@@ -5,13 +5,15 @@ syntax = "proto3";
 
 // package service;
 
-// option java_package = "ar.edu.itba.pod.grpc";
+ option java_package = "ar.edu.itba.pod.grpc";
 // option java_outer_classname = "ServiceModel";
-// option java_multiple_files = true;
+ option java_multiple_files = true;
 
 
-service AttractionService {
-  rpc AddAttraction(AttractionRequest) returns (AttractionResponse);
+service Admin {
+  rpc AddAttraction(AttractionRequest) returns (BooleanResponse);
+  rpc AddTicket(TicketRequest) returns (BooleanResponse);
+  rpc AddCapacity(CapacityRequest) returns (CapacityResponse);
 }
 
 message AttractionRequest {
@@ -21,7 +23,31 @@ message AttractionRequest {
   int32 slotGap = 4;
 }
 
-message AttractionResponse {
+message TicketRequest {
+  string visitorId = 1;
+  PassType passType = 2;
+  int32 dayOfYear = 3;
+  enum PassType {
+    UNKNOWN = 0;
+    HALFDAY = 1;
+    FULLDAY= 2;
+    UNLIMITED = 3;
+  }
+}
+
+message BooleanResponse {
   bool success = 1;
-  string message = 2;
+}
+
+message CapacityRequest {
+  string ride = 1;
+  int32 day = 2;
+  int32 capacity = 3;
+}
+
+message CapacityResponse {
+  string result_message = 1;
+  int32 confirmed_bookings = 2;
+  int32 relocated_bookings = 3;
+  int32 cancelled_bookings = 4;
 }
