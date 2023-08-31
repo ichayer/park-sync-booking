@@ -1,20 +1,24 @@
 package ar.edu.itba.pod.grpc.adminClient;
 
+import ar.edu.itba.pod.grpc.AdminGrpc;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
+import static ar.edu.itba.pod.grpc.AdminGrpc.newBlockingStub;
+
 public class AdminClient {
     private static final Logger logger = LoggerFactory.getLogger(AdminClient.class);
 
+
     public static void main(String[] args) throws InterruptedException {
-        AdminArgumentParser arguments = null;
+        System.out.println(System.getProperty("user.dir"));
+        AdminArguments arguments = null;
         try {
-            arguments = new AdminArgumentParser(args);
+            arguments = new AdminArguments(args);
+            arguments.getAction().execute(newBlockingStub(arguments.getChannel()), arguments);
         }catch (IllegalClientArgumentException e){
             System.out.println(e.getMessage());
         }

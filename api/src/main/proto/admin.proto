@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+// import "google/protobuf/wrappers.proto";
+// import "google/protobuf/empty.proto";
+
+// package service;
+
+// option java_package = "ar.edu.itba.pod.grpc";
+// option java_outer_classname = "ServiceModel";
+// option java_multiple_files = true;
+
+
+service AttractionService {
+  rpc AddAttraction(AttractionRequest) returns (AttractionResponse);
+}
+
+message AttractionRequest {
+  string name = 1;
+  string hoursFrom = 2;
+  string hoursTo = 3;
+  int32 slotGap = 4;
+}
+
+message AttractionResponse {
+  bool success = 1;
+  string message = 2;
+}

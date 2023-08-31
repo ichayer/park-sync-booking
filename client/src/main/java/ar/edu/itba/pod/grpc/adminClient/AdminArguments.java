@@ -8,14 +8,14 @@ import io.grpc.ManagedChannelBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class AdminArgumentParser {
+public class AdminArguments {
     private ManagedChannel channel;
     private AdminClientAction action;
     private String filename;
     private String rideName;
     private Integer dayOfYear;
     private Integer capacity;
-    private static final Map<String, BiConsumer<String, AdminArgumentParser>> OPTIONS = Map.of(
+    private static final Map<String, BiConsumer<String, AdminArguments>> OPTIONS = Map.of(
             "-DserverAddress", (argValue, parser) -> parser.channel = ManagedChannelBuilder.forTarget(argValue).usePlaintext().build(),
             "-Daction", (argValue, parser) -> parser.action = AdminClientAction.getAction(argValue.toUpperCase()),
             "-DinPath", (argValue, parser) -> parser.filename = argValue,
@@ -24,7 +24,7 @@ public class AdminArgumentParser {
             "-Dcapacity", (argValue, parser) -> parser.capacity = Integer.valueOf(argValue)
             );
 
-    public AdminArgumentParser(String[] args){
+    public AdminArguments(String[] args){
         for(String arg : args){
             String[] parts = arg.split("=");
             if(parts.length != 2){
