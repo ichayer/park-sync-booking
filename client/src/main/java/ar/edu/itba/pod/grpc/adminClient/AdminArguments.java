@@ -24,6 +24,10 @@ public class AdminArguments {
             "-Dcapacity", (argValue, parser) -> parser.capacity = Integer.valueOf(argValue)
             );
 
+    private static final BiConsumer<String, AdminArguments> DEFAULT_ACTION = (argValue, parser) -> {
+        throw new IllegalClientArgumentException("The argument " + argValue + "is not valid");
+    };
+
     public AdminArguments(String[] args){
         for(String arg : args){
             String[] parts = arg.split("=");
@@ -31,12 +35,7 @@ public class AdminArguments {
                 throw new IllegalClientArgumentException("Arguments must have the format -Dargument=value");
             }
             try{
-                OPTIONS.getOrDefault(
-                        parts[0],
-                        (argValue, parser) -> {
-                            throw new IllegalClientArgumentException("The argument " + argValue + "is not valid");
-                            })
-                        .accept(parts[1], this);
+                OPTIONS.getOrDefault(parts[0], DEFAULT_ACTION ).accept(parts[1], this);
             }catch (Exception e) {
                 throw new IllegalClientArgumentException(e.getMessage());
             }
