@@ -16,13 +16,6 @@ import java.util.TreeMap;
 @RunWith(MockitoJUnitRunner.class)
 public class AdminServiceImplTest {
 
-    private final Map<String, AttractionRequest> attractions = new TreeMap<>();
-    @InjectMocks
-    private final AdminServiceImpl adminService = new AdminServiceImpl(attractions);
-
-    @Mock
-    private StreamObserver<BooleanResponse> responseObserver;
-
     private static final String ATTRACTION_NAME = "attractionName";
     private static final String HOURS_FROM = "10:00";
     private static final String HOURS_TO = "18:00";
@@ -34,6 +27,11 @@ public class AdminServiceImplTest {
     private static final int NO_SLOT_GAP = 0;
     private static final int NEGATIVE_SLOT_GAP = -1;
     private static final int INVALID_SLOT_GAP = 61;
+    private final Map<String, AttractionRequest> attractions = new TreeMap<>();
+    @InjectMocks
+    private final AdminServiceImpl adminService = new AdminServiceImpl(attractions);
+    @Mock
+    private StreamObserver<BooleanResponse> responseObserver;
 
     @BeforeEach
     public void setUp() {

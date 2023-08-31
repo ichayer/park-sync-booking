@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.grpc.adminClient;
 
-import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +18,10 @@ public class AdminClient {
         try {
             arguments = new AdminArguments(args);
             arguments.getAction().execute(newBlockingStub(arguments.getChannel()), arguments);
-        }catch (IllegalClientArgumentException e){
+        } catch (IllegalClientArgumentException e) {
             System.out.println(e.getMessage());
-        }
-        finally{
-            if(arguments!=null && arguments.getChannel() != null){
+        } finally {
+            if (arguments != null && arguments.getChannel() != null) {
                 arguments.getChannel().shutdown().awaitTermination(10, TimeUnit.SECONDS);
             }
         }

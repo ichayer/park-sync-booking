@@ -5,9 +5,9 @@ syntax = "proto3";
 
 // package service;
 
- option java_package = "ar.edu.itba.pod.grpc";
+option java_package = "ar.edu.itba.pod.grpc";
 // option java_outer_classname = "ServiceModel";
- option java_multiple_files = true;
+option java_multiple_files = true;
 
 
 service AdminService {
@@ -30,7 +30,7 @@ message TicketRequest {
   enum PassType {
     UNKNOWN = 0;
     HALFDAY = 1;
-    FULLDAY= 2;
+    FULLDAY = 2;
     UNLIMITED = 3;
   }
 }

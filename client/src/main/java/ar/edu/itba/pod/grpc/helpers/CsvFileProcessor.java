@@ -18,8 +18,8 @@ public class CsvFileProcessor {
         String line;
         reader.readLine(); // Skip header
         while ((line = reader.readLine()) != null) {
-           String[] fields = line.split(";");
-           lineProcessor.accept(fields);
+            String[] fields = line.split(";");
+            lineProcessor.accept(fields);
         }
     }
 }

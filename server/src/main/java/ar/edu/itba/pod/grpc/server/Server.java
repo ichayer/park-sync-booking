@@ -21,4 +21,5 @@ public class Server {
             server.shutdown();
             logger.info("Server shut down");
         }));
-    }}
+    }
+}

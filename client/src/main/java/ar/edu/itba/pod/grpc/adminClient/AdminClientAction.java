@@ -1,6 +1,9 @@
 package ar.edu.itba.pod.grpc.adminClient;
 
-import ar.edu.itba.pod.grpc.*;
+import ar.edu.itba.pod.grpc.AdminServiceGrpc;
+import ar.edu.itba.pod.grpc.AttractionRequest;
+import ar.edu.itba.pod.grpc.CapacityRequest;
+import ar.edu.itba.pod.grpc.TicketRequest;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 
 import java.io.IOException;
@@ -8,7 +11,7 @@ import java.io.IOException;
 import static ar.edu.itba.pod.grpc.helpers.CsvFileProcessor.processFile;
 
 public enum AdminClientAction {
-    RIDES(){
+    RIDES() {
         @Override
         public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
             try {
@@ -36,7 +39,7 @@ public enum AdminClientAction {
             // TODO: define if the message should be printed here
         }
     },
-    TICKETS(){
+    TICKETS() {
         @Override
         public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
             try {
@@ -65,10 +68,10 @@ public enum AdminClientAction {
             // TODO: define if the message should be printed here
         }
     },
-    SLOTS(){
+    SLOTS() {
         @Override
         public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
-            if(arguments.getDayOfYear() == null || arguments.getRideName() == null || arguments.getCapacity() == null){
+            if (arguments.getDayOfYear() == null || arguments.getRideName() == null || arguments.getCapacity() == null) {
                 throw new IllegalClientArgumentException("The slots action must be provided a day, a name and a capacity " +
                         "with the arguments -Dday=day -Dride=rideName -Dcapacity=capacity");
             }
@@ -83,8 +86,6 @@ public enum AdminClientAction {
             // TODO: define if the message should be printed here
         }
     };
-
-    public abstract void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments);
 
     //TODO: IDK where this function should go
     private static TicketRequest.PassType mapPassType(String type) {
@@ -104,4 +105,6 @@ public enum AdminClientAction {
         }
         throw new RuntimeException(arg + "is not a valid Action");
     }
+
+    public abstract void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments);
 }
