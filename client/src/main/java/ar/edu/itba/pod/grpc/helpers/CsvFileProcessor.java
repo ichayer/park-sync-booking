@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.grpc.helpers;
 
-import ar.edu.itba.pod.grpc.AdminGrpc;
+import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 
 import java.io.BufferedReader;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 public class CsvFileProcessor {
-    public static void processFile(String filename, AdminGrpc.AdminBlockingStub stub, Consumer<String[]> lineProcessor) throws IOException {
+    public static void processFile(String filename, AdminServiceGrpc.AdminServiceBlockingStub stub, Consumer<String[]> lineProcessor) throws IOException {
         if (filename == null) {
             throw new IllegalClientArgumentException("The action must provide a file using -DinPath=fileName");
         }

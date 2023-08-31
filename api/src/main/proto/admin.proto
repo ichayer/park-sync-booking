@@ -10,7 +10,7 @@ syntax = "proto3";
  option java_multiple_files = true;
 
 
-service Admin {
+service AdminService {
   rpc AddAttraction(AttractionRequest) returns (BooleanResponse);
   rpc AddTicket(TicketRequest) returns (BooleanResponse);
   rpc AddCapacity(CapacityRequest) returns (CapacityResponse);

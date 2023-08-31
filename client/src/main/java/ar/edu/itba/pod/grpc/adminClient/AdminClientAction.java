@@ -10,7 +10,7 @@ import static ar.edu.itba.pod.grpc.helpers.CsvFileProcessor.processFile;
 public enum AdminClientAction {
     RIDES(){
         @Override
-        public void execute(AdminGrpc.AdminBlockingStub stub, AdminArguments arguments) {
+        public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
             try {
                 processFile(arguments.getFilename(), stub, (fields) -> {
                     if (fields.length == 4) {
@@ -38,7 +38,7 @@ public enum AdminClientAction {
     },
     TICKETS(){
         @Override
-        public void execute(AdminGrpc.AdminBlockingStub stub, AdminArguments arguments) {
+        public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
             try {
                 processFile(arguments.getFilename(), stub, (fields) -> {
                     if (fields.length == 3) {
@@ -67,7 +67,7 @@ public enum AdminClientAction {
     },
     SLOTS(){
         @Override
-        public void execute(AdminGrpc.AdminBlockingStub stub, AdminArguments arguments) {
+        public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
             if(arguments.getDayOfYear() == null || arguments.getRideName() == null || arguments.getCapacity() == null){
                 throw new IllegalClientArgumentException("The slots action must be provided a day, a name and a capacity " +
                         "with the arguments -Dday=day -Dride=rideName -Dcapacity=capacity");
@@ -84,7 +84,7 @@ public enum AdminClientAction {
         }
     };
 
-    public abstract void execute(AdminGrpc.AdminBlockingStub stub, AdminArguments arguments);
+    public abstract void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments);
 
     //TODO: IDK where this function should go
     private static TicketRequest.PassType mapPassType(String type) {
