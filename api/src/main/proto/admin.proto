@@ -23,16 +23,17 @@ message AttractionRequest {
   int32 slotGap = 4;
 }
 
+enum PassType {
+  UNKNOWN = 0;
+  HALFDAY = 1;
+  FULLDAY = 2;
+  UNLIMITED = 3;
+}
+
 message TicketRequest {
   string visitorId = 1;
   PassType passType = 2;
-  int32 dayOfYear = 3;
-  enum PassType {
-    UNKNOWN = 0;
-    HALFDAY = 1;
-    FULLDAY = 2;
-    UNLIMITED = 3;
-  }
+  string dayOfYear = 3;
 }
 
 message BooleanResponse {
