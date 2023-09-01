@@ -1,9 +1,6 @@
 package ar.edu.itba.pod.grpc.adminClient;
 
-import ar.edu.itba.pod.grpc.AdminServiceGrpc;
-import ar.edu.itba.pod.grpc.AttractionRequest;
-import ar.edu.itba.pod.grpc.CapacityRequest;
-import ar.edu.itba.pod.grpc.TicketRequest;
+import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 
 import java.io.IOException;
@@ -45,12 +42,12 @@ public enum AdminClientAction {
             try {
                 processFile(arguments.getFilename(), stub, (fields) -> {
                     if (fields.length == 3) {
-                        TicketRequest.PassType passType = mapPassType(fields[1]);
-                        if (passType != TicketRequest.PassType.UNKNOWN) {
+                        PassType passType = mapPassType(fields[1]);
+                        if (passType != PassType.UNKNOWN) {
                             TicketRequest request = TicketRequest.newBuilder()
                                     .setVisitorId(fields[0])
                                     .setPassType(passType)
-                                    .setDayOfYear(Integer.parseInt(fields[2]))
+                                    .setDayOfYear(String.valueOf(Integer.parseInt(fields[2])))
                                     .build();
                             // BooleanResponse response = stub.addTicket(request);
                             // if (response.getSuccess()) {
@@ -88,12 +85,12 @@ public enum AdminClientAction {
     };
 
     //TODO: IDK where this function should go
-    private static TicketRequest.PassType mapPassType(String type) {
+    private static PassType mapPassType(String type) {
         return switch (type) {
-            case "HALFDAY" -> TicketRequest.PassType.HALFDAY;
-            case "FULLDAY" -> TicketRequest.PassType.FULLDAY;
-            case "UNLIMITED" -> TicketRequest.PassType.UNLIMITED;
-            default -> TicketRequest.PassType.UNKNOWN;
+            case "HALFDAY" -> PassType.HALFDAY;
+            case "FULLDAY" -> PassType.FULLDAY;
+            case "UNLIMITED" -> PassType.UNLIMITED;
+            default -> PassType.UNKNOWN;
         };
     }
 

@@ -3,15 +3,21 @@ package ar.edu.itba.pod.grpc.server.services;
 import ar.edu.itba.pod.grpc.*;
 import io.grpc.stub.StreamObserver;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     private final Map<String, AttractionRequest> attractions;
+    private final Map<String, Map<LocalDate, PassType>> tickets;
 
-    public AdminServiceImpl(Map<String, AttractionRequest> attractionsMap) {
+    public AdminServiceImpl(Map<String, AttractionRequest> attractionsMap, Map<String, Map<LocalDate, PassType>> ticketsMap) {
         this.attractions = attractionsMap;
+        this.tickets = ticketsMap;
     }
 
     @Override
@@ -29,7 +35,26 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     @Override
     public void addTicket(TicketRequest request, StreamObserver<BooleanResponse> responseObserver) {
-        super.addTicket(request, responseObserver);
+        boolean success = false;
+        LocalDate date = parseDateOrNull(request.getDayOfYear());
+
+
+        // TODO: Check if PassType.forNumber(request.getPassType().getNumber() != null) validation is necessary
+        if (date != null) {
+
+            if (!tickets.containsKey(request.getVisitorId())) {
+                tickets.put(request.getVisitorId(), new HashMap<>());
+            }
+
+            Map<LocalDate, PassType> visitorTickets = tickets.get(request.getVisitorId());
+
+            if (!visitorTickets.containsKey(date)) {
+                tickets.get(request.getVisitorId()).put(date, request.getPassType());
+                success = true;
+            }
+        }
+        responseObserver.onNext(BooleanResponse.newBuilder().setSuccess(success).build());
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -40,7 +65,6 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
     private boolean isValidAttractionRequest(AttractionRequest request) {
 
         String attractionName = request.getName();
-
         if (attractionName.isEmpty() || attractions.containsKey(attractionName)) {
             return false;
         }
@@ -50,21 +74,25 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
             return false;
         }
 
-        String hoursFrom = request.getHoursFrom();
-        String hoursTo = request.getHoursTo();
-        if (!hoursFrom.matches("\\d{2}:\\d{2}") || !hoursTo.matches("\\d{2}:\\d{2}")) {
-            return false;
-        }
+        LocalTime openTime = parseTimeOrNull(request.getHoursFrom());
+        LocalTime closeTime = parseTimeOrNull(request.getHoursTo());
 
-        LocalTime openTime, closeTime;
+        return openTime != null && closeTime != null && openTime.isBefore(closeTime);
+    }
 
+    private LocalDate parseDateOrNull(String date) {
         try {
-            openTime = LocalTime.parse(hoursFrom);
-            closeTime = LocalTime.parse(hoursTo);
-        } catch (Exception e) {
-            return false;
+            return LocalDate.parse(date, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        } catch (DateTimeParseException e) {
+            return null;
         }
+    }
 
-        return !openTime.isAfter(closeTime);
+    private LocalTime parseTimeOrNull(String time) {
+        try {
+            return LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"));
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 }

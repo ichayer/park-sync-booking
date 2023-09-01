@@ -10,8 +10,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AdminServiceImplTest {
@@ -27,15 +29,25 @@ public class AdminServiceImplTest {
     private static final int NO_SLOT_GAP = 0;
     private static final int NEGATIVE_SLOT_GAP = -1;
     private static final int INVALID_SLOT_GAP = 61;
-    private final Map<String, AttractionRequest> attractions = new TreeMap<>();
+    private static final PassType FULLDAY_PASS_TYPE = PassType.FULLDAY;
+    private static final PassType HALFDAY_PASS_TYPE = PassType.HALFDAY;
+    private static final String DEFAULT_VISITOR_ID = "1";
+    private static final String VALID_DATE = "10-09-2023";
+    private static final String OTHER_VALID_DATE = "11-10-2023";
+    private static final String INVALID_DATE = "32-10-2023";
+    private static final String INVALID_DATE_FORMAT = "/10/2023";
+    private final Map<String, AttractionRequest> attractions = new HashMap<>();
+    private final Map<String, Map<LocalDate, PassType>> tickets = new HashMap<>();
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     @InjectMocks
-    private final AdminServiceImpl adminService = new AdminServiceImpl(attractions);
+    private final AdminServiceImpl adminService = new AdminServiceImpl(attractions, tickets);
     @Mock
     private StreamObserver<BooleanResponse> responseObserver;
 
     @BeforeEach
     public void setUp() {
         attractions.clear();
+        tickets.clear();
     }
 
     @Test
@@ -193,4 +205,104 @@ public class AdminServiceImplTest {
 
         Assert.assertTrue(attractions.isEmpty());
     }
+
+    @Test
+    public void testAddTicket() {
+        TicketRequest request = TicketRequest.newBuilder()
+                .setVisitorId(DEFAULT_VISITOR_ID)
+                .setDayOfYear(VALID_DATE)
+                .setPassType(FULLDAY_PASS_TYPE)
+                .build();
+
+        adminService.addTicket(request, responseObserver);
+
+        Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID));
+        Assert.assertTrue(tickets.get(DEFAULT_VISITOR_ID).containsKey(LocalDate.parse(VALID_DATE, formatter)));
+        Assert.assertEquals(1, tickets.size());
+        Assert.assertEquals(1, tickets.get(DEFAULT_VISITOR_ID).size());
+    }
+
+    @Test
+    public void testAddTicketFailureInvalidDate() {
+        TicketRequest request = TicketRequest.newBuilder()
+                .setVisitorId(DEFAULT_VISITOR_ID)
+                .setDayOfYear(INVALID_DATE)
+                .setPassType(FULLDAY_PASS_TYPE)
+                .build();
+
+        adminService.addTicket(request, responseObserver);
+
+        Assert.assertFalse(tickets.containsKey(DEFAULT_VISITOR_ID));
+        Assert.assertEquals(0, tickets.size());
+    }
+
+    @Test
+    public void testAddTicketFailureInvalidDateFormat() {
+        TicketRequest request = TicketRequest.newBuilder()
+                .setVisitorId(DEFAULT_VISITOR_ID)
+                .setDayOfYear(INVALID_DATE_FORMAT)
+                .setPassType(FULLDAY_PASS_TYPE)
+                .build();
+
+        adminService.addTicket(request, responseObserver);
+
+        Assert.assertFalse(tickets.containsKey(DEFAULT_VISITOR_ID));
+        Assert.assertEquals(0, tickets.size());
+    }
+
+    @Test
+    public void testAddSameTicketPassForSameDate() {
+        tickets.put(DEFAULT_VISITOR_ID, new HashMap<>());
+        tickets.get(DEFAULT_VISITOR_ID).put(LocalDate.parse(VALID_DATE, formatter), FULLDAY_PASS_TYPE);
+        TicketRequest request = TicketRequest.newBuilder()
+                .setVisitorId(DEFAULT_VISITOR_ID)
+                .setDayOfYear(VALID_DATE)
+                .setPassType(FULLDAY_PASS_TYPE)
+                .build();
+
+        adminService.addTicket(request, responseObserver);
+
+        Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID));
+        Assert.assertTrue(tickets.get(DEFAULT_VISITOR_ID).containsKey(LocalDate.parse(VALID_DATE, formatter)));
+        Assert.assertEquals(1, tickets.size());
+        Assert.assertEquals(1, tickets.get(DEFAULT_VISITOR_ID).size());
+    }
+
+    @Test
+    public void testAddOtherPassForSameDate() {
+        tickets.put(DEFAULT_VISITOR_ID, new HashMap<>());
+        tickets.get(DEFAULT_VISITOR_ID).put(LocalDate.parse(VALID_DATE, formatter), FULLDAY_PASS_TYPE);
+        TicketRequest request = TicketRequest.newBuilder()
+                .setVisitorId(DEFAULT_VISITOR_ID)
+                .setDayOfYear(VALID_DATE)
+                .setPassType(HALFDAY_PASS_TYPE)
+                .build();
+
+        adminService.addTicket(request, responseObserver);
+
+        Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID));
+        Assert.assertTrue(tickets.get(DEFAULT_VISITOR_ID).containsKey(LocalDate.parse(VALID_DATE, formatter)));
+        Assert.assertEquals(1, tickets.size());
+        Assert.assertEquals(1, tickets.get(DEFAULT_VISITOR_ID).size());
+    }
+
+    @Test
+    public void testAddTicketForOtherDay() {
+        tickets.put(DEFAULT_VISITOR_ID, new HashMap<>());
+        tickets.get(DEFAULT_VISITOR_ID).put(LocalDate.parse(VALID_DATE, formatter), FULLDAY_PASS_TYPE);
+        TicketRequest request = TicketRequest.newBuilder()
+                .setVisitorId(DEFAULT_VISITOR_ID)
+                .setDayOfYear(OTHER_VALID_DATE)
+                .setPassType(FULLDAY_PASS_TYPE)
+                .build();
+
+        adminService.addTicket(request, responseObserver);
+
+        Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID));
+        Assert.assertEquals(1, tickets.size());
+        Assert.assertEquals(2, tickets.get(DEFAULT_VISITOR_ID).size());
+        Assert.assertTrue(tickets.get(DEFAULT_VISITOR_ID).containsKey(LocalDate.parse(VALID_DATE, formatter)));
+        Assert.assertTrue(tickets.get(DEFAULT_VISITOR_ID).containsKey(LocalDate.parse(OTHER_VALID_DATE, formatter)));
+    }
+
 }
