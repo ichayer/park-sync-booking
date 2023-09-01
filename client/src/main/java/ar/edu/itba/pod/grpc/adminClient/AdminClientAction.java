@@ -5,12 +5,14 @@ import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 
 import java.io.IOException;
 
+import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 import static ar.edu.itba.pod.grpc.helpers.CsvFileProcessor.processFile;
 
 public enum AdminClientAction {
     RIDES() {
         @Override
-        public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
+        public void execute(AdminArguments arguments) {
+            AdminServiceGrpc.AdminServiceBlockingStub stub = newBlockingStub(arguments.getChannel());
             try {
                 processFile(arguments.getFilename(), stub, (fields) -> {
                     if (fields.length == 4) {
@@ -38,7 +40,8 @@ public enum AdminClientAction {
     },
     TICKETS() {
         @Override
-        public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
+        public void execute(AdminArguments arguments) {
+            AdminServiceGrpc.AdminServiceBlockingStub stub = newBlockingStub(arguments.getChannel());
             try {
                 processFile(arguments.getFilename(), stub, (fields) -> {
                     if (fields.length == 3) {
@@ -67,7 +70,8 @@ public enum AdminClientAction {
     },
     SLOTS() {
         @Override
-        public void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments) {
+        public void execute(AdminArguments arguments) {
+            AdminServiceGrpc.AdminServiceBlockingStub stub = newBlockingStub(arguments.getChannel());
             if (arguments.getDayOfYear() == null || arguments.getRideName() == null || arguments.getCapacity() == null) {
                 throw new IllegalClientArgumentException("The slots action must be provided a day, a name and a capacity " +
                         "with the arguments -Dday=day -Dride=rideName -Dcapacity=capacity");
@@ -103,5 +107,5 @@ public enum AdminClientAction {
         throw new RuntimeException(arg + "is not a valid Action");
     }
 
-    public abstract void execute(AdminServiceGrpc.AdminServiceBlockingStub stub, AdminArguments arguments);
+    public abstract void execute(AdminArguments arguments);
 }

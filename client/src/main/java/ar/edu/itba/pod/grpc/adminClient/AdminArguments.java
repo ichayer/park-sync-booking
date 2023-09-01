@@ -1,16 +1,18 @@
 package ar.edu.itba.pod.grpc.adminClient;
 
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
+import ar.edu.itba.pod.grpc.interfaces.ArgumentParser;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class AdminArguments {
+public class AdminArguments implements ArgumentParser {
     private static final Map<String, BiConsumer<String, AdminArguments>> OPTIONS = Map.of(
             "-DserverAddress", (argValue, parser) -> parser.channel = ManagedChannelBuilder.forTarget(argValue).usePlaintext().build(),
-            "-Daction", (argValue, parser) -> parser.action = AdminClientAction.getAction(argValue.toUpperCase()),
+            "-Daction", (argValue, parser) -> {parser.action = AdminClientAction.getAction(argValue.toUpperCase());
+                                                   parser.stringAction = argValue.toUpperCase(); },
             "-DinPath", (argValue, parser) -> parser.filename = argValue,
             "-Dride", (argValue, parser) -> parser.rideName = argValue,
             "-Dday", (argValue, parser) -> parser.dayOfYear = argValue,
@@ -18,27 +20,13 @@ public class AdminArguments {
     );
     private ManagedChannel channel;
     private AdminClientAction action;
+    private String stringAction;
     private String filename;
     private String rideName;
     private String dayOfYear;
     private Integer capacity;
 
-    public AdminArguments(String[] args) {
-        for (String arg : args) {
-            String[] parts = arg.split("=");
-            if (parts.length != 2) {
-                throw new IllegalClientArgumentException("Arguments must have the format -Dargument=value");
-            }
-            try {
-                OPTIONS.getOrDefault(parts[0], AdminArguments::InvalidArgument).accept(parts[1], this);
-            } catch (Exception e) {
-                throw new IllegalClientArgumentException(e.getMessage());
-            }
-        }
-
-        if (channel == null || action == null) {
-            throw new IllegalClientArgumentException("the parameters -DserverAddress and -Daction must be provided");
-        }
+    public AdminArguments() {
     }
 
     private static void InvalidArgument(String arg, AdminArguments parser) {
@@ -79,5 +67,28 @@ public class AdminArguments {
 
     public Integer getCapacity() {
         return capacity;
+    }
+
+    @Override
+    public void parse(String[] args) {
+        for (String arg : args) {
+            String[] parts = arg.split("=");
+            if (parts.length != 2) {
+                throw new IllegalClientArgumentException("Arguments must have the format -Dargument=value");
+            }
+            try {
+                OPTIONS.getOrDefault(parts[0], AdminArguments::InvalidArgument).accept(parts[1], this);
+            } catch (Exception e) {
+                throw new IllegalClientArgumentException(e.getMessage());
+            }
+        }
+
+        if (channel == null || action == null) {
+            throw new IllegalClientArgumentException("the parameters -DserverAddress and -Daction must be provided");
+        }
+    }
+
+    public String getStringAction() {
+        return stringAction;
     }
 }
