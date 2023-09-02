@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.grpc;
 
+import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import io.grpc.stub.StreamObserver;
 import org.junit.Assert;
@@ -11,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +38,7 @@ public class AdminServiceImplTest {
     private static final String OTHER_VALID_DATE = "11-10-2023";
     private static final String INVALID_DATE = "32-10-2023";
     private static final String INVALID_DATE_FORMAT = "/10/2023";
-    private final Map<String, AttractionRequest> attractions = new HashMap<>();
+    private final Map<String, Attraction> attractions = new HashMap<>();
     private final Map<String, Map<LocalDate, PassType>> tickets = new HashMap<>();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     @InjectMocks
@@ -72,7 +74,9 @@ public class AdminServiceImplTest {
                 .setSlotGap(SLOT_GAP)
                 .build();
 
-        attractions.put(ATTRACTION_NAME, request);
+        final Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(HOURS_FROM), LocalTime.parse(HOURS_TO), SLOT_GAP);
+
+        attractions.put(ATTRACTION_NAME, attraction);
 
         adminService.addAttraction(request, responseObserver);
 

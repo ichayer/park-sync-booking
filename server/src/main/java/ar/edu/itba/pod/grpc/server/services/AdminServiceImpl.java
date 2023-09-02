@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
+import ar.edu.itba.pod.grpc.server.models.Attraction;
 import io.grpc.stub.StreamObserver;
 
 import java.time.LocalDate;
@@ -12,21 +13,26 @@ import java.util.Map;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
-    private final Map<String, AttractionRequest> attractions;
+    private final Map<String, Attraction> attractions;
     private final Map<String, Map<LocalDate, PassType>> tickets;
 
-    public AdminServiceImpl(Map<String, AttractionRequest> attractionsMap, Map<String, Map<LocalDate, PassType>> ticketsMap) {
+    public AdminServiceImpl(Map<String, Attraction> attractionsMap, Map<String, Map<LocalDate, PassType>> ticketsMap) {
         this.attractions = attractionsMap;
         this.tickets = ticketsMap;
     }
 
     @Override
     public void addAttraction(AttractionRequest request, StreamObserver<BooleanResponse> responseObserver) {
-        boolean isValid = isValidAttractionRequest(request);
+        String attractionName = request.getName();
+        LocalTime openTime = parseTimeOrNull(request.getHoursFrom());
+        LocalTime closeTime = parseTimeOrNull(request.getHoursTo());
+        int slotGap = request.getSlotGap();
+
+        boolean isValid = isValidAttractionRequest(attractionName, openTime, closeTime, slotGap);
 
         if (isValid) {
-            String attractionName = request.getName();
-            attractions.put(attractionName, request);
+            Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotGap);
+            attractions.put(attractionName, attraction);
         }
 
         responseObserver.onNext(BooleanResponse.newBuilder().setSuccess(isValid).build());
@@ -37,7 +43,6 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
     public void addTicket(TicketRequest request, StreamObserver<BooleanResponse> responseObserver) {
         boolean success = false;
         LocalDate date = parseDateOrNull(request.getDayOfYear());
-
 
         // TODO: Check if PassType.forNumber(request.getPassType().getNumber() != null) validation is necessary
         if (date != null) {
@@ -62,20 +67,15 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
         super.addCapacity(request, responseObserver);
     }
 
-    private boolean isValidAttractionRequest(AttractionRequest request) {
+    private boolean isValidAttractionRequest(String attractionName, LocalTime openTime, LocalTime closeTime, int slotGap) {
 
-        String attractionName = request.getName();
         if (attractionName.isEmpty() || attractions.containsKey(attractionName)) {
             return false;
         }
 
-        int slotGap = request.getSlotGap();
         if (slotGap <= 0 || slotGap > 60) {
             return false;
         }
-
-        LocalTime openTime = parseTimeOrNull(request.getHoursFrom());
-        LocalTime closeTime = parseTimeOrNull(request.getHoursTo());
 
         return openTime != null && closeTime != null && openTime.isBefore(closeTime);
     }
