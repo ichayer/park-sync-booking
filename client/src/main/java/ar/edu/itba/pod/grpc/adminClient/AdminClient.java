@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.adminClient;
 
 import ar.edu.itba.pod.grpc.adminClient.actions.AdminActionMapper;
+import ar.edu.itba.pod.grpc.exceptions.IOClientFileError;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,21 +15,13 @@ public class AdminClient {
 
 
     public static void main(String[] args) throws InterruptedException {
-        System.out.println(System.getProperty("user.dir"));
         AdminArguments arguments = null;
         try {
-            arguments = new AdminArguments();
-            arguments.parse(args);
-
-            // Enum option
-            arguments.getAction().execute(arguments);
-
-            //Class option
+            arguments = AdminArguments.parse(args);
             AdminActionMapper actionMapper = new AdminActionMapper(arguments);
             actionMapper.getAction(arguments.getStringAction()).execute();
-
-
-        } catch (IllegalClientArgumentException e) {
+        } catch (IllegalClientArgumentException | IOClientFileError e) {
+            //TODO: improve
             System.out.println(e.getMessage());
         } finally {
             if (arguments != null && arguments.getChannel() != null) {
