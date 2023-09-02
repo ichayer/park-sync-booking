@@ -19,7 +19,7 @@ public class AdminClient {
         try {
             arguments = AdminArguments.parse(args);
             AdminActionMapper actionMapper = new AdminActionMapper(arguments);
-            actionMapper.getAction(arguments.getStringAction()).execute();
+            actionMapper.getAction(arguments.getStringAction()).execute().showResults();
         } catch (IllegalClientArgumentException | IOClientFileError e) {
             //TODO: improve
             System.out.println(e.getMessage());

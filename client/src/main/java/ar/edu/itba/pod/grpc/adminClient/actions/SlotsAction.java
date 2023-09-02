@@ -4,6 +4,7 @@ import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.CapacityRequest;
 import ar.edu.itba.pod.grpc.adminClient.AdminArguments;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
+import ar.edu.itba.pod.grpc.interfaces.Action;
 
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 
@@ -17,7 +18,7 @@ public class SlotsAction extends AdminAction{
     }
 
     @Override
-    public void execute() {
+    public Action execute() {
         AdminServiceGrpc.AdminServiceBlockingStub stub = newBlockingStub(arguments.getChannel());
         if (arguments.getDayOfYear() == null || arguments.getRideName() == null || arguments.getCapacity() == null) {
             throw new IllegalClientArgumentException("The slots action must be provided a day, a name and a capacity " +
@@ -31,6 +32,7 @@ public class SlotsAction extends AdminAction{
                 .build();
         //CapacityResponse response = stub.addCapacity(request);
 
+        return this;
     }
 
     @Override

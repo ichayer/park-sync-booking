@@ -5,6 +5,7 @@ import ar.edu.itba.pod.grpc.AttractionRequest;
 import ar.edu.itba.pod.grpc.adminClient.AdminArguments;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
+import ar.edu.itba.pod.grpc.interfaces.Action;
 
 
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
@@ -19,7 +20,7 @@ public class RidesAction extends AdminAction {
     }
 
     @Override
-    public void execute() {
+    public Action execute() {
         if (arguments.getFilename() == null) {
             throw new IllegalClientArgumentException("The action rides needs a file to process, use -DinPath=filename");
         }
@@ -45,6 +46,7 @@ public class RidesAction extends AdminAction {
             }
         }
         fileIterator.close();
+        return this;
     }
 
     @Override
