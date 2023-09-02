@@ -46,17 +46,9 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
         // TODO: Check if PassType.forNumber(request.getPassType().getNumber() != null) validation is necessary
         if (date != null) {
-
-            if (!tickets.containsKey(request.getVisitorId())) {
-                tickets.put(request.getVisitorId(), new HashMap<>());
-            }
-
+            tickets.putIfAbsent(request.getVisitorId(), new HashMap<>());
             Map<LocalDate, PassType> visitorTickets = tickets.get(request.getVisitorId());
-
-            if (!visitorTickets.containsKey(date)) {
-                tickets.get(request.getVisitorId()).put(date, request.getPassType());
-                success = true;
-            }
+            success = visitorTickets.putIfAbsent(date, request.getPassType()) == null;
         }
         responseObserver.onNext(BooleanResponse.newBuilder().setSuccess(success).build());
         responseObserver.onCompleted();
