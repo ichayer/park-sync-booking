@@ -1,6 +1,9 @@
 package ar.edu.itba.pod.grpc.server.models;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Attraction {
 
@@ -8,13 +11,14 @@ public class Attraction {
     private final LocalTime openingTime;
     private final LocalTime closingTime;
     private final int slotDuration;
-    private int capacity;
+    private final Map<LocalDate, Integer> capacityByDate;
 
     public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration) {
         this.name = name;
         this.openingTime = openingTime;
         this.closingTime = closingTime;
         this.slotDuration = slotDuration;
+        this.capacityByDate = new HashMap<>();
     }
 
     public String getName() {
@@ -33,11 +37,12 @@ public class Attraction {
         return slotDuration;
     }
 
-    public int getCapacity() {
-        return capacity;
+    public int getCapacityByDate(LocalDate date) {
+        return capacityByDate.getOrDefault(date, null);
     }
 
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
+    public boolean setCapacityByDate(LocalDate date, int capacity) {
+        return capacityByDate.putIfAbsent(date, capacity) == null;
     }
+
 }
