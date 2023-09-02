@@ -3,6 +3,8 @@ package ar.edu.itba.pod.grpc.adminClient;
 import ar.edu.itba.pod.grpc.adminClient.actions.AdminActionMapper;
 import ar.edu.itba.pod.grpc.exceptions.IOClientFileError;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
+import ar.edu.itba.pod.grpc.helpers.Arguments;
+import ar.edu.itba.pod.grpc.helpers.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,11 +17,11 @@ public class AdminClient {
 
 
     public static void main(String[] args) throws InterruptedException {
-        AdminArguments arguments = null;
+        Arguments arguments = null;
         try {
-            arguments = AdminArguments.parse(args);
-            AdminActionMapper actionMapper = new AdminActionMapper(arguments);
-            actionMapper.getAction(arguments.getStringAction()).execute().showResults();
+            arguments = Parser.parse(args);
+            AdminActionMapper actionMapper = new AdminActionMapper();
+            actionMapper.getAction(arguments.getAction()).execute(arguments).showResults();
         } catch (IllegalClientArgumentException | IOClientFileError e) {
             //TODO: improve
             System.out.println(e.getMessage());

@@ -2,28 +2,27 @@ package ar.edu.itba.pod.grpc.adminClient.actions;
 
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.CapacityRequest;
-import ar.edu.itba.pod.grpc.adminClient.AdminArguments;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
+import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
 
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 
-public class SlotsAction extends AdminAction{
+public class SlotsAction implements Action {
     private int noChangedBookings;
     private int relocatedBookings;
     private int cancelledBookings;
 
-    public SlotsAction(AdminArguments arguments) {
-        super(arguments);
-    }
+    private Arguments arguments;
 
     @Override
-    public Action execute() {
+    public Action execute(Arguments arguments) {
         AdminServiceGrpc.AdminServiceBlockingStub stub = newBlockingStub(arguments.getChannel());
         if (arguments.getDayOfYear() == null || arguments.getRideName() == null || arguments.getCapacity() == null) {
             throw new IllegalClientArgumentException("The slots action must be provided a day, a name and a capacity " +
                     "with the arguments -Dday=day -Dride=rideName -Dcapacity=capacity");
         }
+        this.arguments = arguments;
         // TODO: implement response on server side, initialize the fields of the class
         CapacityRequest request = CapacityRequest.newBuilder()
                 .setRide(arguments.getRideName())

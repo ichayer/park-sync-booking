@@ -2,25 +2,22 @@ package ar.edu.itba.pod.grpc.adminClient.actions;
 
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.AttractionRequest;
-import ar.edu.itba.pod.grpc.adminClient.AdminArguments;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
+import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
 import ar.edu.itba.pod.grpc.interfaces.Action;
 
 
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 
-public class RidesAction extends AdminAction {
+public class RidesAction implements Action {
 
     private int attractionsAdded = 0;
     private int attractionsFailed = 0;
 
-    public RidesAction(AdminArguments arguments){
-        super(arguments);
-    }
 
     @Override
-    public Action execute() {
+    public Action execute(Arguments arguments) {
         if (arguments.getFilename() == null) {
             throw new IllegalClientArgumentException("The action rides needs a file to process, use -DinPath=filename");
         }
