@@ -69,11 +69,11 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
         int hardcodedValue = 0;
         String hardcodedMessage = "This is a message";
         responseObserver.onNext(CapacityResponse.newBuilder()
-                        .setCancelledBookings(hardcodedValue)
-                                .setConfirmedBookings(hardcodedValue)
-                                        .setRelocatedBookings(hardcodedValue)
-                                                .setResultMessage(hardcodedMessage)
-                                                                .build());
+                .setCancelledBookings(hardcodedValue)
+                .setConfirmedBookings(hardcodedValue)
+                .setRelocatedBookings(hardcodedValue)
+                .setResultMessage(hardcodedMessage)
+                .build());
         responseObserver.onCompleted();
     }
 
