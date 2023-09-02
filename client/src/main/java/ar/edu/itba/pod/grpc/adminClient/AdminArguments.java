@@ -13,14 +13,14 @@ public class AdminArguments {
             "-Daction", (argValue, parser) -> parser.action = AdminClientAction.getAction(argValue.toUpperCase()),
             "-DinPath", (argValue, parser) -> parser.filename = argValue,
             "-Dride", (argValue, parser) -> parser.rideName = argValue,
-            "-Dday", (argValue, parser) -> parser.dayOfYear = Integer.valueOf(argValue),
+            "-Dday", (argValue, parser) -> parser.dayOfYear = argValue,
             "-Dcapacity", (argValue, parser) -> parser.capacity = Integer.valueOf(argValue)
     );
     private ManagedChannel channel;
     private AdminClientAction action;
     private String filename;
     private String rideName;
-    private Integer dayOfYear;
+    private String dayOfYear;
     private Integer capacity;
 
     public AdminArguments(String[] args) {
@@ -73,7 +73,7 @@ public class AdminArguments {
         return rideName;
     }
 
-    public Integer getDayOfYear() {
+    public String getDayOfYear() {
         return dayOfYear;
     }
 

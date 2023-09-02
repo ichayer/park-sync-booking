@@ -74,8 +74,8 @@ public enum AdminClientAction {
             }
             // TODO: implement response on server side
             CapacityRequest request = CapacityRequest.newBuilder()
-                    .setRide(arguments.getRideName())
-                    .setDay(arguments.getDayOfYear())
+                    .setAttractionName(arguments.getRideName())
+                    .setDayOfYear(arguments.getDayOfYear())
                     .setCapacity(arguments.getCapacity())
                     .build();
             //CapacityResponse response = stub.addCapacity(request);

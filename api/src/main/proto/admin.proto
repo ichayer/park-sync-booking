@@ -41,8 +41,8 @@ message BooleanResponse {
 }
 
 message CapacityRequest {
-  string ride = 1;
-  int32 day = 2;
+  string attractionName = 1;
+  string dayOfYear = 2;
   int32 capacity = 3;
 }
 

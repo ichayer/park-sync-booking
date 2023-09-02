@@ -2,8 +2,7 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Attraction {
 
@@ -37,12 +36,27 @@ public class Attraction {
         return slotDuration;
     }
 
-    public int getCapacityByDate(LocalDate date) {
-        return capacityByDate.getOrDefault(date, null);
+    public Optional<Integer> getCapacityByDate(LocalDate date) {
+        return Optional.ofNullable(capacityByDate.get(date));
     }
 
     public boolean setCapacityByDate(LocalDate date, int capacity) {
         return capacityByDate.putIfAbsent(date, capacity) == null;
     }
 
+    public boolean removeCapacityByDate(LocalDate date) {
+        return capacityByDate.remove(date) != null;
+    }
+
+    public boolean updateCapacityByDate(LocalDate date, int capacity) {
+        return capacityByDate.replace(date, capacity) != null;
+    }
+
+    public List<LocalDate> getDatesWithCapacitySet() {
+        return new ArrayList<>(capacityByDate.keySet());
+    }
+
+    public int getAmountOfDatesWithCapacitySet() {
+        return capacityByDate.size();
+    }
 }

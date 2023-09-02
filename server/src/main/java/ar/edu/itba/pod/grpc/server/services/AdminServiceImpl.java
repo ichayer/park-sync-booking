@@ -56,7 +56,25 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     @Override
     public void addCapacity(CapacityRequest request, StreamObserver<CapacityResponse> responseObserver) {
-        super.addCapacity(request, responseObserver);
+        String attractionName = request.getAttractionName();
+        LocalDate date = parseDateOrNull(request.getDayOfYear());
+        int capacity = request.getCapacity();
+
+        if (attractions.containsKey(attractionName) && date != null && capacity > 0) {
+            Attraction attraction = attractions.get(attractionName);
+            attraction.setCapacityByDate(date, capacity);
+        }
+
+        // TODO: Confirm, cancel or assign another attraction to the visitor
+        int hardcodedValue = 0;
+        String hardcodedMessage = "This is a message";
+        responseObserver.onNext(CapacityResponse.newBuilder()
+                        .setCancelledBookings(hardcodedValue)
+                                .setConfirmedBookings(hardcodedValue)
+                                        .setRelocatedBookings(hardcodedValue)
+                                                .setResultMessage(hardcodedMessage)
+                                                                .build());
+        responseObserver.onCompleted();
     }
 
     private boolean isValidAttractionRequest(String attractionName, LocalTime openTime, LocalTime closeTime, int slotGap) {
