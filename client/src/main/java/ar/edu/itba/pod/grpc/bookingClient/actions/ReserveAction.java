@@ -3,10 +3,6 @@ package ar.edu.itba.pod.grpc.bookingClient.actions;
 import ar.edu.itba.pod.grpc.BookingRequest;
 import ar.edu.itba.pod.grpc.BookingServiceGrpc;
 import ar.edu.itba.pod.grpc.ReservationStatus;
-import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
-import ar.edu.itba.pod.grpc.helpers.Arguments;
-import ar.edu.itba.pod.grpc.helpers.SlotValidator;
-import ar.edu.itba.pod.grpc.interfaces.Action;
 
 public class ReserveAction extends BoookingAction {
     ReservationStatus status;

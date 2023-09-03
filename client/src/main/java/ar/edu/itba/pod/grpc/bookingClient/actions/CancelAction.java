@@ -3,7 +3,6 @@ package ar.edu.itba.pod.grpc.bookingClient.actions;
 import ar.edu.itba.pod.grpc.BookingRequest;
 import ar.edu.itba.pod.grpc.BookingServiceGrpc;
 import ar.edu.itba.pod.grpc.CancellationResponse;
-import ar.edu.itba.pod.grpc.ConfirmationResponse;
 
 public class CancelAction extends BoookingAction {
 
