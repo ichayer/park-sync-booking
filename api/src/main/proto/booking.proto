@@ -13,8 +13,8 @@ service BookingService {
   rpc GetAttractions(google.protobuf.Empty) returns (AttractionsResponse);
 //  rpc CheckAttractionAvailability(AvailabilityRequest) returns (AvailabilityResponse);
   rpc ReserveAttraction(BookingRequest) returns (ReservationResponse);
-//  rpc ConfirmReservation(BookingRequest) returns (ConfirmationResponse);
-//  rpc CancelReservation(BookingRequest) returns (CancellationResponse);
+  rpc ConfirmReservation(BookingRequest) returns (ConfirmationResponse);
+  rpc CancelReservation(BookingRequest) returns (CancellationResponse);
 }
 
 //message AvailabilityRequest {
@@ -65,10 +65,12 @@ message ReservationResponse {
   string message = 3;
 }
 
-//message ConfirmationResponse {
-//  string message = 1;
-//}
-//
-//message CancellationResponse {
-//  string message = 1;
-//}
+message ConfirmationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CancellationResponse {
+  bool success = 1;
+  string message = 2;
+}

@@ -2,21 +2,20 @@ package ar.edu.itba.pod.grpc.bookingClient.actions;
 
 import ar.edu.itba.pod.grpc.BookingRequest;
 import ar.edu.itba.pod.grpc.BookingServiceGrpc;
-import ar.edu.itba.pod.grpc.ReservationResponse;
-import ar.edu.itba.pod.grpc.ReservationStatus;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.SlotValidator;
 import ar.edu.itba.pod.grpc.interfaces.Action;
 
-public class BookAction implements Action {
-    private String attractionName;
-    private int dayOfYear;
-    private String slot;
-    private String visitorId;
-    private boolean success;
-    private String responseMessage;
-    ReservationStatus status;
+public abstract class BoookingAction implements Action {
+
+    protected String attractionName;
+    protected int dayOfYear;
+    protected String slot;
+    protected String visitorId;
+
+    protected boolean success;
+    protected String responseMessage;
 
     @Override
     public Action execute(Arguments arguments) {
@@ -43,21 +42,10 @@ public class BookAction implements Action {
                 .setVisitorId(visitorId)
                 .build();
 
-//        ReservationResponse response = stub.reserveAttraction(request);
-//
-//        success = response.getSuccess();
-//        responseMessage = response.getMessage();
-//        status = response.getStatus();
+        sendServerMessage(request, stub);
 
         return this;
     }
 
-    @Override
-    public void showResults() {
-        if(!success){
-            System.out.println("There was a problem while trying yo make the booking: " + responseMessage);
-        }
-
-        System.out.printf("The reservation for %s at %s on the day %d is %s%n", attractionName, slot, dayOfYear, status.name());
-    }
+    protected abstract void sendServerMessage(BookingRequest bookingRequest, BookingServiceGrpc.BookingServiceBlockingStub stub);
 }
