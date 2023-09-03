@@ -34,8 +34,8 @@ public class AdminServiceImplTest {
     private static final int NO_SLOT_GAP = 0;
     private static final int NEGATIVE_SLOT_GAP = -1;
     private static final int INVALID_SLOT_GAP = 61;
-    private static final PassType FULLDAY_PASS_TYPE = PassType.FULLDAY;
-    private static final PassType HALFDAY_PASS_TYPE = PassType.HALFDAY;
+    private static final PassType FULLDAY_PASS_TYPE = PassType.PASS_TYPE_FULL_DAY;
+    private static final PassType HALFDAY_PASS_TYPE = PassType.PASS_TYPE_HALF_DAY;
     private static final String DEFAULT_VISITOR_ID = "1";
     private static final String VALID_DATE = "10-09-2023";
     private static final String OTHER_VALID_DATE = "11-10-2023";

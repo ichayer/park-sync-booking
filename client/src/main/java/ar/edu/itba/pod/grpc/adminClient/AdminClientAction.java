@@ -43,7 +43,7 @@ public enum AdminClientAction {
                 processFile(arguments.getFilename(), stub, (fields) -> {
                     if (fields.length == 3) {
                         PassType passType = mapPassType(fields[1]);
-                        if (passType != PassType.UNKNOWN) {
+                        if (passType != PassType.PASS_TYPE_UNKNOWN) {
                             TicketRequest request = TicketRequest.newBuilder()
                                     .setVisitorId(fields[0])
                                     .setPassType(passType)
@@ -87,10 +87,10 @@ public enum AdminClientAction {
     //TODO: IDK where this function should go
     private static PassType mapPassType(String type) {
         return switch (type) {
-            case "HALFDAY" -> PassType.HALFDAY;
-            case "FULLDAY" -> PassType.FULLDAY;
-            case "UNLIMITED" -> PassType.UNLIMITED;
-            default -> PassType.UNKNOWN;
+            case "HALFDAY" -> PassType.PASS_TYPE_HALF_DAY;
+            case "FULLDAY" -> PassType.PASS_TYPE_FULL_DAY;
+            case "UNLIMITED" -> PassType.PASS_TYPE_UNLIMITED;
+            default -> PassType.PASS_TYPE_UNKNOWN;
         };
     }
 
