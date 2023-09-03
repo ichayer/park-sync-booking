@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.adminClient.actions;
 
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
+import ar.edu.itba.pod.grpc.PassType;
 import ar.edu.itba.pod.grpc.TicketRequest;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
@@ -26,12 +27,12 @@ public class TicketsAction implements Action {
         while (fileIterator.hasNext()) {
             String[] fields = fileIterator.next();
             if (fields.length == 4) {
-                TicketRequest.PassType passType = mapPassType(fields[1]);
-                if (passType != TicketRequest.PassType.UNKNOWN) {
+                PassType passType = mapPassType(fields[1]);
+                if (passType != PassType.PASS_TYPE_UNKNOWN) {
                     TicketRequest request = TicketRequest.newBuilder()
                             .setVisitorId(fields[0])
                             .setPassType(passType)
-                            .setDayOfYear(Integer.parseInt(fields[2]))
+                            .setDayOfYear(fields[2])
                             .build();
                     // BooleanResponse response = stub.addTicket(request);
                     // if (response.getSuccess()) {
@@ -54,12 +55,12 @@ public class TicketsAction implements Action {
         System.out.printf("%d passes added%n", ticketsAdded);
     }
 
-    private static TicketRequest.PassType mapPassType(String type) {
+    private static PassType mapPassType(String type) {
         return switch (type) {
-            case "HALFDAY" -> TicketRequest.PassType.HALFDAY;
-            case "FULLDAY" -> TicketRequest.PassType.FULLDAY;
-            case "UNLIMITED" -> TicketRequest.PassType.UNLIMITED;
-            default -> TicketRequest.PassType.UNKNOWN;
+            case "HALFDAY" -> PassType.PASS_TYPE_HALF_DAY;
+            case "FULLDAY" -> PassType.PASS_TYPE_FULL_DAY;
+            case "UNLIMITED" -> PassType.PASS_TYPE_UNLIMITED;
+            default -> PassType.PASS_TYPE_UNKNOWN;
         };
     }
 }

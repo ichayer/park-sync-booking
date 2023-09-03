@@ -25,8 +25,8 @@ public class SlotsAction implements Action {
         this.arguments = arguments;
         // TODO: implement response on server side, initialize the fields of the class
         CapacityRequest request = CapacityRequest.newBuilder()
-                .setRide(arguments.getRideName())
-                .setDay(arguments.getDayOfYear())
+                .setAttractionName(arguments.getRideName())
+                .setDayOfYear(arguments.getDayOfYear())
                 .setCapacity(arguments.getCapacity())
                 .build();
         //CapacityResponse response = stub.addCapacity(request);
