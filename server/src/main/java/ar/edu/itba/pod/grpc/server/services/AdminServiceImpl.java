@@ -62,7 +62,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
     @Override
     public void addCapacity(CapacityRequest request, StreamObserver<CapacityResponse> responseObserver) {
         String attractionName = request.getAttractionName();
-        Optional<LocalDate> date = parseDateOrNull(request.getDayOfYear());
+        Optional<LocalDate> date = parseDateOrNull("20-4"); // TO FIX
         int capacity = request.getCapacity();
 
         if (attractions.containsKey(attractionName) && date.isPresent() && capacity > 0) {

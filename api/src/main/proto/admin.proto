@@ -36,7 +36,7 @@ message BooleanResponse {
 
 message CapacityRequest {
   string attractionName = 1;
-  string dayOfYear = 2;
+  int32 dayOfYear = 2;
   int32 capacity = 3;
 }
 

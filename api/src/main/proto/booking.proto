@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+// import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+// package service;
+
+option java_package = "ar.edu.itba.pod.grpc";
+// option java_outer_classname = "ServiceModel";
+option java_multiple_files = true;
+
+service BookingService {
+  rpc GetAttractions(google.protobuf.Empty) returns (AttractionsResponse);
+//  rpc CheckAttractionAvailability(AvailabilityRequest) returns (AvailabilityResponse);
+  rpc ReserveAttraction(BookingRequest) returns (ReservationResponse);
+  rpc ConfirmReservation(BookingRequest) returns (ConfirmationResponse);
+  rpc CancelReservation(BookingRequest) returns (CancellationResponse);
+}
+
+//message AvailabilityRequest {
+//  string attractionName = 1;
+//  int32 dayOfYear = 2;
+//  string slot = 3;
+//  string slotTo = 4;
+//}
+
+message BookingRequest {
+  string attractionName = 1;
+  int32 dayOfYear = 2;
+  string slot = 3;
+  string visitorId = 4;
+}
+
+message AttractionsResponse {
+  repeated Attraction attraction = 1;
+}
+
+message Attraction {
+  string name = 1;
+  string openingTime = 2;
+  string closingTime = 3;
+}
+
+//message AvailabilityResponse {
+//  repeated AvailabilitySlot slot = 1;
+//}
+//
+//message AvailabilitySlot {
+//  string slot = 1;
+//  int32 capacity = 2;
+//  int32 pending = 3;
+//  int32 confirmed = 4;
+//  string attraction = 5;
+//}
+
+enum ReservationStatus {
+  UNKNOWN = 0;
+  PENDING = 1;
+  CONFIRMED = 2;
+}
+
+message ReservationResponse {
+  bool success = 1;
+  ReservationStatus status = 2;
+  string message = 3;
+}
+
+message ConfirmationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CancellationResponse {
+  bool success = 1;
+  string message = 2;
+}
