@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.grpc.adminClient;
 
-import ar.edu.itba.pod.grpc.adminClient.actions.AdminActionMapper;
 import ar.edu.itba.pod.grpc.exceptions.IOClientFileError;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
@@ -9,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
-
-import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 
 public class AdminClient {
     private static final Logger logger = LoggerFactory.getLogger(AdminClient.class);
