@@ -13,8 +13,8 @@ service ReservationService {
 
 message AttractionData {
   string name = 1;
-  string hoursFrom = 2;
-  string hoursTo = 3;
+  string openingTime = 2;
+  string closingTime = 3;
   int32 slotGap = 4;
 }
 
