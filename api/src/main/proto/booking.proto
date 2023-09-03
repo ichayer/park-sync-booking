@@ -12,7 +12,7 @@ option java_multiple_files = true;
 service BookingService {
   rpc GetAttractions(google.protobuf.Empty) returns (AttractionsResponse);
 //  rpc CheckAttractionAvailability(AvailabilityRequest) returns (AvailabilityResponse);
-//  rpc ReserveAttraction(BookingRequest) returns (ReservationResponse);
+  rpc ReserveAttraction(BookingRequest) returns (ReservationResponse);
 //  rpc ConfirmReservation(BookingRequest) returns (ConfirmationResponse);
 //  rpc CancelReservation(BookingRequest) returns (CancellationResponse);
 }
@@ -23,13 +23,13 @@ service BookingService {
 //  string slot = 3;
 //  string slotTo = 4;
 //}
-//
-//message BookingRequest {
-//  string attractionName = 1;
-//  int32 dayOfYear = 2;
-//  string slot = 3;
-//  string visitorId = 4;
-//}
+
+message BookingRequest {
+  string attractionName = 1;
+  int32 dayOfYear = 2;
+  string slot = 3;
+  string visitorId = 4;
+}
 
 message AttractionsResponse {
   repeated Attraction attraction = 1;
@@ -52,11 +52,19 @@ message Attraction {
 //  int32 confirmed = 4;
 //  string attraction = 5;
 //}
-//
-//message ReservationResponse {
-//  string message = 1;
-//}
-//
+
+enum ReservationStatus {
+  UNKNOWN = 0;
+  PENDING = 1;
+  CONFIRMED = 2;
+}
+
+message ReservationResponse {
+  bool success = 1;
+  ReservationStatus status = 2;
+  string message = 3;
+}
+
 //message ConfirmationResponse {
 //  string message = 1;
 //}
