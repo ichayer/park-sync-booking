@@ -7,27 +7,33 @@ public class Arguments {
     private final ManagedChannel channel;
     private final String action;
     private final Integer dayOfYear;
-    private final String rideName;
+    private final String attractionName;
     private final String visitorId;
     private final String bookingSlot;
     private final String bookingSlotTo;
     private final String filename;
     private final Integer capacity;
+    private final String outFile;
 
     private Arguments(Builder builder) {
         this.channel = builder.channel;
         this.action = builder.action;
         this.dayOfYear = builder.dayOfYear;
-        this.rideName = builder.rideName;
+        this.attractionName = builder.attractionName;
         this.visitorId = builder.visitorId;
         this.bookingSlot = builder.bookingSlot;
         this.bookingSlotTo = builder.bookingSlotTo;
         this.filename = builder.filename;
         this.capacity = builder.capacity;
+        this.outFile = builder.outFile;
 
         if (channel == null || action == null) {
             throw new IllegalClientArgumentException("The parameters -DserverAddress and -Daction must be provided");
         }
+    }
+
+    public String getOutFile(){
+        return outFile;
     }
 
     public ManagedChannel getChannel() {
@@ -42,8 +48,8 @@ public class Arguments {
         return dayOfYear;
     }
 
-    public String getRideName() {
-        return rideName;
+    public String getAttractionName() {
+        return attractionName;
     }
 
     public String getVisitorId() {
@@ -69,13 +75,14 @@ public class Arguments {
     public static class Builder {
         private ManagedChannel channel;
         private String action;
-        private Integer dayOfYear;
-        private String rideName;
-        private String visitorId;
-        private String bookingSlot;
-        private String bookingSlotTo;
-        private String filename;
-        private Integer capacity;
+        private Integer dayOfYear = null;
+        private String attractionName = null;
+        private String visitorId = null;
+        private String bookingSlot = null;
+        private String bookingSlotTo = null;
+        private String filename = null;
+        private Integer capacity = null;
+        private String outFile = null;
 
         public Builder channel(ManagedChannel channel) {
             this.channel = channel;
@@ -87,13 +94,18 @@ public class Arguments {
             return this;
         }
 
+        public Builder outFile(String outFile) {
+            this.outFile = outFile;
+            return this;
+        }
+
         public Builder dayOfYear(Integer dayOfYear) {
             this.dayOfYear = dayOfYear;
             return this;
         }
 
-        public Builder rideName(String rideName) {
-            this.rideName = rideName;
+        public Builder attractionName(String rideName) {
+            this.attractionName = rideName;
             return this;
         }
 

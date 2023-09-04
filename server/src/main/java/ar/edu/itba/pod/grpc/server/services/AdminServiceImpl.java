@@ -2,116 +2,87 @@ package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
+import com.google.protobuf.BoolValue;
 import io.grpc.stub.StreamObserver;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
 import java.util.Optional;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
-    private final Map<String, Attraction> attractions;
-    private final Map<String, Map<LocalDate, PassType>> tickets;
+    private final DataHandler dataHandler;
 
-    public AdminServiceImpl(Map<String, Attraction> attractionsMap, Map<String, Map<LocalDate, PassType>> ticketsMap) {
-        this.attractions = attractionsMap;
-        this.tickets = ticketsMap;
+    public AdminServiceImpl(DataHandler dataHandler) {
+        this.dataHandler = dataHandler;
     }
 
     @Override
-    public void addAttraction(AttractionRequest request, StreamObserver<BooleanResponse> responseObserver) {
+    public void addAttraction(AddAttractionRequest request, StreamObserver<BoolValue> responseObserver) {
         boolean success = false;
         String attractionName = request.getName();
-        Optional<LocalTime> openTime = parseTimeOrNull(request.getHoursFrom());
-        Optional<LocalTime> closeTime = parseTimeOrNull(request.getHoursTo());
-        int slotGap = request.getSlotGap();
+        Optional<LocalTime> openTime = LocalTimeUtils.parseTimeOrEmpty(request.getOpeningTime());
+        Optional<LocalTime> closeTime = LocalTimeUtils.parseTimeOrEmpty(request.getClosingTime());
+        int slotGap = request.getSlotDurationMinutes();
 
-        if (openTime.isPresent() && closeTime.isPresent()) {
-            success = isValidAttractionRequest(attractionName, openTime.get(), closeTime.get(), slotGap);
+        if (openTime.isPresent() && closeTime.isPresent() && isValidAddAttractionRequest(attractionName, openTime.get(), closeTime.get(), slotGap)) {
+            Attraction attraction = new Attraction(attractionName, openTime.get(), closeTime.get(), slotGap);
+            success = dataHandler.addAttraction(attractionName, attraction);
+        }
+        responseObserver.onNext(BoolValue.newBuilder().setValue(success).build());
+        responseObserver.onCompleted();
+    }
 
-            if (success) {
-                Attraction attraction = new Attraction(attractionName, openTime.get(), closeTime.get(), slotGap);
-                attractions.put(attractionName, attraction);
+    @Override
+    public void addTicket(AddTicketRequest request, StreamObserver<BoolValue> responseObserver) {
+        boolean success = false;
+        int dayOfYear = request.getDayOfYear();
+
+        // TODO: Check if PassType.forNumber(request.getPassType().getNumber() != null) validation is necessary
+        if (dayOfYear >= 1 && dayOfYear <= 365 ) {
+            success = dataHandler.addTicket(request.getVisitorId(), dayOfYear, request.getPassType());
+        }
+
+        responseObserver.onNext(BoolValue.newBuilder().setValue(success).build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void addCapacity(AddCapacityRequest request, StreamObserver<AddCapacityResponse> responseObserver) {
+        AddCapacityStatus status = null;
+        int confirmedBookings = 0, relocatedBookings = 0, cancelledBookings = 0;
+
+        if (!dataHandler.containsAttraction(request.getAttractionName())) {
+            status = AddCapacityStatus.ADD_CAPACITY_STATUS_NOT_EXISTS;
+        } else if (request.getDayOfYear() < 1 || request.getDayOfYear() > 365) {
+            status = AddCapacityStatus.ADD_CAPACITY_STATUS_INVALID_DAY;
+        } else if (request.getCapacity() < 0) {
+            status = AddCapacityStatus.ADD_CAPACITY_STATUS_NEGATIVE_CAPACITY;
+        } else {
+            if (dataHandler.setAttractionCapacityByDate(request.getAttractionName(), request.getDayOfYear(), request.getCapacity())) {
+                status = AddCapacityStatus.ADD_CAPACITY_STATUS_SUCCESS;;
+                // TODO: Set confirmedBookings, relocatedBookings, cancelledBookings variables.
+            } else {
+                status = AddCapacityStatus.ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED;
             }
         }
 
-        responseObserver.onNext(BooleanResponse.newBuilder().setSuccess(success).build());
-        responseObserver.onCompleted();
-    }
-
-    @Override
-    public void addTicket(TicketRequest request, StreamObserver<BooleanResponse> responseObserver) {
-        boolean success = false;
-        Optional<LocalDate> date = parseDateOrNull(request.getDayOfYear());
-
-        // TODO: Check if PassType.forNumber(request.getPassType().getNumber() != null) validation is necessary
-        if (date.isPresent()) {
-            tickets.putIfAbsent(request.getVisitorId(), new HashMap<>());
-            Map<LocalDate, PassType> visitorTickets = tickets.get(request.getVisitorId());
-            success = visitorTickets.putIfAbsent(date.get(), request.getPassType()) == null;
-        }
-        responseObserver.onNext(BooleanResponse.newBuilder().setSuccess(success).build());
-        responseObserver.onCompleted();
-    }
-
-    @Override
-    public void addCapacity(CapacityRequest request, StreamObserver<CapacityResponse> responseObserver) {
-        String attractionName = request.getAttractionName();
-        Optional<LocalDate> date = parseDateOrNull("20-4"); // TO FIX
-        int capacity = request.getCapacity();
-
-        if (attractions.containsKey(attractionName) && date.isPresent() && capacity > 0) {
-            Attraction attraction = attractions.get(attractionName);
-            attraction.setCapacityByDate(date.get(), capacity);
-        }
-
         // TODO: Confirm, cancel or assign another attraction to the visitor
-        int hardcodedValue = 0;
-        String hardcodedMessage = "This is a message";
-        responseObserver.onNext(CapacityResponse.newBuilder()
-                .setCancelledBookings(hardcodedValue)
-                .setConfirmedBookings(hardcodedValue)
-                .setRelocatedBookings(hardcodedValue)
-                .setResultMessage(hardcodedMessage)
+        responseObserver.onNext(AddCapacityResponse.newBuilder()
+                .setCancelledBookings(cancelledBookings)
+                .setConfirmedBookings(confirmedBookings)
+                .setRelocatedBookings(relocatedBookings)
+                .setStatus(status)
                 .build());
         responseObserver.onCompleted();
     }
 
-    private boolean isValidAttractionRequest(String attractionName, LocalTime openTime, LocalTime closeTime, int slotGap) {
-
-        if (attractionName.isEmpty() || attractions.containsKey(attractionName)) {
-            return false;
-        }
-
-        if (slotGap <= 0 || slotGap > 60) {
-            return false;
-        }
-
-        return openTime.isBefore(closeTime);
-    }
-
-    private Optional<LocalDate> parseDateOrNull(String date) {
-        Optional<LocalDate> parsedDate;
-        try {
-            parsedDate = Optional.of(LocalDate.parse(date, DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-        } catch (DateTimeParseException e) {
-            parsedDate = Optional.empty();
-        }
-        return parsedDate;
-    }
-
-    private Optional<LocalTime> parseTimeOrNull(String time) {
-        Optional<LocalTime> parsedTime;
-        try {
-            parsedTime = Optional.of(LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm")));
-        } catch (DateTimeParseException e) {
-            parsedTime = Optional.empty();
-        }
-        return parsedTime;
+    private boolean isValidAddAttractionRequest(String attractionName, LocalTime openTime, LocalTime closeTime, int slotGap) {
+        return !attractionName.isEmpty() &&
+                slotGap > 0 && slotGap <= 60 &&
+                openTime.isBefore(closeTime);
     }
 }

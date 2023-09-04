@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.grpc.adminClient.actions;
 
+import ar.edu.itba.pod.grpc.AddAttractionRequest;
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
-import ar.edu.itba.pod.grpc.AttractionRequest;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
@@ -28,18 +28,18 @@ public class RidesAction implements Action {
         while (fileIterator.hasNext()) {
             String[] fields = fileIterator.next();
             if (fields.length == 4) {
-                AttractionRequest request = AttractionRequest.newBuilder()
+                AddAttractionRequest request = AddAttractionRequest.newBuilder()
                         .setName(fields[0])
-                        .setHoursFrom(fields[1])
-                        .setHoursTo(fields[2])
-                        .setSlotGap(Integer.parseInt(fields[3]))
+                        .setOpeningTime(fields[1])
+                        .setClosingTime(fields[2])
+                        .setSlotDurationMinutes(Integer.parseInt(fields[3]))
                         .build();
-                // BooleanResponse response = stub.addAttraction(request);
-                // if (response.getSuccess()) {
-                //     attractionsAdded++;
-                // } else {
-                //     attractionsFailed++;
-                // }
+                com.google.protobuf.BoolValue response = stub.addAttraction(request);
+                 if (response.getValue()) {
+                     attractionsAdded++;
+                 } else {
+                     attractionsFailed++;
+                 }
             }
         }
         fileIterator.close();

@@ -1,20 +1,21 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 option java_package = "ar.edu.itba.pod.grpc";
 option java_multiple_files = true;
 
-
 service AdminService {
-  rpc AddAttraction(AttractionRequest) returns (BooleanResponse);
-  rpc AddTicket(TicketRequest) returns (BooleanResponse);
-  rpc AddCapacity(CapacityRequest) returns (CapacityResponse);
+  rpc AddAttraction(AddAttractionRequest) returns (google.protobuf.BoolValue);
+  rpc AddTicket(AddTicketRequest) returns (google.protobuf.BoolValue);
+  rpc AddCapacity(AddCapacityRequest) returns (AddCapacityResponse);
 }
 
-message AttractionRequest {
+message AddAttractionRequest {
   string name = 1;
-  string hoursFrom = 2;
-  string hoursTo = 3;
-  int32 slotGap = 4;
+  string openingTime = 2;
+  string closingTime = 3;
+  int32 slotDurationMinutes = 4;
 }
 
 enum PassType {
@@ -24,25 +25,30 @@ enum PassType {
   PASS_TYPE_UNLIMITED = 3;
 }
 
-message TicketRequest {
+message AddTicketRequest {
   string visitorId = 1;
   PassType passType = 2;
-  string dayOfYear = 3;
+  int32 dayOfYear = 3;
 }
 
-message BooleanResponse {
-  bool success = 1;
+enum AddCapacityStatus {
+  ADD_CAPACITY_STATUS_UNKNOWN = 0;
+  ADD_CAPACITY_STATUS_SUCCESS = 1;
+  ADD_CAPACITY_STATUS_NOT_EXISTS = 2;
+  ADD_CAPACITY_STATUS_INVALID_DAY = 3;
+  ADD_CAPACITY_STATUS_NEGATIVE_CAPACITY = 4;
+  ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED = 5;
 }
 
-message CapacityRequest {
+message AddCapacityRequest {
   string attractionName = 1;
   int32 dayOfYear = 2;
   int32 capacity = 3;
 }
 
-message CapacityResponse {
-  string result_message = 1;
-  int32 confirmed_bookings = 2;
-  int32 relocated_bookings = 3;
-  int32 cancelled_bookings = 4;
+message AddCapacityResponse {
+  AddCapacityStatus status = 1;
+  int32 confirmedBookings = 2;
+  int32 relocatedBookings = 3;
+  int32 cancelledBookings = 4;
 }

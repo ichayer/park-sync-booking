@@ -1,8 +1,8 @@
 package ar.edu.itba.pod.grpc.server.models;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Attraction {
 
@@ -10,14 +10,14 @@ public class Attraction {
     private final LocalTime openingTime;
     private final LocalTime closingTime;
     private final int slotDuration;
-    private final Map<LocalDate, Integer> capacityByDate;
+    private final Map<Integer, ReservationsHandler> reservationsHandlerMap;
 
     public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration) {
         this.name = name;
         this.openingTime = openingTime;
         this.closingTime = closingTime;
         this.slotDuration = slotDuration;
-        this.capacityByDate = new HashMap<>();
+        this.reservationsHandlerMap = new ConcurrentHashMap<>();
     }
 
     public String getName() {
@@ -36,27 +36,27 @@ public class Attraction {
         return slotDuration;
     }
 
-    public Optional<Integer> getCapacityByDate(LocalDate date) {
-        return Optional.ofNullable(capacityByDate.get(date));
-    }
-
-    public boolean setCapacityByDate(LocalDate date, int capacity) {
-        return capacityByDate.putIfAbsent(date, capacity) == null;
-    }
-
-    public boolean removeCapacityByDate(LocalDate date) {
-        return capacityByDate.remove(date) != null;
-    }
-
-    public boolean updateCapacityByDate(LocalDate date, int capacity) {
-        return capacityByDate.replace(date, capacity) != null;
-    }
-
-    public List<LocalDate> getDatesWithCapacitySet() {
-        return new ArrayList<>(capacityByDate.keySet());
-    }
-
-    public int getAmountOfDatesWithCapacitySet() {
-        return capacityByDate.size();
-    }
+//    public Optional<Integer> getCapacityByDate(Integer dayOfYear) {
+//        return Optional.ofNullable(capacityByDate.get(dayOfYear));
+//    }
+//
+//    public boolean setCapacityByDate(Integer dayOfYear, int capacity) {
+//        return capacityByDate.putIfAbsent(dayOfYear, capacity) == null;
+//    }
+//
+//    public boolean removeCapacityByDate(Integer dayOfYear) {
+//        return capacityByDate.remove(dayOfYear) != null;
+//    }
+//
+//    public boolean updateCapacityByDate(Integer dayOfYear, int capacity) {
+//        return capacityByDate.replace(dayOfYear, capacity) != null;
+//    }
+//
+//    public Set<Integer> getDatesWithCapacitySet() {
+//        return Collections.unmodifiableSet(capacityByDate.keySet());
+//    }
+//
+//    public int getAmountOfDatesWithCapacitySet() {
+//        return capacityByDate.size();
+//    }
 }

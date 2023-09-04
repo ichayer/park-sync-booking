@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.adminClient.actions;
 
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.PassType;
-import ar.edu.itba.pod.grpc.TicketRequest;
+import ar.edu.itba.pod.grpc.AddTicketRequest;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
@@ -29,17 +29,17 @@ public class TicketsAction implements Action {
             if (fields.length == 4) {
                 PassType passType = mapPassType(fields[1]);
                 if (passType != PassType.PASS_TYPE_UNKNOWN) {
-                    TicketRequest request = TicketRequest.newBuilder()
+                    AddTicketRequest request = AddTicketRequest.newBuilder()
                             .setVisitorId(fields[0])
                             .setPassType(passType)
-                            .setDayOfYear(fields[2])
+                            .setDayOfYear(Integer.valueOf(fields[2]))
                             .build();
-                    // BooleanResponse response = stub.addTicket(request);
-                    // if (response.getSuccess()) {
-                    //     ticketsAdded++;
-                    // } else {
-                    //     ticketsFailed++;
-                    // }
+                     com.google.protobuf.BoolValue response = stub.addTicket(request);
+                     if (response.getValue()) {
+                         ticketsAdded++;
+                     } else {
+                         ticketsFailed++;
+                     }
                 }
             }
         }

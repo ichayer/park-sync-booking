@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.grpc.bookingClient.actions;
 
 import ar.edu.itba.pod.grpc.Attraction;
-import ar.edu.itba.pod.grpc.AttractionsResponse;
+import ar.edu.itba.pod.grpc.GetAttractionsResponse;
 import ar.edu.itba.pod.grpc.BookingServiceGrpc;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
@@ -17,7 +17,7 @@ public class AttractionsAction implements Action {
     public Action execute(Arguments arguments) {
         BookingServiceGrpc.BookingServiceBlockingStub client = BookingServiceGrpc.newBlockingStub(arguments.getChannel());
 
-        AttractionsResponse response = client.getAttractions(Empty.getDefaultInstance());
+        GetAttractionsResponse response = client.getAttractions(Empty.getDefaultInstance());
         attractionList = response.getAttractionList();
         return this;
     }
