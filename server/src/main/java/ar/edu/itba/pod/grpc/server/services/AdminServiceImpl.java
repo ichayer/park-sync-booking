@@ -62,16 +62,15 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
         } else if (request.getCapacity() < 0) {
             status = AddCapacityStatus.ADD_CAPACITY_STATUS_NEGATIVE_CAPACITY;
         } else {
-            if (dataHandler.setAttractionCapacityByDate(request.getAttractionName(), request.getDayOfYear(), request.getCapacity())) {
+            boolean success = dataHandler.setSlotCapacityForAttraction(request.getAttractionName(), request.getDayOfYear(), request.getCapacity());
+            if (success) {
                 status = AddCapacityStatus.ADD_CAPACITY_STATUS_SUCCESS;
-                ;
                 // TODO: Set confirmedBookings, relocatedBookings, cancelledBookings variables.
             } else {
                 status = AddCapacityStatus.ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED;
             }
         }
 
-        // TODO: Confirm, cancel or assign another attraction to the visitor
         responseObserver.onNext(AddCapacityResponse.newBuilder()
                 .setCancelledBookings(cancelledBookings)
                 .setConfirmedBookings(confirmedBookings)

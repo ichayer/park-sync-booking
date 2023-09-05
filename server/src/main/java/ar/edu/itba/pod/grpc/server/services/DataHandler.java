@@ -30,11 +30,9 @@ public class DataHandler {
         return attractions.containsKey(attractionName);
     }
 
-
-    // TODO: Waiting for Thomas :)
-    public boolean setAttractionCapacityByDate(String attractionName, int dayOfYear, int capacity) {
+    public boolean setSlotCapacityForAttraction(String attractionName, int dayOfYear, int slotCapacity) {
         Attraction attraction = attractions.get(attractionName);
-        return true;
+        return attraction != null && attraction.attemptToSetSlotCapacity(dayOfYear, slotCapacity);
     }
 
     public Collection<Attraction> getAttractions() {

@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Attraction {
@@ -36,27 +36,8 @@ public class Attraction {
         return slotDuration;
     }
 
-//    public Optional<Integer> getCapacityByDate(Integer dayOfYear) {
-//        return Optional.ofNullable(capacityByDate.get(dayOfYear));
-//    }
-//
-//    public boolean setCapacityByDate(Integer dayOfYear, int capacity) {
-//        return capacityByDate.putIfAbsent(dayOfYear, capacity) == null;
-//    }
-//
-//    public boolean removeCapacityByDate(Integer dayOfYear) {
-//        return capacityByDate.remove(dayOfYear) != null;
-//    }
-//
-//    public boolean updateCapacityByDate(Integer dayOfYear, int capacity) {
-//        return capacityByDate.replace(dayOfYear, capacity) != null;
-//    }
-//
-//    public Set<Integer> getDatesWithCapacitySet() {
-//        return Collections.unmodifiableSet(capacityByDate.keySet());
-//    }
-//
-//    public int getAmountOfDatesWithCapacitySet() {
-//        return capacityByDate.size();
-//    }
+    public boolean attemptToSetSlotCapacity(int dayOfYear, int slotCapacity) {
+        ReservationsHandler reservation = reservationsHandlerMap.get(dayOfYear);
+        return reservation != null && reservation.defineSlotCapacity(slotCapacity);
+    }
 }
