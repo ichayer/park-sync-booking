@@ -35,10 +35,11 @@ public class ReservationsHandler {
      * Stores the confirmed set of visitors for each slot. The slots are stored ordered by time ascending.
      * Note: all elements in this array start as null and are created as needed.
      */
-    private final Set<UUID>[] slots;
+    private final Set<UUID>[] slotConfirmedRequests;
 
     /**
-     * Stores the pending reservation requests for each slot.
+     * Stores the pending reservation requests for each slot. Requests are added to this queue as they arrive, and
+     * therefore are ordered chronologically.
      * Note: all elements in this array start as null and are created as needed.
      */
     private final Queue<UUID>[] slotPendingRequests;
@@ -53,8 +54,24 @@ public class ReservationsHandler {
         if (this.slotCount <= 0)
             throw new IllegalArgumentException("The attraction must have at least one time slot");
 
-        this.slots = (Set<UUID>[]) new Set[slotCount];
+        this.slotConfirmedRequests = (Set<UUID>[]) new Set[slotCount];
         this.slotPendingRequests = (Queue<UUID>[]) new List[slotCount];
+    }
+
+    private Set<UUID> getOrCreateSlotConfirmedRequests(int slotIndex) {
+        Set<UUID> confirmed = slotConfirmedRequests[slotIndex];
+        if (confirmed == null)
+            confirmed = slotConfirmedRequests[slotIndex] = new HashSet<>();
+
+        return confirmed;
+    }
+
+    private Queue<UUID> getOrCreateSlotPendingRequests(int slotIndex) {
+        Queue<UUID> pending = slotPendingRequests[slotIndex];
+        if (pending == null)
+            pending = slotPendingRequests[slotIndex] = new LinkedList<>();
+
+        return pending;
     }
 
     /**
@@ -99,7 +116,58 @@ public class ReservationsHandler {
 
         this.slotCapacity = slotCapacity;
 
-        // TODO: Apply pending reservations algorithm to flush the pendingReservations queue into the slots.
+        // Apply the reservation relocation algorithm to confirm the pending requests into the slots, or relocate.
+
+        for (int slotIndex = 0; slotIndex < slotPendingRequests.length; slotIndex++) {
+            Queue<UUID> requests = slotPendingRequests[slotIndex];
+            if (requests == null || requests.isEmpty())
+                continue;
+
+            Set<UUID> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
+
+            // Dequeue the first N requests from the pending queue and confirm them. (N = slotCapacity)
+            UUID next;
+            while (confirmed.size() < slotCapacity && (next = requests.poll()) != null) {
+                confirmed.add(next);
+                // TODO: Alert that the request was confirmed.
+            }
+        }
+
+        // Attempt to relocate forward all pending requests, traversing by slot chronologically.
+        int relocateSlotIndex = 0;
+        for (int slotIndex = 0; slotIndex < slotPendingRequests.length && relocateSlotIndex < slotCount; slotIndex++) {
+            Queue<UUID> requests = slotPendingRequests[slotIndex];
+            if (requests == null || requests.isEmpty())
+                continue;
+
+            relocateSlotIndex = Math.max(relocateSlotIndex, slotIndex + 1);
+
+            int amountToRelocate = slotConfirmedRequests[slotIndex].size() + requests.size() - slotCapacity;
+            for (int i = 0; i < amountToRelocate; i++) {
+                UUID visitorToRelocate = requests.remove();
+                boolean relocated = false;
+
+                while (!relocated && relocateSlotIndex < slotCount) {
+                    Set<UUID> otherSlotConfirmed = getOrCreateSlotConfirmedRequests(relocateSlotIndex);
+                    Queue<UUID> otherSlotPending = slotPendingRequests[relocateSlotIndex];
+                    int otherSlotTotal = otherSlotConfirmed.size() + (otherSlotPending == null ? 0 : otherSlotPending.size());
+
+                    if (otherSlotTotal < slotCapacity) {
+                        otherSlotPending = getOrCreateSlotPendingRequests(relocateSlotIndex);
+                        otherSlotPending.add(visitorToRelocate);
+                        relocated = true;
+                    } else {
+                        relocateSlotIndex++;
+                    }
+                }
+
+                if (relocated) {
+                    // TODO: Alert that the request was relocated.
+                } else {
+                    // TODO: Alert that the request was cancelled.
+                }
+            }
+        }
     }
 
     /**
@@ -118,19 +186,16 @@ public class ReservationsHandler {
 
         if (slotCapacity == -1) {
             // Slot capacity has not been defined, queue the reservation.
-            if (slotPendingRequests[slotIndex] == null)
-                slotPendingRequests[slotIndex] = new LinkedList<>();
-
-            slotPendingRequests[slotIndex].add(visitorId);
+            getOrCreateSlotPendingRequests(slotIndex).add(visitorId);
             return MakeReservationResult.QUEUED;
         }
 
         // Slot capacity has been defined, attempt the reservation right now.
-        final Set<UUID> set = slots[slotIndex];
+        final Set<UUID> set = slotConfirmedRequests[slotIndex];
         if (set.size() >= slotCapacity)
             return MakeReservationResult.OUT_OF_CAPACITY;
 
-        boolean success = slots[slotIndex].add(visitorId);
+        boolean success = slotConfirmedRequests[slotIndex].add(visitorId);
         return success ? MakeReservationResult.CONFIRMED : MakeReservationResult.ALREADY_EXISTS;
     }
 
