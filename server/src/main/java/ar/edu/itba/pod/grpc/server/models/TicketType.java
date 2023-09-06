@@ -2,13 +2,29 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.PassType;
 
+import java.time.LocalTime;
 import java.util.Optional;
 
 public enum TicketType {
 
-    FULL_DAY,
-    HALF_DAY,
-    UNLIMITED;
+    FULL_DAY {
+        @Override
+        public boolean canBook(int bookings, LocalTime sloTime) {
+            return bookings < 3;
+        }
+    },
+    HALF_DAY {
+        @Override
+        public boolean canBook(int bookings, LocalTime sloTime) {
+            return sloTime.isAfter(LocalTime.of(14,0));
+        }
+    },
+    UNLIMITED {
+        @Override
+        public boolean canBook(int bookings, LocalTime sloTime) {
+            return true;
+        }
+    };
 
     public static Optional<TicketType> fromPassType(PassType passType) {
         return switch (passType) {
@@ -27,4 +43,6 @@ public enum TicketType {
             default -> Optional.empty();
         };
     }
+
+    public abstract boolean canBook(int bookings, LocalTime sloTime);
 }
