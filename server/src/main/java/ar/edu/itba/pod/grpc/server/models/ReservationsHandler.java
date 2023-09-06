@@ -155,7 +155,7 @@ public class ReservationsHandler {
     public synchronized SuggestedCapacityResult getSuggestedCapacity() {
         if (slotCapacity != -1)
             throw new IllegalStateException("Slot capacity was already decided for this ReservationsHandler");
-        
+
         if (slotCount == 0)
             return new SuggestedCapacityResult(0, null);
 

@@ -2,15 +2,14 @@ package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
 import com.google.protobuf.BoolValue;
 import io.grpc.stub.StreamObserver;
 
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-
 import java.util.Optional;
+import java.util.UUID;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
@@ -40,10 +39,11 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
     public void addTicket(AddTicketRequest request, StreamObserver<BoolValue> responseObserver) {
         boolean success = false;
         int dayOfYear = request.getDayOfYear();
+        Optional<TicketType> ticketType = TicketType.fromPassType(request.getPassType());
 
-        // TODO: Check if PassType.forNumber(request.getPassType().getNumber() != null) validation is necessary
-        if (dayOfYear >= 1 && dayOfYear <= 365 ) {
-            success = dataHandler.addTicket(request.getVisitorId(), dayOfYear, request.getPassType());
+        if (dayOfYear >= 1 && dayOfYear <= 365 && ticketType.isPresent()) {
+            UUID visitorId = UUID.fromString(request.getVisitorId());
+            success = dataHandler.addTicket(visitorId, dayOfYear, ticketType.get());
         }
 
         responseObserver.onNext(BoolValue.newBuilder().setValue(success).build());
@@ -62,15 +62,15 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
         } else if (request.getCapacity() < 0) {
             status = AddCapacityStatus.ADD_CAPACITY_STATUS_NEGATIVE_CAPACITY;
         } else {
-            if (dataHandler.setAttractionCapacityByDate(request.getAttractionName(), request.getDayOfYear(), request.getCapacity())) {
-                status = AddCapacityStatus.ADD_CAPACITY_STATUS_SUCCESS;;
+            boolean success = dataHandler.setSlotCapacityForAttraction(request.getAttractionName(), request.getDayOfYear(), request.getCapacity());
+            if (success) {
+                status = AddCapacityStatus.ADD_CAPACITY_STATUS_SUCCESS;
                 // TODO: Set confirmedBookings, relocatedBookings, cancelledBookings variables.
             } else {
                 status = AddCapacityStatus.ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED;
             }
         }
 
-        // TODO: Confirm, cancel or assign another attraction to the visitor
         responseObserver.onNext(AddCapacityResponse.newBuilder()
                 .setCancelledBookings(cancelledBookings)
                 .setConfirmedBookings(confirmedBookings)
