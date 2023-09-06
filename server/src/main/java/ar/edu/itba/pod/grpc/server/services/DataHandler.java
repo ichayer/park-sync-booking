@@ -9,9 +9,10 @@ import java.util.*;
 public class DataHandler {
 
     private final Map<String, Attraction> attractions;
-    private final Map<UUID, Map<Integer, Ticket>> tickets;
+    private final Map<UUID, Ticket[]> tickets;
+    private static final int DAYS_OF_THE_YEAR = 365;
 
-    public DataHandler(Map<String, Attraction> attractions, Map<UUID, Map<Integer, Ticket>> tickets) {
+    public DataHandler(Map<String, Attraction> attractions, Map<UUID, Ticket[]> tickets) {
         this.attractions = attractions;
         this.tickets = tickets;
     }
@@ -21,9 +22,16 @@ public class DataHandler {
     }
 
     public boolean addTicket(UUID visitorId, int dayOfYear, TicketType ticketType) {
-        this.tickets.putIfAbsent(visitorId, new HashMap<>());
-        Map<Integer, Ticket> visitorTickets = tickets.get(visitorId);
-        return visitorTickets.putIfAbsent(dayOfYear, new Ticket(visitorId, dayOfYear, ticketType)) == null;
+        this.tickets.putIfAbsent(visitorId, new Ticket[DAYS_OF_THE_YEAR]);
+        Ticket[] visitorTickets = tickets.get(visitorId);
+        Ticket ticket = visitorTickets[dayOfYear - 1];
+
+        if (ticket == null || ticket.getVisitorId().equals(visitorId)) {
+            visitorTickets[dayOfYear - 1] = new Ticket(visitorId, dayOfYear, ticketType);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean containsAttraction(String attractionName) {
