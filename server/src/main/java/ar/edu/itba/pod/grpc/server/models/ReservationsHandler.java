@@ -26,19 +26,25 @@ public class ReservationsHandler {
      * The total amount of slots available for the day.
      */
     private final int slotCount;
-    /**
-     * Stores the set of visitors for each slot. The slots are stored ordered by time ascending.
-     */
-    private final Set<UUID>[] slots;
+
     /**
      * The amount of people each slot may assign, or -1 if this has not been defined yet.
      */
     private int slotCapacity = -1;
+
+    /**
+     * Stores the set of visitors for each slot. The slots are stored ordered by time ascending.
+     */
+    private final Set<UUID>[] slots;
+
     /**
      * Stores the reservation requests received before capacity has been defined. Once capacity is defined, the queue
      * is flushed and this variable set to null.
      */
     private Queue<ReservationRequest> pendingReservations = new LinkedList<>();
+
+    private record ReservationRequest(UUID visitorId, int slotIndex) {
+    }
 
     public ReservationsHandler(int slotDuration, LocalTime openingTime, LocalTime closingTime) {
         this.slotDuration = slotDuration;
@@ -89,24 +95,21 @@ public class ReservationsHandler {
 
     /**
      * Sets the slot capacity, if it isn't already set.
-     *
      * @throws IllegalStateException if slot capacity is already defined.
      */
-    public synchronized boolean defineSlotCapacity(int slotCapacity) {
+    public synchronized void defineSlotCapacity(int slotCapacity) {
         if (this.slotCapacity != -1)
-            return false;
+            throw new IllegalStateException("Cannot define slot capacity when already defined");
 
         this.slotCapacity = slotCapacity;
 
         // TODO: Apply pending reservations algorithm to flush the pendingReservations queue into the slots.
 
         pendingReservations = null;
-        return true;
     }
 
     /**
      * Attempts to make a reservation for a given visitor and time slot.
-     *
      * @return The result of the operation.
      * @throws IllegalArgumentException if the requested slot time isn't valid.
      */
@@ -135,8 +138,17 @@ public class ReservationsHandler {
     }
 
     /**
+     * Represents the possible results of a make reservation request.
+     */
+    public enum MakeReservationResult {
+        QUEUED,
+        CONFIRMED,
+        ALREADY_EXISTS,
+        OUT_OF_CAPACITY
+    }
+
+    /**
      * Computes the suggested slot capacity.
-     *
      * @return The suggested capacity as the maximum between all slots, and the slot with the said maximum capacity.
      * @throws IllegalStateException if slot capacity has already been decided.
      */
@@ -163,23 +175,9 @@ public class ReservationsHandler {
     }
 
     /**
-     * Represents the possible results of a make reservation request.
-     */
-    public enum MakeReservationResult {
-        QUEUED,
-        CONFIRMED,
-        ALREADY_EXISTS,
-        OUT_OF_CAPACITY
-    }
-
-    private record ReservationRequest(UUID visitorId, int slotIndex) {
-    }
-
-    /**
      * Represents the result of a get suggested capacity query.
-     *
      * @param maxPendingReservationCount The maximum amount of pending reservations any given slot has, or 0 if there are no slots.
-     * @param slotTime                   The slot's time, or null if there are no slots.
+     * @param slotTime The slot's time, or null if there are no slots.
      */
     private record SuggestedCapacityResult(int maxPendingReservationCount, LocalTime slotTime) {
     }
