@@ -8,7 +8,6 @@ import java.util.*;
  */
 public class ReservationsHandler {
 
-    // TODO: This class currently cannot handle storing pending requests after slot capacity has been determined.
     // TODO: Implement the slot allocation algorithm described in the document, point 1.3 (page 2).
     // TODO: Store the date each reservation was confirmed at, or find another way to fulfill query 4.2.
 
@@ -33,18 +32,16 @@ public class ReservationsHandler {
     private int slotCapacity = -1;
 
     /**
-     * Stores the set of visitors for each slot. The slots are stored ordered by time ascending.
+     * Stores the confirmed set of visitors for each slot. The slots are stored ordered by time ascending.
+     * Note: all elements in this array start as null and are created as needed.
      */
     private final Set<UUID>[] slots;
 
     /**
-     * Stores the reservation requests received before capacity has been defined. Once capacity is defined, the queue
-     * is flushed and this variable set to null.
+     * Stores the pending reservation requests for each slot.
+     * Note: all elements in this array start as null and are created as needed.
      */
-    private Queue<ReservationRequest> pendingReservations = new LinkedList<>();
-
-    private record ReservationRequest(UUID visitorId, int slotIndex) {
-    }
+    private final Queue<UUID>[] slotPendingRequests;
 
     public ReservationsHandler(int slotDuration, LocalTime openingTime, LocalTime closingTime) {
         this.slotDuration = slotDuration;
@@ -57,8 +54,7 @@ public class ReservationsHandler {
             throw new IllegalArgumentException("The attraction must have at least one time slot");
 
         this.slots = (Set<UUID>[]) new Set[slotCount];
-        for (int i = 0; i < slots.length; i++)
-            this.slots[i] = new HashSet<>();
+        this.slotPendingRequests = (Queue<UUID>[]) new List[slotCount];
     }
 
     /**
@@ -104,8 +100,6 @@ public class ReservationsHandler {
         this.slotCapacity = slotCapacity;
 
         // TODO: Apply pending reservations algorithm to flush the pendingReservations queue into the slots.
-
-        pendingReservations = null;
     }
 
     /**
@@ -124,7 +118,10 @@ public class ReservationsHandler {
 
         if (slotCapacity == -1) {
             // Slot capacity has not been defined, queue the reservation.
-            pendingReservations.add(new ReservationRequest(visitorId, slotIndex));
+            if (slotPendingRequests[slotIndex] == null)
+                slotPendingRequests[slotIndex] = new LinkedList<>();
+
+            slotPendingRequests[slotIndex].add(visitorId);
             return MakeReservationResult.QUEUED;
         }
 
@@ -159,19 +156,17 @@ public class ReservationsHandler {
         if (slotCount == 0)
             return new SuggestedCapacityResult(0, null);
 
-        // Count how many reservations there are for each slot.
-        int[] pendingReservationCounts = new int[slotCount];
-        for (ReservationRequest request : pendingReservations)
-            pendingReservationCounts[request.slotIndex]++;
-
         // Find the slotIndex wih the maximum amount of pending reservations.
         int indexOfMax = 0;
-        for (int i = 1; i < pendingReservationCounts.length; i++) {
-            if (pendingReservationCounts[i] > pendingReservationCounts[indexOfMax])
+        int maxPendingReservationCount = 0;
+        for (int i = 1; i < slotPendingRequests.length; i++) {
+            if (slotPendingRequests[i] != null && slotPendingRequests[i].size() > maxPendingReservationCount) {
                 indexOfMax = i;
+                maxPendingReservationCount = slotPendingRequests[i].size();
+            }
         }
 
-        return new SuggestedCapacityResult(pendingReservationCounts[indexOfMax], getSlotTimeByIndex(indexOfMax));
+        return new SuggestedCapacityResult(maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
     }
 
     /**
