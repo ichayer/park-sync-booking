@@ -3,12 +3,12 @@ package ar.edu.itba.pod.grpc.server.models;
 import java.time.LocalTime;
 
 public class Attraction {
+    private static final int DAYS_OF_THE_YEAR = 365;
 
     private final String name;
     private final LocalTime openingTime;
     private final LocalTime closingTime;
     private final int slotDuration;
-    private static final int DAYS_OF_THE_YEAR = 365;
     private final ReservationsHandler[] reservationsHandlers;
 
     public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration) {
@@ -35,7 +35,7 @@ public class Attraction {
         return slotDuration;
     }
 
-    public boolean attemptToSetSlotCapacity(int dayOfYear, int slotCapacity) {
+    public synchronized boolean attemptToSetSlotCapacity(int dayOfYear, int slotCapacity) {
         boolean isReservationHandlerUninitialized = reservationsHandlers[dayOfYear - 1] == null;
         if(isReservationHandlerUninitialized) {
             reservationsHandlers[dayOfYear - 1] = new ReservationsHandler(this.slotDuration, this.openingTime, this.closingTime);
