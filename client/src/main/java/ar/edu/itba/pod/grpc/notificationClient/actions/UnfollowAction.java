@@ -2,15 +2,21 @@ package ar.edu.itba.pod.grpc.notificationClient.actions;
 
 import ar.edu.itba.pod.grpc.AttractionNotificationServiceGrpc;
 import ar.edu.itba.pod.grpc.NotificationResponse;
+import ar.edu.itba.pod.grpc.bookingClient.actions.CancelAction;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
 import ar.edu.itba.pod.grpc.NotificationRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UnfollowAction implements Action {
 
     private Arguments arguments;
     private String msg;
+
+    private static final Logger logger = LoggerFactory.getLogger(UnfollowAction.class);
+
 
     @Override
     public Action execute(Arguments arguments) {
@@ -27,6 +33,8 @@ public class UnfollowAction implements Action {
                 .setVisitorId(arguments.getVisitorId())
                 .setDayOfYear(arguments.getDayOfYear())
                 .build();
+
+        logger.info("Sending unfollow request {}", request);
 
         AttractionNotificationServiceGrpc.AttractionNotificationServiceBlockingStub stub =
                 AttractionNotificationServiceGrpc.newBlockingStub(arguments.getChannel());

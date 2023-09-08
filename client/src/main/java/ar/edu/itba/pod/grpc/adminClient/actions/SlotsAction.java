@@ -7,6 +7,8 @@ import ar.edu.itba.pod.grpc.AddCapacityResponse;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 
@@ -15,8 +17,9 @@ public class SlotsAction implements Action {
     private int relocatedBookings;
     private int cancelledBookings;
     private AddCapacityStatus status;
-
     private Arguments arguments;
+
+    private static final Logger logger = LoggerFactory.getLogger(SlotsAction.class);
 
     @Override
     public Action execute(Arguments arguments) {
@@ -32,6 +35,7 @@ public class SlotsAction implements Action {
                 .setDayOfYear(arguments.getDayOfYear())
                 .setCapacity(arguments.getCapacity())
                 .build();
+        logger.info("Sending slot request {}", request);
 
         AddCapacityResponse response = stub.addCapacity(request);
 

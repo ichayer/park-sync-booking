@@ -5,15 +5,20 @@ import ar.edu.itba.pod.grpc.BookingServiceGrpc;
 import ar.edu.itba.pod.grpc.ReservationStatus;
 import ar.edu.itba.pod.grpc.ReservationResponse;
 import ar.edu.itba.pod.grpc.exceptions.ServerErrorReceived;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static ar.edu.itba.pod.grpc.ReservationStatus.BOOKING_STATUS_SUCCESS;
 
 public class ReserveAction extends BoookingAction {
 
     ReservationStatus status;
+    private static final Logger logger = LoggerFactory.getLogger(ReserveAction.class);
+
 
     @Override
     protected void sendServerMessage(BookingRequest bookingRequest, BookingServiceGrpc.BookingServiceBlockingStub stub) {
+        logger.info("Sending reserve request {}", bookingRequest);
         ReservationResponse response = stub.reserveAttraction(bookingRequest);
         status = response.getStatus();
     }

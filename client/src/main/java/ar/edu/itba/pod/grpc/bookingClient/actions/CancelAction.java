@@ -5,13 +5,17 @@ import ar.edu.itba.pod.grpc.BookingServiceGrpc;
 import ar.edu.itba.pod.grpc.CancellationResponse;
 import ar.edu.itba.pod.grpc.CancellationStatus;
 import ar.edu.itba.pod.grpc.exceptions.ServerErrorReceived;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CancelAction extends BoookingAction {
 
     private CancellationStatus status;
+    private static final Logger logger = LoggerFactory.getLogger(CancelAction.class);
 
     @Override
     protected void sendServerMessage(BookingRequest bookingRequest, BookingServiceGrpc.BookingServiceBlockingStub stub) {
+        logger.info("Sending cancel request {}", bookingRequest);
         CancellationResponse response = stub.cancelReservation(bookingRequest);
         status = response.getStatus();
     }

@@ -34,6 +34,7 @@ public abstract class BoookingAction implements Action {
                 .setVisitorId(visitorId)
                 .build();
 
+
         sendServerMessage(request, stub);
 
         return this;

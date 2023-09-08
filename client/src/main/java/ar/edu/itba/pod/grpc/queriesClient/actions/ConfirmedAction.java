@@ -1,7 +1,10 @@
 package ar.edu.itba.pod.grpc.queriesClient.actions;
 
 import ar.edu.itba.pod.grpc.*;
+import ar.edu.itba.pod.grpc.bookingClient.actions.CancelAction;
 import ar.edu.itba.pod.grpc.exceptions.ServerErrorReceived;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.util.Comparator;
@@ -11,9 +14,12 @@ public class ConfirmedAction extends QueriesAction{
 
     ConfirmedCapacityStatus status;
     List<ConfirmedReservation> reservations;
+    private static final Logger logger = LoggerFactory.getLogger(ConfirmedAction.class);
+
 
     @Override
     protected void sendServerMessage(DayOfYearRequest request, QueryServiceGrpc.QueryServiceBlockingStub stub) {
+        logger.info("Sending confirmed actions query request {}", request);
         ConfirmedReservationsResponse response = stub.getConfirmedReservations(request);
 
         status = response.getStatus();

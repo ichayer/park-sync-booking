@@ -1,10 +1,13 @@
 package ar.edu.itba.pod.grpc.bookingClient.actions;
 
 import ar.edu.itba.pod.grpc.*;
+import ar.edu.itba.pod.grpc.adminClient.actions.TicketsAction;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.exceptions.ServerErrorReceived;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -12,7 +15,7 @@ public class AvailabilityAction implements Action {
 
     CheckAvailabilityStatus status;
     List<AvailabilitySlot> slots;
-
+    private static final Logger logger = LoggerFactory.getLogger(AvailabilityAction.class);
     @Override
     public Action execute(Arguments arguments) {
         AvailabilityRequest.Builder requestBuilder = AvailabilityRequest.newBuilder();
@@ -28,12 +31,14 @@ public class AvailabilityAction implements Action {
             }
         }else {
             throw new IllegalClientArgumentException("Invalid arguments for the availability action.");
-
         }
 
         BookingServiceGrpc.BookingServiceBlockingStub client = BookingServiceGrpc.newBlockingStub(arguments.getChannel());
 
-        AvailabilityResponse response = client.checkAttractionAvailability(requestBuilder.build());
+        AvailabilityRequest request = requestBuilder.build();
+        logger.info("Sending availability request {}", request);
+
+        AvailabilityResponse response = client.checkAttractionAvailability(request);
 
         status = response.getStatus();
         slots = response.getSlotList();
