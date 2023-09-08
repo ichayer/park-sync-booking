@@ -5,13 +5,18 @@ import ar.edu.itba.pod.grpc.BookingServiceGrpc;
 import ar.edu.itba.pod.grpc.ConfirmationResponse;
 import ar.edu.itba.pod.grpc.ConfirmationStatus;
 import ar.edu.itba.pod.grpc.exceptions.ServerErrorReceived;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfirmAction extends BoookingAction {
 
     private ConfirmationStatus status;
 
+    private static final Logger logger = LoggerFactory.getLogger(ConfirmAction.class);
+
     @Override
     protected void sendServerMessage(BookingRequest bookingRequest, BookingServiceGrpc.BookingServiceBlockingStub stub) {
+        logger.info("Sending confirm request {}", bookingRequest);
         ConfirmationResponse response = stub.confirmReservation(bookingRequest);
         status = response.getStatus();
     }
