@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalTime;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Ticket {
@@ -11,9 +12,9 @@ public class Ticket {
     private int bookings;
 
     public Ticket(UUID visitorId, int dayOfYear, TicketType ticketType) {
-        this.visitorId = visitorId;
+        this.visitorId = Objects.requireNonNull(visitorId);
+        this.ticketType = Objects.requireNonNull(ticketType);
         this.dayOfYear = dayOfYear;
-        this.ticketType = ticketType;
         this.bookings = 0;
     }
 

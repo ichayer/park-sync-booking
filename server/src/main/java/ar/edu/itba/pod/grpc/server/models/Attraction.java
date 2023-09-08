@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalTime;
+import java.util.Objects;
 
 public class Attraction {
     private static final int DAYS_OF_THE_YEAR = 365;
@@ -12,9 +13,9 @@ public class Attraction {
     private final ReservationsHandler[] reservationsHandlers;
 
     public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration) {
-        this.name = name;
-        this.openingTime = openingTime;
-        this.closingTime = closingTime;
+        this.name = Objects.requireNonNull(name);
+        this.openingTime = Objects.requireNonNull(openingTime);
+        this.closingTime = Objects.requireNonNull(closingTime);
         this.slotDuration = slotDuration;
         this.reservationsHandlers = new ReservationsHandler[DAYS_OF_THE_YEAR];
     }
