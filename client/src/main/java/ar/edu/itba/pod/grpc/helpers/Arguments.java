@@ -72,6 +72,22 @@ public class Arguments {
         return capacity;
     }
 
+    @Override
+    public String toString() {
+        return "Arguments{" +
+                "channel=" + channel +
+                ", action='" + action + '\'' +
+                ", dayOfYear=" + dayOfYear +
+                ", attractionName='" + attractionName + '\'' +
+                ", visitorId='" + visitorId + '\'' +
+                ", bookingSlot='" + bookingSlot + '\'' +
+                ", bookingSlotTo='" + bookingSlotTo + '\'' +
+                ", filename='" + filename + '\'' +
+                ", capacity=" + capacity +
+                ", outFile='" + outFile + '\'' +
+                '}';
+    }
+
     public static class Builder {
         private ManagedChannel channel;
         private String action;

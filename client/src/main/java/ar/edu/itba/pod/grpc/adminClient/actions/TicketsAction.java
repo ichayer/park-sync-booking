@@ -3,10 +3,13 @@ package ar.edu.itba.pod.grpc.adminClient.actions;
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.PassType;
 import ar.edu.itba.pod.grpc.AddTicketRequest;
+import ar.edu.itba.pod.grpc.adminClient.AdminClient;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
 import ar.edu.itba.pod.grpc.interfaces.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 
@@ -14,6 +17,8 @@ public class TicketsAction implements Action {
 
     private int ticketsAdded = 0;
     private int ticketsFailed = 0;
+
+    private static final Logger logger = LoggerFactory.getLogger(TicketsAction.class);
 
     @Override
     public Action execute(Arguments arguments) {
@@ -26,21 +31,30 @@ public class TicketsAction implements Action {
         CsvFileIterator fileIterator = new CsvFileIterator(arguments.getFilename());
         while (fileIterator.hasNext()) {
             String[] fields = fileIterator.next();
-            if (fields.length == 4) {
+            if (fields.length == 3) {
                 PassType passType = mapPassType(fields[1]);
                 if (passType != PassType.PASS_TYPE_UNKNOWN) {
                     AddTicketRequest request = AddTicketRequest.newBuilder()
                             .setVisitorId(fields[0])
                             .setPassType(passType)
-                            .setDayOfYear(Integer.valueOf(fields[2]))
+                            .setDayOfYear(Integer.parseInt(fields[2]))
                             .build();
+                    logger.info("Sending ticket request {}", request);
                      com.google.protobuf.BoolValue response = stub.addTicket(request);
                      if (response.getValue()) {
+                         logger.info("ticket for user {} added", fields[0]);
                          ticketsAdded++;
                      } else {
+                         logger.info("ticket for user {} could not be added", fields[0]);
                          ticketsFailed++;
                      }
                 }
+                else{
+                    logger.error("Unknown pass type {}", fields[1]);
+                }
+            }
+            else{
+                logger.error("Invalid file format, got {} fields, expected 3 ", fields.length);
             }
         }
         fileIterator.close();

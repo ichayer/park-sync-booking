@@ -6,6 +6,8 @@ import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
 import ar.edu.itba.pod.grpc.interfaces.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
@@ -15,6 +17,7 @@ public class RidesAction implements Action {
     private int attractionsAdded = 0;
     private int attractionsFailed = 0;
 
+    private static final Logger logger = LoggerFactory.getLogger(RidesAction.class);
 
     @Override
     public Action execute(Arguments arguments) {
@@ -34,10 +37,13 @@ public class RidesAction implements Action {
                         .setClosingTime(fields[2])
                         .setSlotDurationMinutes(Integer.parseInt(fields[3]))
                         .build();
+                logger.info("Sending ride request {}", request);
                 com.google.protobuf.BoolValue response = stub.addAttraction(request);
                  if (response.getValue()) {
+                     logger.info("ride {} added", fields[0]);
                      attractionsAdded++;
                  } else {
+                     logger.info("ride {} could not be added", fields[0]);
                      attractionsFailed++;
                  }
             }
