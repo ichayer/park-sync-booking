@@ -1,8 +1,6 @@
 package ar.edu.itba.pod.grpc.notificationClient;
 
 import ar.edu.itba.pod.grpc.GenericClient;
-import ar.edu.itba.pod.grpc.bookingClient.BookingActionMapper;
-import ar.edu.itba.pod.grpc.bookingClient.BookingClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
