@@ -26,7 +26,7 @@ public class DataHandler {
         Ticket[] visitorTickets = tickets.get(visitorId);
         Ticket ticket = visitorTickets[dayOfYear - 1];
 
-        if (ticket == null || ticket.getVisitorId().equals(visitorId)) {
+        if (ticket == null || !ticket.getVisitorId().equals(visitorId)) {
             visitorTickets[dayOfYear - 1] = new Ticket(visitorId, dayOfYear, ticketType);
             return true;
         }
