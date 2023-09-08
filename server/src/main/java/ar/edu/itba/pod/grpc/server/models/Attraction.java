@@ -11,14 +11,14 @@ public class Attraction {
     private final LocalTime openingTime;
     private final LocalTime closingTime;
     private final int slotDuration;
-    private final ReservationsHandler[] reservationsHandlers;
+    private final ReservationHandler[] reservationHandlers;
 
     public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration) {
         this.name = Objects.requireNonNull(name);
         this.openingTime = Objects.requireNonNull(openingTime);
         this.closingTime = Objects.requireNonNull(closingTime);
         this.slotDuration = slotDuration;
-        this.reservationsHandlers = new ReservationsHandler[DAYS_OF_THE_YEAR];
+        this.reservationHandlers = new ReservationHandler[DAYS_OF_THE_YEAR];
     }
 
     public String getName() {
@@ -38,19 +38,19 @@ public class Attraction {
     }
 
     public synchronized boolean attemptToSetSlotCapacity(int dayOfYear, int slotCapacity) {
-        boolean isReservationHandlerUninitialized = reservationsHandlers[dayOfYear - 1] == null;
+        boolean isReservationHandlerUninitialized = reservationHandlers[dayOfYear - 1] == null;
         if(isReservationHandlerUninitialized) {
-            reservationsHandlers[dayOfYear - 1] = new ReservationsHandler(this.slotDuration, this.openingTime, this.closingTime);
-            reservationsHandlers[dayOfYear - 1].defineSlotCapacity(slotCapacity);
+            reservationHandlers[dayOfYear - 1] = new ReservationHandler(this.slotDuration, this.openingTime, this.closingTime);
+            reservationHandlers[dayOfYear - 1].defineSlotCapacity(slotCapacity);
         }
         return isReservationHandlerUninitialized;
     }
 
     public boolean isSlotTimeValid(int dayOfYear, LocalTime slotTime) {
-        return reservationsHandlers[dayOfYear - 1] != null && reservationsHandlers[dayOfYear - 1].isSlotTimeValid(slotTime);
+        return reservationHandlers[dayOfYear - 1] != null && reservationHandlers[dayOfYear - 1].isSlotTimeValid(slotTime);
     }
 
-    public ReservationsHandler.MakeReservationResult makeReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
-        return reservationsHandlers[dayOfYear - 1].makeReservation(visitorId, slotTime);
+    public ReservationHandler.MakeReservationResult makeReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        return reservationHandlers[dayOfYear - 1].makeReservation(visitorId, slotTime);
     }
 }

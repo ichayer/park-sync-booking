@@ -6,9 +6,8 @@ import java.util.*;
 /**
  * Manages the reservations for an attraction, for a specific day.
  */
-public class ReservationsHandler {
+public class ReservationHandler {
 
-    // TODO: Implement the slot allocation algorithm described in the document, point 1.3 (page 2).
     // TODO: Store the date each reservation was confirmed at, or find another way to fulfill query 4.2.
 
     /**
@@ -44,7 +43,7 @@ public class ReservationsHandler {
      */
     private final Queue<UUID>[] slotPendingRequests;
 
-    public ReservationsHandler(int slotDuration, LocalTime openingTime, LocalTime closingTime) {
+    public ReservationHandler(int slotDuration, LocalTime openingTime, LocalTime closingTime) {
         this.slotDuration = slotDuration;
         this.firstSlotMinuteOfDay = openingTime.getMinute() + openingTime.getHour() * 60;
 
@@ -55,7 +54,7 @@ public class ReservationsHandler {
             throw new IllegalArgumentException("The attraction must have at least one time slot");
 
         this.slotConfirmedRequests = (Set<UUID>[]) new Set[slotCount];
-        this.slotPendingRequests = (Queue<UUID>[]) new List[slotCount];
+        this.slotPendingRequests = (Queue<UUID>[]) new Queue[slotCount];
     }
 
     private Set<UUID> getOrCreateSlotConfirmedRequests(int slotIndex) {
@@ -223,7 +222,7 @@ public class ReservationsHandler {
      */
     public synchronized SuggestedCapacityResult getSuggestedCapacity() {
         if (slotCapacity != -1)
-            throw new IllegalStateException("Slot capacity was already decided for this ReservationsHandler");
+            throw new IllegalStateException("Slot capacity was already decided for this ReservationHandler");
 
         if (slotCount == 0)
             return new SuggestedCapacityResult(0, null);
@@ -246,6 +245,6 @@ public class ReservationsHandler {
      * @param maxPendingReservationCount The maximum amount of pending reservations any given slot has, or 0 if there are no slots.
      * @param slotTime The slot's time, or null if there are no slots.
      */
-    private record SuggestedCapacityResult(int maxPendingReservationCount, LocalTime slotTime) {
+    public record SuggestedCapacityResult(int maxPendingReservationCount, LocalTime slotTime) {
     }
 }

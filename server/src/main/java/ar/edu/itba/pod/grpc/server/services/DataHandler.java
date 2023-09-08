@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.models.ReservationsHandler;
+import ar.edu.itba.pod.grpc.server.models.ReservationHandler;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 
@@ -62,7 +62,7 @@ public class DataHandler {
         return visitorHasTicketForDay(visitorId, dayOfYear) && tickets.get(visitorId)[dayOfYear - 1].canBook(slotTime);
     }
 
-    public ReservationsHandler.MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
+    public ReservationHandler.MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
         return attractions.get(attractionName).makeReservation(visitorId, dayOfYear, slotTime);
     }
 }
