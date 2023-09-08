@@ -7,16 +7,13 @@ import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-public class BookingService extends BookingServiceGrpc.BookingServiceImplBase {
+public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBase {
 
     private final DataHandler dataHandler;
 
-    public BookingService(DataHandler dataHandler) {
+    public BookingServiceImpl(DataHandler dataHandler) {
         this.dataHandler = dataHandler;
     }
 
@@ -26,10 +23,10 @@ public class BookingService extends BookingServiceGrpc.BookingServiceImplBase {
 
         Collection<ar.edu.itba.pod.grpc.Attraction> attractionsDto = attractions.stream()
                 .map(attraction -> ar.edu.itba.pod.grpc.Attraction.newBuilder()
-                .setName(attraction.getName())
-                .setClosingTime(attraction.getClosingTime().toString())
-                .setOpeningTime(attraction.getOpeningTime().toString())
-                .build()).toList();
+                        .setName(attraction.getName())
+                        .setClosingTime(attraction.getClosingTime().toString())
+                        .setOpeningTime(attraction.getOpeningTime().toString())
+                        .build()).toList();
 
         responseObserver.onNext(GetAttractionsResponse.newBuilder().addAllAttraction(attractionsDto).build());
         responseObserver.onCompleted();
@@ -66,12 +63,48 @@ public class BookingService extends BookingServiceGrpc.BookingServiceImplBase {
             }
         }
         responseObserver.onNext(AvailabilityResponse.newBuilder().setStatus(status).addAllSlot(availabilitySlots).build());
-        responseObserver.onCompleted();;
+        responseObserver.onCompleted();
     }
 
     @Override
     public void reserveAttraction(BookingRequest request, StreamObserver<ReservationResponse> responseObserver) {
-        super.reserveAttraction(request, responseObserver);
+        String attractionName = request.getAttractionName();
+        int dayOfYear = request.getDayOfYear();
+        Optional<LocalTime> slotTime = LocalTimeUtils.parseTimeOrEmpty(request.getSlot());
+        UUID visitorId = UUID.fromString(request.getVisitorId());
+
+        ReservationStatus status = ReservationStatus.BOOKING_STATUS_UNKNOWN;
+        BookingState bookingState = BookingState.RESERVATION_STATUS_UNKNOWN;
+
+        if (dayOfYear < 0 || dayOfYear > 365) {
+            status = ReservationStatus.BOOKING_STATUS_INVALID_DAY;
+        } else if (slotTime.isEmpty()) {
+            status = ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
+        } else if (attractionName.isEmpty() || !dataHandler.containsAttraction(attractionName)) {
+            status = ReservationStatus.BOOKING_STATUS_ATTRACTION_NOT_FOUND;
+        } else if (!dataHandler.visitorHasTicketForDay(visitorId, dayOfYear)) {
+            status = ReservationStatus.BOOKING_STATUS_MISSING_PASS;
+        } else if (!dataHandler.isSlotTimeValidForAttraction(attractionName, dayOfYear, slotTime.get())) {
+            status = ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
+        } else if (!dataHandler.visitorCanBookForDay(visitorId, dayOfYear, slotTime.get())) {
+            status = ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
+        }
+
+        if (status == ReservationStatus.BOOKING_STATUS_UNKNOWN) {
+            switch (dataHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get())) {
+                case QUEUED -> bookingState = BookingState.RESERVATION_STATUS_PENDING;
+                case CONFIRMED -> bookingState = BookingState.RESERVATION_STATUS_CONFIRMED;
+                case OUT_OF_CAPACITY -> status = ReservationStatus.BOOKING_STATUS_NO_CAPACITY;
+                case ALREADY_EXISTS -> status = ReservationStatus.BOOKING_STATUS_ALREADY_EXISTS;
+            }
+        }
+
+        if (bookingState != BookingState.RESERVATION_STATUS_UNKNOWN) {
+            status = ReservationStatus.BOOKING_STATUS_SUCCESS;
+        }
+
+        responseObserver.onNext(ReservationResponse.newBuilder().setStatus(status).setState(bookingState).build());
+        responseObserver.onCompleted();
     }
 
     @Override

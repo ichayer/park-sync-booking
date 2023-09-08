@@ -107,6 +107,13 @@ public class ReservationsHandler {
     }
 
     /**
+     * Returns true if the slot time is valid, false otherwise.
+     */
+    public boolean isSlotTimeValid(LocalTime slotTime) {
+        return getSlotIndex(slotTime) >= 0;
+    }
+
+    /**
      * Sets the slot capacity, if it isn't already set.
      * @throws IllegalStateException if slot capacity is already defined.
      */

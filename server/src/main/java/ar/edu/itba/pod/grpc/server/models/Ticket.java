@@ -18,12 +18,14 @@ public class Ticket {
         this.bookings = 0;
     }
 
-    public boolean attemptBooking(LocalTime slotTime) {
-        boolean canBook = this.ticketType.canBook(this.bookings, slotTime);
-        if (canBook) {
+    public boolean canBook(LocalTime slotTime) {
+        return this.ticketType.canBook(this.bookings, slotTime);
+    }
+
+    public synchronized void attemptToBook(LocalTime slotTime) {
+        if (canBook(slotTime)) {
             this.bookings++;
         }
-        return canBook;
     }
 
     public UUID getVisitorId() {

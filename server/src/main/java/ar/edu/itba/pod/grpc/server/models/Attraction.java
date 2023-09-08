@@ -2,6 +2,7 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalTime;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Attraction {
     private static final int DAYS_OF_THE_YEAR = 365;
@@ -43,5 +44,13 @@ public class Attraction {
             reservationsHandlers[dayOfYear - 1].defineSlotCapacity(slotCapacity);
         }
         return isReservationHandlerUninitialized;
+    }
+
+    public boolean isSlotTimeValid(int dayOfYear, LocalTime slotTime) {
+        return reservationsHandlers[dayOfYear - 1] != null && reservationsHandlers[dayOfYear - 1].isSlotTimeValid(slotTime);
+    }
+
+    public ReservationsHandler.MakeReservationResult makeReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        return reservationsHandlers[dayOfYear - 1].makeReservation(visitorId, slotTime);
     }
 }
