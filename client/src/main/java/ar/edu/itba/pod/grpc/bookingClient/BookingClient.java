@@ -18,7 +18,7 @@ public class BookingClient {
     public static void main(String[] args) throws InterruptedException {
         logger.debug("Booking client started, mapping actions");
         GenericClient client = new GenericClient(new BookingActionMapper());
-        logger.debug("Booking actions mapper");
+        logger.debug("Booking actions mapped");
         client.run(args);
     }
 }
