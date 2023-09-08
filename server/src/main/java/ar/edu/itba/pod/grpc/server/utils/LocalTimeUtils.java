@@ -16,4 +16,9 @@ public class LocalTimeUtils {
         }
         return parsedTime;
     }
+
+    // Suppress default constructor for noninstantiability
+    private LocalTimeUtils() {
+        throw new AssertionError("Class is not instantiable");
+    }
 }
