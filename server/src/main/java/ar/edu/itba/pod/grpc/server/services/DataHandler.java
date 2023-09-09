@@ -1,9 +1,6 @@
 package ar.edu.itba.pod.grpc.server.services;
 
-import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.models.ReservationHandler;
-import ar.edu.itba.pod.grpc.server.models.Ticket;
-import ar.edu.itba.pod.grpc.server.models.TicketType;
+import ar.edu.itba.pod.grpc.server.models.*;
 
 import java.time.LocalTime;
 import java.util.*;
@@ -42,6 +39,9 @@ public class DataHandler {
     }
 
     public boolean addTicket(UUID visitorId, int dayOfYear, TicketType ticketType) {
+        // TODO: Inefficient handling of tickets. A user might only visit a few days a year, there's no reason to make
+        // this an array. Consider replacing for a map.
+        // Issue: This code creates a new ticket array each time, whether it already exists or not
         this.tickets.putIfAbsent(visitorId, new Ticket[DAYS_OF_THE_YEAR]);
         Ticket[] visitorTickets = tickets.get(visitorId);
         Ticket ticket = visitorTickets[dayOfYear - 1];
@@ -62,7 +62,20 @@ public class DataHandler {
         return visitorHasTicketForDay(visitorId, dayOfYear) && tickets.get(visitorId)[dayOfYear - 1].canBook(slotTime);
     }
 
-    public ReservationHandler.MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
-        return attractions.get(attractionName).makeReservation(visitorId, dayOfYear, slotTime);
+    public MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        Attraction attraction = attractions.get(attractionName);
+        if (attraction == null)
+            return MakeReservationResult.ATTRACTION_NOT_FOUND;
+
+        Ticket[] arr = tickets.get(visitorId);
+        Ticket ticket;
+        if (arr == null || (ticket = arr[dayOfYear]) == null)
+            return MakeReservationResult.MISSING_PASS;
+
+        // TODO: Increment "bookings" count in the ticket in a thread-safe and transactional manner. THIS IS NOT OK.
+        if (!ticket.attemptToBook(slotTime))
+            return MakeReservationResult.MISSING_PASS;
+
+        return attraction.makeReservation(ticket, slotTime);
     }
 }

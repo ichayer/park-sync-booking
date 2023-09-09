@@ -33,24 +33,28 @@ public class Attraction {
         return closingTime;
     }
 
+    /**
+     * Gets the duration of each slot, measured in minutes.
+     */
     public int getSlotDuration() {
         return slotDuration;
     }
 
     public synchronized boolean attemptToSetSlotCapacity(int dayOfYear, int slotCapacity) {
         boolean isReservationHandlerUninitialized = reservationHandlers[dayOfYear - 1] == null;
-        if(isReservationHandlerUninitialized) {
-            reservationHandlers[dayOfYear - 1] = new ReservationHandler(this.slotDuration, this.openingTime, this.closingTime);
+        if (isReservationHandlerUninitialized) {
+            reservationHandlers[dayOfYear - 1] = new ReservationHandler(this, dayOfYear);
             reservationHandlers[dayOfYear - 1].defineSlotCapacity(slotCapacity);
         }
         return isReservationHandlerUninitialized;
     }
 
     public boolean isSlotTimeValid(int dayOfYear, LocalTime slotTime) {
-        return reservationHandlers[dayOfYear - 1] != null && reservationHandlers[dayOfYear - 1].isSlotTimeValid(slotTime);
+        ReservationHandler handler = reservationHandlers[dayOfYear - 1];
+        return handler != null && handler.isSlotTimeValid(slotTime);
     }
 
-    public ReservationHandler.MakeReservationResult makeReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
-        return reservationHandlers[dayOfYear - 1].makeReservation(visitorId, slotTime);
+    public MakeReservationResult makeReservation(Ticket ticket, LocalTime slotTime) {
+        return reservationHandlers[ticket.getDayOfYear() - 1].makeReservation(ticket, slotTime);
     }
 }

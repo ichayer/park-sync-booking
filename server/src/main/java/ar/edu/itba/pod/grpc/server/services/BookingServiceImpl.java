@@ -2,6 +2,7 @@ package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
@@ -73,34 +74,40 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
         Optional<LocalTime> slotTime = LocalTimeUtils.parseTimeOrEmpty(request.getSlot());
         UUID visitorId = UUID.fromString(request.getVisitorId());
 
-        ReservationStatus status = ReservationStatus.BOOKING_STATUS_UNKNOWN;
-        BookingState bookingState = BookingState.RESERVATION_STATUS_UNKNOWN;
-
-        if (dayOfYear < 0 || dayOfYear > 365) {
+        ReservationStatus status = null;
+        if (dayOfYear <= 0 || dayOfYear > 365) {
             status = ReservationStatus.BOOKING_STATUS_INVALID_DAY;
         } else if (slotTime.isEmpty()) {
             status = ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
-        } else if (attractionName.isEmpty() || !dataHandler.containsAttraction(attractionName)) {
+        } else if (attractionName.isEmpty()) {
             status = ReservationStatus.BOOKING_STATUS_ATTRACTION_NOT_FOUND;
-        } else if (!dataHandler.visitorHasTicketForDay(visitorId, dayOfYear)) {
-            status = ReservationStatus.BOOKING_STATUS_MISSING_PASS;
-        } else if (!dataHandler.isSlotTimeValidForAttraction(attractionName, dayOfYear, slotTime.get())) {
-            status = ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
-        } else if (!dataHandler.visitorCanBookForDay(visitorId, dayOfYear, slotTime.get())) {
-            status = ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
         }
 
-        if (status == ReservationStatus.BOOKING_STATUS_UNKNOWN) {
-            switch (dataHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get())) {
-                case QUEUED -> bookingState = BookingState.RESERVATION_STATUS_PENDING;
-                case CONFIRMED -> bookingState = BookingState.RESERVATION_STATUS_CONFIRMED;
-                case OUT_OF_CAPACITY -> status = ReservationStatus.BOOKING_STATUS_NO_CAPACITY;
-                case ALREADY_EXISTS -> status = ReservationStatus.BOOKING_STATUS_ALREADY_EXISTS;
-            }
+        if (status != null) {
+            responseObserver.onNext(ReservationResponse.newBuilder().setStatus(status).build());
+            responseObserver.onCompleted();
+            return;
         }
 
-        if (bookingState != BookingState.RESERVATION_STATUS_UNKNOWN) {
+        BookingState bookingState;
+        MakeReservationResult result = dataHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
+        if (result.isSuccess()) {
             status = ReservationStatus.BOOKING_STATUS_SUCCESS;
+            bookingState = switch (result.status()) {
+                case QUEUED -> BookingState.RESERVATION_STATUS_PENDING;
+                case CONFIRMED -> BookingState.RESERVATION_STATUS_CONFIRMED;
+                default -> BookingState.RESERVATION_STATUS_UNKNOWN;
+            };
+        } else {
+            bookingState = BookingState.RESERVATION_STATUS_UNKNOWN;
+            status = switch (result.status()) {
+                case MISSING_PASS -> ReservationStatus.BOOKING_STATUS_MISSING_PASS;
+                case ALREADY_EXISTS -> ReservationStatus.BOOKING_STATUS_ALREADY_EXISTS;
+                case ATTRACTION_NOT_FOUND -> ReservationStatus.BOOKING_STATUS_ATTRACTION_NOT_FOUND;
+                case INVALID_SLOT_TIME -> ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
+                case OUT_OF_CAPACITY -> ReservationStatus.BOOKING_STATUS_NO_CAPACITY;
+                default -> ReservationStatus.BOOKING_STATUS_UNKNOWN;
+            };
         }
 
         responseObserver.onNext(ReservationResponse.newBuilder().setStatus(status).setState(bookingState).build());

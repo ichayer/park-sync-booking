@@ -8,12 +8,15 @@ import java.util.*;
  */
 public class ReservationHandler {
 
-    // TODO: Store the date each reservation was confirmed at, or find another way to fulfill query 4.2.
+    /**
+     * The attraction for which this ReservationHandler manages reservations.
+     */
+    private final Attraction attraction;
 
     /**
-     * The duration of each slot, measured in minutes.
+     * The day of year for which this ReservationHandler manages reservations.
      */
-    private final int slotDuration;
+    private final int dayOfYear;
 
     /**
      * The minute-of-day of the first slot.
@@ -34,17 +37,22 @@ public class ReservationHandler {
      * Stores the confirmed set of visitors for each slot. The slots are stored ordered by time ascending.
      * Note: all elements in this array start as null and are created as needed.
      */
-    private final Set<UUID>[] slotConfirmedRequests;
+    private final Map<UUID, Reservation>[] slotConfirmedRequests;
 
     /**
      * Stores the pending reservation requests for each slot. Requests are added to this queue as they arrive, and
      * therefore are ordered chronologically.
      * Note: all elements in this array start as null and are created as needed.
      */
-    private final Queue<UUID>[] slotPendingRequests;
+    private final Queue<Reservation>[] slotPendingRequests;
 
-    public ReservationHandler(int slotDuration, LocalTime openingTime, LocalTime closingTime) {
-        this.slotDuration = slotDuration;
+    public ReservationHandler(Attraction attraction, int dayOfYear) {
+        this.attraction = Objects.requireNonNull(attraction);
+        this.dayOfYear = dayOfYear;
+
+        LocalTime openingTime = attraction.getOpeningTime();
+        LocalTime closingTime = attraction.getClosingTime();
+        int slotDuration = attraction.getSlotDuration();
         this.firstSlotMinuteOfDay = openingTime.getMinute() + openingTime.getHour() * 60;
 
         // slotCount is calculated as: slotCount = ceiling(totalMinutesOpen / slotDuration)
@@ -53,20 +61,20 @@ public class ReservationHandler {
         if (this.slotCount <= 0)
             throw new IllegalArgumentException("The attraction must have at least one time slot");
 
-        this.slotConfirmedRequests = (Set<UUID>[]) new Set[slotCount];
-        this.slotPendingRequests = (Queue<UUID>[]) new Queue[slotCount];
+        this.slotConfirmedRequests = (Map<UUID, Reservation>[]) new Map[slotCount];
+        this.slotPendingRequests = (Queue<Reservation>[]) new Queue[slotCount];
     }
 
-    private Set<UUID> getOrCreateSlotConfirmedRequests(int slotIndex) {
-        Set<UUID> confirmed = slotConfirmedRequests[slotIndex];
+    private Map<UUID, Reservation> getOrCreateSlotConfirmedRequests(int slotIndex) {
+        Map<UUID, Reservation> confirmed = slotConfirmedRequests[slotIndex];
         if (confirmed == null)
-            confirmed = slotConfirmedRequests[slotIndex] = new HashSet<>();
+            confirmed = slotConfirmedRequests[slotIndex] = new HashMap<>();
 
         return confirmed;
     }
 
-    private Queue<UUID> getOrCreateSlotPendingRequests(int slotIndex) {
-        Queue<UUID> pending = slotPendingRequests[slotIndex];
+    private Queue<Reservation> getOrCreateSlotPendingRequests(int slotIndex) {
+        Queue<Reservation> pending = slotPendingRequests[slotIndex];
         if (pending == null)
             pending = slotPendingRequests[slotIndex] = new LinkedList<>();
 
@@ -77,8 +85,15 @@ public class ReservationHandler {
      * Gets the index in the 'slots' array where the slot for a given time is, or -1 if there's no slot with that time.
      */
     private int getSlotIndex(LocalTime slotTime) {
+        int slotDuration = attraction.getSlotDuration();
         int slotMinuteOfDay = slotTime.getMinute() + slotTime.getHour() * 60;
-        int slotIndex = (slotMinuteOfDay - firstSlotMinuteOfDay) / slotDuration;
+        int diff = slotMinuteOfDay - firstSlotMinuteOfDay;
+        int slotIndex = diff / slotDuration;
+
+        // Check that slotTime was the exact time at which the slot starts. Without this check, if a slot went from
+        // 9:00 to 9:30 and a slotTime of 9:15 was specified, it would be taken as that slot.
+        if (slotIndex * slotDuration != diff)
+            return -1;
 
         return (slotIndex < 0 || slotIndex >= slotCount) ? -1 : slotIndex;
     }
@@ -87,15 +102,16 @@ public class ReservationHandler {
      * Inverse of getSlotIndex().
      */
     private LocalTime getSlotTimeByIndex(int slotIndex) {
-        int slotMinuteOfDay = firstSlotMinuteOfDay + slotIndex * slotDuration;
+        int slotMinuteOfDay = firstSlotMinuteOfDay + slotIndex * attraction.getSlotDuration();
         return LocalTime.ofSecondOfDay(slotMinuteOfDay * 60L);
     }
 
-    /**
-     * Gets the duration of each slot, measured in minutes.
-     */
-    public int getSlotDuration() {
-        return slotDuration;
+    public Attraction getAttraction() {
+        return attraction;
+    }
+
+    public int getDayOfYear() {
+        return dayOfYear;
     }
 
     /**
@@ -125,16 +141,16 @@ public class ReservationHandler {
         // Apply the reservation relocation algorithm to confirm the pending requests into the slots, or relocate.
 
         for (int slotIndex = 0; slotIndex < slotPendingRequests.length; slotIndex++) {
-            Queue<UUID> requests = slotPendingRequests[slotIndex];
+            Queue<Reservation> requests = slotPendingRequests[slotIndex];
             if (requests == null || requests.isEmpty())
                 continue;
 
-            Set<UUID> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
+            Map<UUID, Reservation> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
 
             // Dequeue the first N requests from the pending queue and confirm them. (N = slotCapacity)
-            UUID next;
+            Reservation next;
             while (confirmed.size() < slotCapacity && (next = requests.poll()) != null) {
-                confirmed.add(next);
+                confirmed.put(next.getVisitorId(), next);
                 // TODO: Alert that the request was confirmed.
             }
         }
@@ -142,25 +158,26 @@ public class ReservationHandler {
         // Attempt to relocate forward all pending requests, traversing by slot chronologically.
         int relocateSlotIndex = 0;
         for (int slotIndex = 0; slotIndex < slotPendingRequests.length && relocateSlotIndex < slotCount; slotIndex++) {
-            Queue<UUID> requests = slotPendingRequests[slotIndex];
+            Queue<Reservation> requests = slotPendingRequests[slotIndex];
             if (requests == null || requests.isEmpty())
                 continue;
 
             relocateSlotIndex = Math.max(relocateSlotIndex, slotIndex + 1);
 
+            // TODO: Check that the time a reservation was relocated to is valid for the ticket.
             int amountToRelocate = slotConfirmedRequests[slotIndex].size() + requests.size() - slotCapacity;
             for (int i = 0; i < amountToRelocate; i++) {
-                UUID visitorToRelocate = requests.remove();
+                Reservation visitorToRelocate = requests.remove();
                 boolean relocated = false;
 
                 while (!relocated && relocateSlotIndex < slotCount) {
-                    Set<UUID> otherSlotConfirmed = getOrCreateSlotConfirmedRequests(relocateSlotIndex);
-                    Queue<UUID> otherSlotPending = slotPendingRequests[relocateSlotIndex];
-                    int otherSlotTotal = otherSlotConfirmed.size() + (otherSlotPending == null ? 0 : otherSlotPending.size());
+                    Map<UUID, Reservation> relocateSlotConfirmed = getOrCreateSlotConfirmedRequests(relocateSlotIndex);
+                    Queue<Reservation> relocateSlotPending = slotPendingRequests[relocateSlotIndex];
+                    int relocateSlotTotal = relocateSlotConfirmed.size() + (relocateSlotPending == null ? 0 : relocateSlotPending.size());
 
-                    if (otherSlotTotal < slotCapacity) {
-                        otherSlotPending = getOrCreateSlotPendingRequests(relocateSlotIndex);
-                        otherSlotPending.add(visitorToRelocate);
+                    if (relocateSlotTotal < slotCapacity) {
+                        relocateSlotPending = getOrCreateSlotPendingRequests(relocateSlotIndex);
+                        relocateSlotPending.add(visitorToRelocate);
                         relocated = true;
                     } else {
                         relocateSlotIndex++;
@@ -178,13 +195,15 @@ public class ReservationHandler {
 
     /**
      * Attempts to make a reservation for a given visitor and time slot.
-     * @return The result of the operation.
-     * @throws IllegalArgumentException if the requested slot time isn't valid.
+     * @return A MakeReservationResult with the result of the operation. If the result is an error, the
+     * <code>.reservation</code> value will be null.
+     * @implNote To check for success or status, use <code>.status</code> instead of reading fields from the
+     * <code>.reservation</code>. This will avoid race conditions.
      */
-    public synchronized MakeReservationResult makeReservation(UUID visitorId, LocalTime slotTime) {
+    public synchronized MakeReservationResult makeReservation(Ticket ticket, LocalTime slotTime) {
         final int slotIndex = getSlotIndex(slotTime);
         if (slotIndex == -1)
-            throw new IllegalArgumentException("Invalid slotTime");
+            return MakeReservationResult.INVALID_SLOT_TIME;
 
         // The behavior of this method changes depending on whether slot capacities have been defined:
         // - If slot capacities have not been defined, the reservation is queued until they are.
@@ -192,27 +211,26 @@ public class ReservationHandler {
 
         if (slotCapacity == -1) {
             // Slot capacity has not been defined, queue the reservation.
-            getOrCreateSlotPendingRequests(slotIndex).add(visitorId);
-            return MakeReservationResult.QUEUED;
+            Reservation reservation = new Reservation(ticket, attraction, slotTime, false);
+            // TODO: Notify new pending reservation created.
+            getOrCreateSlotPendingRequests(slotIndex).add(reservation);
+            return new MakeReservationResult(MakeReservationResult.MakeReservationStatus.QUEUED, reservation);
         }
 
         // Slot capacity has been defined, attempt the reservation right now.
-        final Set<UUID> set = slotConfirmedRequests[slotIndex];
-        if (set.size() >= slotCapacity)
+        final Map<UUID, Reservation> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
+        if (confirmed.size() >= slotCapacity)
             return MakeReservationResult.OUT_OF_CAPACITY;
 
-        boolean success = slotConfirmedRequests[slotIndex].add(visitorId);
-        return success ? MakeReservationResult.CONFIRMED : MakeReservationResult.ALREADY_EXISTS;
-    }
+        // TODO: Consider replacing with confirmed.computeIfAbsent
+        Reservation reservation = new Reservation(ticket, attraction, slotTime, true);
+        boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), reservation) == null;
+        if (success) {
+            //  TODO: Notify new confirmed reservation created.
+            return new MakeReservationResult(MakeReservationResult.MakeReservationStatus.CONFIRMED, reservation);
+        }
 
-    /**
-     * Represents the possible results of a make reservation request.
-     */
-    public enum MakeReservationResult {
-        QUEUED,
-        CONFIRMED,
-        ALREADY_EXISTS,
-        OUT_OF_CAPACITY
+        return MakeReservationResult.ALREADY_EXISTS;
     }
 
     /**
@@ -225,11 +243,11 @@ public class ReservationHandler {
             throw new IllegalStateException("Slot capacity was already decided for this ReservationHandler");
 
         if (slotCount == 0)
-            return new SuggestedCapacityResult(0, null);
+            return SuggestedCapacityResult.EMPTY;
 
         // Find the slotIndex wih the maximum amount of pending reservations.
         int indexOfMax = 0;
-        int maxPendingReservationCount = 0;
+        int maxPendingReservationCount = slotPendingRequests[0].size();
         for (int i = 1; i < slotPendingRequests.length; i++) {
             if (slotPendingRequests[i] != null && slotPendingRequests[i].size() > maxPendingReservationCount) {
                 indexOfMax = i;
@@ -237,14 +255,9 @@ public class ReservationHandler {
             }
         }
 
-        return new SuggestedCapacityResult(maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
-    }
+        if (indexOfMax == 0 && maxPendingReservationCount == 0)
+            return SuggestedCapacityResult.EMPTY;
 
-    /**
-     * Represents the result of a get suggested capacity query.
-     * @param maxPendingReservationCount The maximum amount of pending reservations any given slot has, or 0 if there are no slots.
-     * @param slotTime The slot's time, or null if there are no slots.
-     */
-    public record SuggestedCapacityResult(int maxPendingReservationCount, LocalTime slotTime) {
+        return new SuggestedCapacityResult(maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
     }
 }

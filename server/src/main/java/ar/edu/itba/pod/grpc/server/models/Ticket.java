@@ -22,10 +22,13 @@ public class Ticket {
         return this.ticketType.canBook(this.bookings, slotTime);
     }
 
-    public synchronized void attemptToBook(LocalTime slotTime) {
+    public synchronized boolean attemptToBook(LocalTime slotTime) {
         if (canBook(slotTime)) {
             this.bookings++;
+            return true;
         }
+
+        return false;
     }
 
     public UUID getVisitorId() {

@@ -5,20 +5,20 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
-public class LocalTimeUtils {
-
-    public static Optional<LocalTime> parseTimeOrEmpty(String time) {
-        Optional<LocalTime> parsedTime;
-        try {
-            parsedTime = Optional.of(LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm")));
-        } catch (DateTimeParseException e) {
-            parsedTime = Optional.empty();
-        }
-        return parsedTime;
-    }
+public final class LocalTimeUtils {
 
     // Suppress default constructor for noninstantiability
     private LocalTimeUtils() {
         throw new AssertionError("Class is not instantiable");
+    }
+
+    private static final DateTimeFormatter slotTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+    public static Optional<LocalTime> parseTimeOrEmpty(String time) {
+        try {
+            return Optional.of(LocalTime.parse(time, slotTimeFormatter));
+        } catch (DateTimeParseException e) {
+            return Optional.empty();
+        }
     }
 }
