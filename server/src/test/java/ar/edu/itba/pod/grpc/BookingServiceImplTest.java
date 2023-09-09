@@ -20,15 +20,15 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BookingServiceImplTest {
     private static final String ATTRACTION_NAME = "attractionName";
     private static final LocalTime TIME_FROM = LocalTime.of(10, 0);
     private static final LocalTime TIME_TO = LocalTime.of(18, 0);
-    private static final int SLOT_GAP = 10;
-    private static final Map<String, Attraction> attractions = new HashMap<>();
-    private static final Map<UUID, Ticket[]> tickets = new HashMap<>();
+    private static final Map<String, Attraction> attractions = new ConcurrentHashMap<>();
+    private static final Map<UUID, Map<Integer, Ticket>> tickets = new ConcurrentHashMap<>();
     private static final DataHandler dataHandler = new DataHandler(attractions, tickets);
     private static final BookingServiceImpl bookingService = new BookingServiceImpl(dataHandler);
     @Mock
@@ -36,7 +36,7 @@ public class BookingServiceImplTest {
     @Mock
     private static StreamObserver<GetAttractionsResponse> attractionResponseObserver;
 
-    @AfterEach
+    @BeforeEach
     public void setUp() {
         attractions.clear();
         tickets.clear();

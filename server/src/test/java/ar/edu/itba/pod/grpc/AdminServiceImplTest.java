@@ -7,22 +7,19 @@ import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import ar.edu.itba.pod.grpc.server.services.DataHandler;
 import com.google.protobuf.BoolValue;
 import io.grpc.stub.StreamObserver;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AdminServiceImplTest {
@@ -51,8 +48,8 @@ public class AdminServiceImplTest {
     private static final int OTHER_INVALID_DATE = 0;
     private static final int VALID_CAPACITY = 10;
     private static final int INVALID_CAPACITY = -1;
-    private final Map<String, Attraction> attractions = new HashMap<>();
-    private final Map<UUID, Ticket[]> tickets = new HashMap<>();
+    private final Map<String, Attraction> attractions = new ConcurrentHashMap<>();
+    private final Map<UUID, Map<Integer, Ticket>> tickets = new ConcurrentHashMap<>();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     private final DataHandler dataHandler = new DataHandler(attractions, tickets);
     private final AdminServiceImpl adminService = new AdminServiceImpl(dataHandler);
@@ -257,7 +254,7 @@ public class AdminServiceImplTest {
         Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID_UUID));
         Assert.assertNotNull(tickets.get(DEFAULT_VISITOR_ID_UUID));
         Assert.assertEquals(1, tickets.size());
-        Assert.assertEquals(DAYS_IN_YEAR, tickets.get(DEFAULT_VISITOR_ID_UUID).length);
+        Assert.assertEquals(1, tickets.get(DEFAULT_VISITOR_ID_UUID).size());
     }
 
     @Test
@@ -291,8 +288,9 @@ public class AdminServiceImplTest {
     @Test
     public void testAddSameTicketPassForSameDate() {
         Ticket ticket = new Ticket(DEFAULT_VISITOR_ID_UUID, VALID_DATE, TicketType.FULL_DAY);
-        tickets.put(DEFAULT_VISITOR_ID_UUID, new Ticket[DAYS_IN_YEAR]);
-        tickets.get(DEFAULT_VISITOR_ID_UUID)[VALID_DATE - 1] = ticket;
+        tickets.put(DEFAULT_VISITOR_ID_UUID, new HashMap<>());
+        tickets.get(DEFAULT_VISITOR_ID_UUID).put(VALID_DATE, ticket);
+
         AddTicketRequest request = AddTicketRequest.newBuilder()
                 .setVisitorId(DEFAULT_VISITOR_ID_STRING)
                 .setDayOfYear(VALID_DATE)
@@ -303,15 +301,16 @@ public class AdminServiceImplTest {
 
         Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID_UUID));
         Assert.assertEquals(1, tickets.size());
-        Assert.assertEquals(DAYS_IN_YEAR, tickets.get(DEFAULT_VISITOR_ID_UUID).length);
-        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID)[VALID_DATE - 1], ticket);
+        Assert.assertEquals(1, tickets.get(DEFAULT_VISITOR_ID_UUID).size());
+        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID).get(VALID_DATE), ticket);
     }
 
     @Test
     public void testAddOtherPassForSameDate() {
         Ticket ticket = new Ticket(DEFAULT_VISITOR_ID_UUID, VALID_DATE, TicketType.FULL_DAY);
-        tickets.put(DEFAULT_VISITOR_ID_UUID, new Ticket[DAYS_IN_YEAR]);
-        tickets.get(DEFAULT_VISITOR_ID_UUID)[VALID_DATE - 1] = ticket;
+        tickets.put(DEFAULT_VISITOR_ID_UUID, new HashMap<>());
+        tickets.get(DEFAULT_VISITOR_ID_UUID).put(VALID_DATE, ticket);
+
         AddTicketRequest request = AddTicketRequest.newBuilder()
                 .setVisitorId(DEFAULT_VISITOR_ID_STRING)
                 .setDayOfYear(VALID_DATE)
@@ -322,15 +321,15 @@ public class AdminServiceImplTest {
 
         Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID_UUID));
         Assert.assertEquals(1, tickets.size());
-        Assert.assertEquals(DAYS_IN_YEAR, tickets.get(DEFAULT_VISITOR_ID_UUID).length);
-        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID)[VALID_DATE - 1], ticket);
+        Assert.assertEquals(1, tickets.get(DEFAULT_VISITOR_ID_UUID).size());
+        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID).get(VALID_DATE), ticket);
     }
 
     @Test
     public void testAddTicketForOtherDay() {
         Ticket ticket = new Ticket(DEFAULT_VISITOR_ID_UUID, VALID_DATE, TicketType.FULL_DAY);
-        tickets.put(DEFAULT_VISITOR_ID_UUID, new Ticket[DAYS_IN_YEAR]);
-        tickets.get(DEFAULT_VISITOR_ID_UUID)[VALID_DATE - 1] = ticket;
+        tickets.put(DEFAULT_VISITOR_ID_UUID, new HashMap<>());
+        tickets.get(DEFAULT_VISITOR_ID_UUID).put(VALID_DATE, ticket);
 
         AddTicketRequest request = AddTicketRequest.newBuilder()
                 .setVisitorId(DEFAULT_VISITOR_ID_STRING)
@@ -342,93 +341,11 @@ public class AdminServiceImplTest {
 
         Assert.assertTrue(tickets.containsKey(DEFAULT_VISITOR_ID_UUID));
         Assert.assertEquals(1, tickets.size());
-        Assert.assertEquals(DAYS_IN_YEAR, tickets.get(DEFAULT_VISITOR_ID_UUID).length);
-        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID)[VALID_DATE - 1], ticket);
-        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID)[OTHER_VALID_DATE - 1].getVisitorId(), DEFAULT_VISITOR_ID_UUID);
-        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID)[OTHER_VALID_DATE - 1].getDayOfYear(), OTHER_VALID_DATE);
-        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID)[OTHER_VALID_DATE - 1].getTicketType(), TicketType.FULL_DAY);
+        Assert.assertEquals(2, tickets.get(DEFAULT_VISITOR_ID_UUID).size());
+        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID).get(VALID_DATE), ticket);
+        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID).get(OTHER_VALID_DATE).getVisitorId(), DEFAULT_VISITOR_ID_UUID);
+        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID).get(OTHER_VALID_DATE).getDayOfYear(), OTHER_VALID_DATE);
+        Assert.assertEquals(tickets.get(DEFAULT_VISITOR_ID_UUID).get(OTHER_VALID_DATE).getTicketType(), TicketType.FULL_DAY);
     }
-
-//    @Test
-//    public void testAddCapacity() {
-//        CapacityRequest request = CapacityRequest.newBuilder()
-//                .setAttractionName(ATTRACTION_NAME)
-//                .setDayOfYear(VALID_DATE)
-//                .setCapacity(VALID_CAPACITY)
-//                .build();
-//
-//        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-//        attractions.put(ATTRACTION_NAME, attraction);
-//
-//        adminService.addCapacity(request, capacityResponseObserver);
-//
-//        Optional<Integer> capacity = attraction.getCapacityByDate(LocalDate.parse(VALID_DATE, formatter));
-//        Assert.assertTrue(capacity.isPresent());
-//        Assert.assertEquals(10, capacity.get().intValue());
-//    }
-//
-//    @Test
-//    public void testAddCapacityWithOtherAttractionName() {
-//        CapacityRequest request = CapacityRequest.newBuilder()
-//                .setAttractionName(ANOTHER_ATTRACTION_NAME)
-//                .setDayOfYear(VALID_DATE)
-//                .setCapacity(VALID_CAPACITY)
-//                .build();
-//
-//        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-//        attractions.put(ATTRACTION_NAME, attraction);
-//
-//        adminService.addCapacity(request, capacityResponseObserver);
-//
-//        Assert.assertFalse(attraction.getCapacityByDate(LocalDate.parse(VALID_DATE, formatter)).isPresent());
-//    }
-//
-//    @Test
-//    public void testAddCapacityWithInvalidDate() {
-//        CapacityRequest request = CapacityRequest.newBuilder()
-//                .setAttractionName(ATTRACTION_NAME)
-//                .setDayOfYear(INVALID_DATE)
-//                .setCapacity(VALID_CAPACITY)
-//                .build();
-//
-//        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-//        attractions.put(ATTRACTION_NAME, attraction);
-//
-//        adminService.addCapacity(request, capacityResponseObserver);
-//
-//        Assert.assertEquals(0, attraction.getAmountOfDatesWithCapacitySet());
-//    }
-//
-//    @Test
-//    public void testAddCapacityWithInvalidDateFormat() {
-//        CapacityRequest request = CapacityRequest.newBuilder()
-//                .setAttractionName(ATTRACTION_NAME)
-//                .setDayOfYear(INVALID_DATE_FORMAT)
-//                .setCapacity(VALID_CAPACITY)
-//                .build();
-//
-//        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-//        attractions.put(ATTRACTION_NAME, attraction);
-//
-//        adminService.addCapacity(request, capacityResponseObserver);
-//
-//        Assert.assertEquals(0, attraction.getAmountOfDatesWithCapacitySet());
-//    }
-//
-//    @Test
-//    public void testAddCapacityWithInvalidCapacity() {
-//        CapacityRequest request = CapacityRequest.newBuilder()
-//                .setAttractionName(ATTRACTION_NAME)
-//                .setDayOfYear(VALID_DATE)
-//                .setCapacity(INVALID_CAPACITY)
-//                .build();
-//
-//        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-//        attractions.put(ATTRACTION_NAME, attraction);
-//
-//        adminService.addCapacity(request, capacityResponseObserver);
-//
-//        Assert.assertFalse(attraction.getCapacityByDate(LocalDate.parse(VALID_DATE, formatter)).isPresent());
-//    }
 
 }

@@ -4,14 +4,19 @@ import ar.edu.itba.pod.grpc.server.models.*;
 
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler {
 
     private final Map<String, Attraction> attractions;
-    private final Map<UUID, Ticket[]> tickets;
-    private static final int DAYS_OF_THE_YEAR = 365;
+    private final Map<UUID, Map<Integer, Ticket>> tickets;
 
-    public DataHandler(Map<String, Attraction> attractions, Map<UUID, Ticket[]> tickets) {
+    public DataHandler() {
+        this.attractions = new ConcurrentHashMap<>();
+        this.tickets = new ConcurrentHashMap<>();
+    }
+
+    public DataHandler(Map<String, Attraction> attractions, Map<UUID, Map<Integer, Ticket>> tickets) {
         this.attractions = attractions;
         this.tickets = tickets;
     }
@@ -39,27 +44,20 @@ public class DataHandler {
     }
 
     public boolean addTicket(UUID visitorId, int dayOfYear, TicketType ticketType) {
-        // TODO: Inefficient handling of tickets. A user might only visit a few days a year, there's no reason to make
-        // this an array. Consider replacing for a map.
-        // Issue: This code creates a new ticket array each time, whether it already exists or not
-        this.tickets.putIfAbsent(visitorId, new Ticket[DAYS_OF_THE_YEAR]);
-        Ticket[] visitorTickets = tickets.get(visitorId);
-        Ticket ticket = visitorTickets[dayOfYear - 1];
-
-        if (ticket == null || !ticket.getVisitorId().equals(visitorId)) {
-            visitorTickets[dayOfYear - 1] = new Ticket(visitorId, dayOfYear, ticketType);
-            return true;
+        Map<Integer, Ticket> visitorTickets = tickets.computeIfAbsent(visitorId, k -> new HashMap<>());
+        if (visitorTickets.containsKey(dayOfYear)){
+            return false;
         }
-
-        return false;
+        visitorTickets.put(dayOfYear, new Ticket(visitorId, dayOfYear, ticketType));
+        return true;
     }
 
     public boolean visitorHasTicketForDay(UUID visitorId, int dayOfYear) {
-        return tickets.containsKey(visitorId) && tickets.get(visitorId)[dayOfYear - 1] != null;
+        return tickets.containsKey(visitorId) && tickets.get(visitorId).containsKey(dayOfYear);
     }
 
     public boolean visitorCanBookForDay(UUID visitorId, int dayOfYear, LocalTime slotTime) {
-        return visitorHasTicketForDay(visitorId, dayOfYear) && tickets.get(visitorId)[dayOfYear - 1].canBook(slotTime);
+        return visitorHasTicketForDay(visitorId, dayOfYear) && tickets.get(visitorId).get(dayOfYear).canBook(slotTime);
     }
 
     public MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
@@ -67,9 +65,9 @@ public class DataHandler {
         if (attraction == null)
             return MakeReservationResult.ATTRACTION_NOT_FOUND;
 
-        Ticket[] arr = tickets.get(visitorId);
+        Map<Integer, Ticket> visitorTickets = tickets.get(visitorId);
         Ticket ticket;
-        if (arr == null || (ticket = arr[dayOfYear]) == null)
+        if (visitorTickets == null || (ticket = visitorTickets.get(dayOfYear)) == null)
             return MakeReservationResult.MISSING_PASS;
 
         // TODO: Increment "bookings" count in the ticket in a thread-safe and transactional manner. THIS IS NOT OK.
