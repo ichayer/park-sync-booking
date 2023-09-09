@@ -1,7 +1,6 @@
 package ar.edu.itba.pod.grpc.queriesClient.actions;
 
 import ar.edu.itba.pod.grpc.*;
-import ar.edu.itba.pod.grpc.bookingClient.actions.CancelAction;
 import ar.edu.itba.pod.grpc.exceptions.ServerErrorReceived;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

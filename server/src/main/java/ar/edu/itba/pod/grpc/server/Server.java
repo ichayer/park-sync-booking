@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.grpc.server;
 
+import ar.edu.itba.pod.grpc.server.exceptions.ExceptionHandler;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
@@ -18,6 +19,7 @@ public class Server {
         AttractionHandler attractionHandler = new AttractionHandler();
         int port = 50051;
         io.grpc.Server server = ServerBuilder.forPort(port)
+                .intercept(new ExceptionHandler())
                 .addService(new AdminServiceImpl(attractionHandler))
                 .addService(new BookingServiceImpl(attractionHandler))
                 .build()
