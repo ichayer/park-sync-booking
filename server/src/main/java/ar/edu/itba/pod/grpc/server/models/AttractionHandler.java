@@ -1,42 +1,39 @@
-package ar.edu.itba.pod.grpc.server.services;
-
-import ar.edu.itba.pod.grpc.server.models.*;
+package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DataHandler {
+public class AttractionHandler {
 
     private final Map<String, Attraction> attractions;
     private final Map<UUID, Map<Integer, Ticket>> tickets;
 
-    public DataHandler() {
+    public AttractionHandler() {
         this.attractions = new ConcurrentHashMap<>();
         this.tickets = new ConcurrentHashMap<>();
     }
 
-    public DataHandler(Map<String, Attraction> attractions, Map<UUID, Map<Integer, Ticket>> tickets) {
+    /**
+     * Creates a AttractionHandler with the given attraction and ticket maps. This constructor is intended only for testing.
+     * Use the default constructor for everything else.
+     */
+    public AttractionHandler(Map<String, Attraction> attractions, Map<UUID, Map<Integer, Ticket>> tickets) {
         this.attractions = attractions;
         this.tickets = tickets;
     }
 
-    public boolean addAttraction(String attractionName, Attraction attraction) {
+    public boolean createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
+        Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration);
         return this.attractions.putIfAbsent(attractionName, attraction) == null;
     }
 
-    public boolean isSlotTimeValidForAttraction(String attractionName, int dayOfYear, LocalTime slotTime) {
+    public DefineSlotCapacityResult setSlotCapacityForAttraction(String attractionName, int dayOfYear, int slotCapacity) {
         Attraction attraction = attractions.get(attractionName);
-        return attraction != null && attraction.isSlotTimeValid(dayOfYear, slotTime);
-    }
+        if (attraction == null)
+            return DefineSlotCapacityResult.ATTRACTION_NOT_FOUND;
 
-    public boolean containsAttraction(String attractionName) {
-        return attractions.containsKey(attractionName);
-    }
-
-    public boolean setSlotCapacityForAttraction(String attractionName, int dayOfYear, int slotCapacity) {
-        Attraction attraction = attractions.get(attractionName);
-        return attraction != null && attraction.attemptToSetSlotCapacity(dayOfYear, slotCapacity);
+        return attraction.trySetSlotCapacity(dayOfYear, slotCapacity);
     }
 
     public Collection<Attraction> getAttractions() {

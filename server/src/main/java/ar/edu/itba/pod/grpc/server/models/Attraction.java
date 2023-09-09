@@ -2,7 +2,6 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalTime;
 import java.util.Objects;
-import java.util.UUID;
 
 public class Attraction {
     private static final int DAYS_OF_THE_YEAR = 365;
@@ -40,18 +39,16 @@ public class Attraction {
         return slotDuration;
     }
 
-    public synchronized boolean attemptToSetSlotCapacity(int dayOfYear, int slotCapacity) {
-        boolean isReservationHandlerUninitialized = reservationHandlers[dayOfYear - 1] == null;
-        if (isReservationHandlerUninitialized) {
-            reservationHandlers[dayOfYear - 1] = new ReservationHandler(this, dayOfYear);
-            reservationHandlers[dayOfYear - 1].defineSlotCapacity(slotCapacity);
+    public DefineSlotCapacityResult trySetSlotCapacity(int dayOfYear, int slotCapacity) {
+        ReservationHandler reservationHandler;
+        synchronized (this) {
+            reservationHandler = reservationHandlers[dayOfYear - 1];
+            if (reservationHandler == null) {
+                reservationHandler = reservationHandlers[dayOfYear - 1] = new ReservationHandler(this, dayOfYear);
+            }
         }
-        return isReservationHandlerUninitialized;
-    }
 
-    public boolean isSlotTimeValid(int dayOfYear, LocalTime slotTime) {
-        ReservationHandler handler = reservationHandlers[dayOfYear - 1];
-        return handler != null && handler.isSlotTimeValid(slotTime);
+        return reservationHandler.defineSlotCapacity(slotCapacity);
     }
 
     public MakeReservationResult makeReservation(Ticket ticket, LocalTime slotTime) {

@@ -21,4 +21,8 @@ public final class LocalTimeUtils {
             return Optional.empty();
         }
     }
+
+    public static String formatTime(LocalTime time) {
+        return slotTimeFormatter.format(time);
+    }
 }

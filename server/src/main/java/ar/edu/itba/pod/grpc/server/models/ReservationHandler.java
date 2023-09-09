@@ -132,13 +132,17 @@ public class ReservationHandler {
      * Sets the slot capacity, if it isn't already set.
      * @throws IllegalStateException if slot capacity is already defined.
      */
-    public synchronized void defineSlotCapacity(int slotCapacity) {
+    public synchronized DefineSlotCapacityResult defineSlotCapacity(int slotCapacity) {
         if (this.slotCapacity != -1)
-            throw new IllegalStateException("Cannot define slot capacity when already defined");
+            return DefineSlotCapacityResult.CAPACITY_ALREADY_SET;
 
         this.slotCapacity = slotCapacity;
 
         // Apply the reservation relocation algorithm to confirm the pending requests into the slots, or relocate.
+
+        int bookingsConfirmed = 0;
+        int bookingsRelocated = 0;
+        int bookingsCancelled = 0;
 
         for (int slotIndex = 0; slotIndex < slotPendingRequests.length; slotIndex++) {
             Queue<Reservation> requests = slotPendingRequests[slotIndex];
@@ -151,6 +155,7 @@ public class ReservationHandler {
             Reservation next;
             while (confirmed.size() < slotCapacity && (next = requests.poll()) != null) {
                 confirmed.put(next.getVisitorId(), next);
+                bookingsConfirmed++;
                 // TODO: Alert that the request was confirmed.
             }
         }
@@ -186,11 +191,15 @@ public class ReservationHandler {
 
                 if (relocated) {
                     // TODO: Alert that the request was relocated.
+                    bookingsRelocated++;
                 } else {
                     // TODO: Alert that the request was cancelled.
+                    bookingsCancelled++;
                 }
             }
         }
+
+        return new DefineSlotCapacityResult(DefineSlotCapacityResult.Status.SUCCESS, bookingsConfirmed, bookingsRelocated, bookingsCancelled);
     }
 
     /**
@@ -214,7 +223,7 @@ public class ReservationHandler {
             Reservation reservation = new Reservation(ticket, attraction, slotTime, false);
             // TODO: Notify new pending reservation created.
             getOrCreateSlotPendingRequests(slotIndex).add(reservation);
-            return new MakeReservationResult(MakeReservationResult.MakeReservationStatus.QUEUED, reservation);
+            return new MakeReservationResult(MakeReservationResult.Status.QUEUED, reservation);
         }
 
         // Slot capacity has been defined, attempt the reservation right now.
@@ -227,7 +236,7 @@ public class ReservationHandler {
         boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), reservation) == null;
         if (success) {
             //  TODO: Notify new confirmed reservation created.
-            return new MakeReservationResult(MakeReservationResult.MakeReservationStatus.CONFIRMED, reservation);
+            return new MakeReservationResult(MakeReservationResult.Status.CONFIRMED, reservation);
         }
 
         return MakeReservationResult.ALREADY_EXISTS;

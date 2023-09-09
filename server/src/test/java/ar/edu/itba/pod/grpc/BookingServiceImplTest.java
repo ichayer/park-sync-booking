@@ -2,12 +2,11 @@ package ar.edu.itba.pod.grpc;
 
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
-import ar.edu.itba.pod.grpc.server.services.DataHandler;
+import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -17,7 +16,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
 
 import java.time.LocalTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,8 +27,8 @@ public class BookingServiceImplTest {
     private static final LocalTime TIME_TO = LocalTime.of(18, 0);
     private static final Map<String, Attraction> attractions = new ConcurrentHashMap<>();
     private static final Map<UUID, Map<Integer, Ticket>> tickets = new ConcurrentHashMap<>();
-    private static final DataHandler dataHandler = new DataHandler(attractions, tickets);
-    private static final BookingServiceImpl bookingService = new BookingServiceImpl(dataHandler);
+    private static final AttractionHandler ATTRACTION_HANDLER = new AttractionHandler(attractions, tickets);
+    private static final BookingServiceImpl bookingService = new BookingServiceImpl(ATTRACTION_HANDLER);
     @Mock
     private static StreamObserver<ReservationResponse> reservationResponseObserver;
     @Mock

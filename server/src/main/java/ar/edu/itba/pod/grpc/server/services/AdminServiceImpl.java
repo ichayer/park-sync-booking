@@ -1,7 +1,8 @@
 package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
-import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.models.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
 import com.google.protobuf.BoolValue;
@@ -13,24 +14,27 @@ import java.util.UUID;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
-    private final DataHandler dataHandler;
+    private final AttractionHandler attractionHandler;
 
-    public AdminServiceImpl(DataHandler dataHandler) {
-        this.dataHandler = dataHandler;
+    public AdminServiceImpl(AttractionHandler attractionHandler) {
+        this.attractionHandler = attractionHandler;
     }
 
     @Override
     public void addAttraction(AddAttractionRequest request, StreamObserver<BoolValue> responseObserver) {
-        boolean success = false;
         String attractionName = request.getName();
         Optional<LocalTime> openTime = LocalTimeUtils.parseTimeOrEmpty(request.getOpeningTime());
         Optional<LocalTime> closeTime = LocalTimeUtils.parseTimeOrEmpty(request.getClosingTime());
-        int slotGap = request.getSlotDurationMinutes();
+        int slotDuration = request.getSlotDurationMinutes();
 
-        if (openTime.isPresent() && closeTime.isPresent() && isValidAddAttractionRequest(attractionName, openTime.get(), closeTime.get(), slotGap)) {
-            Attraction attraction = new Attraction(attractionName, openTime.get(), closeTime.get(), slotGap);
-            success = dataHandler.addAttraction(attractionName, attraction);
+        if (openTime.isEmpty() || closeTime.isEmpty() || slotDuration <= 0 || openTime.get().isAfter(closeTime.get()) || attractionName.isEmpty()) {
+            responseObserver.onNext(BoolValue.newBuilder().setValue(false).build());
+            responseObserver.onCompleted();
+            return;
         }
+
+        boolean success = attractionHandler.createAttraction(attractionName, openTime.get(), closeTime.get(), slotDuration);
+
         responseObserver.onNext(BoolValue.newBuilder().setValue(success).build());
         responseObserver.onCompleted();
     }
@@ -43,7 +47,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
         if (dayOfYear >= 1 && dayOfYear <= 365 && ticketType.isPresent()) {
             UUID visitorId = UUID.fromString(request.getVisitorId());
-            success = dataHandler.addTicket(visitorId, dayOfYear, ticketType.get());
+            success = attractionHandler.addTicket(visitorId, dayOfYear, ticketType.get());
         }
 
         responseObserver.onNext(BoolValue.newBuilder().setValue(success).build());
@@ -53,36 +57,33 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
     @Override
     public void addCapacity(AddCapacityRequest request, StreamObserver<AddCapacityResponse> responseObserver) {
         AddCapacityStatus status = null;
-        int confirmedBookings = 0, relocatedBookings = 0, cancelledBookings = 0;
 
-        if (!dataHandler.containsAttraction(request.getAttractionName())) {
-            status = AddCapacityStatus.ADD_CAPACITY_STATUS_NOT_EXISTS;
-        } else if (request.getDayOfYear() < 1 || request.getDayOfYear() > 365) {
+        if (request.getDayOfYear() < 1 || request.getDayOfYear() > 365) {
             status = AddCapacityStatus.ADD_CAPACITY_STATUS_INVALID_DAY;
         } else if (request.getCapacity() < 0) {
             status = AddCapacityStatus.ADD_CAPACITY_STATUS_NEGATIVE_CAPACITY;
-        } else {
-            boolean success = dataHandler.setSlotCapacityForAttraction(request.getAttractionName(), request.getDayOfYear(), request.getCapacity());
-            if (success) {
-                status = AddCapacityStatus.ADD_CAPACITY_STATUS_SUCCESS;
-                // TODO: Set confirmedBookings, relocatedBookings, cancelledBookings variables.
-            } else {
-                status = AddCapacityStatus.ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED;
-            }
         }
 
+        if (status != null) {
+            responseObserver.onNext(AddCapacityResponse.newBuilder().setStatus(status).build());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        DefineSlotCapacityResult result = attractionHandler.setSlotCapacityForAttraction(request.getAttractionName(), request.getDayOfYear(), request.getCapacity());
+
+        status = switch (result.status()) {
+            case SUCCESS -> AddCapacityStatus.ADD_CAPACITY_STATUS_SUCCESS;
+            case CAPACITY_ALREADY_SET -> AddCapacityStatus.ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED;
+            case ATTRACTION_NOT_FOUND -> AddCapacityStatus.ADD_CAPACITY_STATUS_NOT_EXISTS;
+        };
+
         responseObserver.onNext(AddCapacityResponse.newBuilder()
-                .setCancelledBookings(cancelledBookings)
-                .setConfirmedBookings(confirmedBookings)
-                .setRelocatedBookings(relocatedBookings)
                 .setStatus(status)
+                .setCancelledBookings(result.bookingsCancelled())
+                .setConfirmedBookings(result.bookingsConfirmed())
+                .setRelocatedBookings(result.bookingsRelocated())
                 .build());
         responseObserver.onCompleted();
-    }
-
-    private boolean isValidAddAttractionRequest(String attractionName, LocalTime openTime, LocalTime closeTime, int slotGap) {
-        return !attractionName.isEmpty() &&
-                slotGap > 0 && slotGap <= 60 &&
-                openTime.isBefore(closeTime);
     }
 }

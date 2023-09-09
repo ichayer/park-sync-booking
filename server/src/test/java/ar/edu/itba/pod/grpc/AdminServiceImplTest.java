@@ -1,10 +1,10 @@
 package ar.edu.itba.pod.grpc;
 
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
-import ar.edu.itba.pod.grpc.server.services.DataHandler;
 import com.google.protobuf.BoolValue;
 import io.grpc.stub.StreamObserver;
 import org.junit.Assert;
@@ -51,8 +51,8 @@ public class AdminServiceImplTest {
     private final Map<String, Attraction> attractions = new ConcurrentHashMap<>();
     private final Map<UUID, Map<Integer, Ticket>> tickets = new ConcurrentHashMap<>();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-    private final DataHandler dataHandler = new DataHandler(attractions, tickets);
-    private final AdminServiceImpl adminService = new AdminServiceImpl(dataHandler);
+    private final AttractionHandler attractionHandler = new AttractionHandler(attractions, tickets);
+    private final AdminServiceImpl adminService = new AdminServiceImpl(attractionHandler);
     @Mock
     private StreamObserver<BoolValue> booleanResponseObserver;
     @Mock

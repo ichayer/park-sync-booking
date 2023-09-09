@@ -2,6 +2,7 @@ package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
 import com.google.protobuf.Empty;
@@ -12,21 +13,21 @@ import java.util.*;
 
 public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBase {
 
-    private final DataHandler dataHandler;
+    private final AttractionHandler attractionHandler;
 
-    public BookingServiceImpl(DataHandler dataHandler) {
-        this.dataHandler = dataHandler;
+    public BookingServiceImpl(AttractionHandler attractionHandler) {
+        this.attractionHandler = attractionHandler;
     }
 
     @Override
     public void getAttractions(Empty request, StreamObserver<GetAttractionsResponse> responseObserver) {
-        Collection<Attraction> attractions = dataHandler.getAttractions();
+        Collection<Attraction> attractions = attractionHandler.getAttractions();
 
         Collection<ar.edu.itba.pod.grpc.Attraction> attractionsDto = attractions.stream()
                 .map(attraction -> ar.edu.itba.pod.grpc.Attraction.newBuilder()
                         .setName(attraction.getName())
-                        .setClosingTime(attraction.getClosingTime().toString())
-                        .setOpeningTime(attraction.getOpeningTime().toString())
+                        .setClosingTime(LocalTimeUtils.formatTime(attraction.getClosingTime()))
+                        .setOpeningTime(LocalTimeUtils.formatTime(attraction.getOpeningTime()))
                         .build()).toList();
 
         responseObserver.onNext(GetAttractionsResponse.newBuilder().addAllAttraction(attractionsDto).build());
@@ -47,18 +48,18 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
             status = CheckAvailabilityStatus.CHECK_AVAILABILITY_INVALID_DAY;
         } else if (slotFrom.isEmpty() || (slotTo.isPresent() && slotFrom.get().isAfter(slotTo.get()))) {
             status = CheckAvailabilityStatus.CHECK_AVAILABILITY_INVALID_SLOT;
-        } else if (!attractionName.isEmpty() && !dataHandler.containsAttraction(attractionName)) {
+        } else if (!attractionName.isEmpty() /*&& !attractionHandler.containsAttraction(attractionName)*/) {
             status = CheckAvailabilityStatus.CHECK_AVAILABILITY_ATTRACTION_NOT_FOUND;
         }
 
         // TODO: Implement methods
         if (status != null) {
             if (!attractionName.isEmpty() && slotTo.isPresent()) {
-                // availabilitySlots.addAll(dataHandler.getAvailabilityForAttraction(attractionName, dayOfYear, slotFrom.get(), slotTo.get()));
+                // availabilitySlots.addAll(attractionHandler.getAvailabilityForAttraction(attractionName, dayOfYear, slotFrom.get(), slotTo.get()));
             } else if (attractionName.isEmpty() && slotTo.isPresent()) {
-                // availabilitySlots.addAll(dataHandler.getAvailabilityForAllAttractions(dayOfYear, slotFrom.get(), slotTo.get()));
+                // availabilitySlots.addAll(attractionHandler.getAvailabilityForAllAttractions(dayOfYear, slotFrom.get(), slotTo.get()));
             } else if (!attractionName.isEmpty()) {
-                // availabilitySlots.addAll(dataHandler.getAvailabilityForSingleSlot(attractionName, dayOfYear, slotFrom.get()));
+                // availabilitySlots.addAll(attractionHandler.getAvailabilityForSingleSlot(attractionName, dayOfYear, slotFrom.get()));
             } else {
                 status = CheckAvailabilityStatus.CHECK_AVAILABILITY_UNKNOWN;
             }
@@ -90,7 +91,7 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
         }
 
         BookingState bookingState;
-        MakeReservationResult result = dataHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
+        MakeReservationResult result = attractionHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
         if (result.isSuccess()) {
             status = ReservationStatus.BOOKING_STATUS_SUCCESS;
             bookingState = switch (result.status()) {
