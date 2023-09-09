@@ -50,7 +50,34 @@ public class ReservationHandler {
      */
     private final Queue<Reservation>[] slotPendingRequests;
 
+    /**
+     * Creates a new ReservationHandler for the given attraction and day of year.
+     */
     public ReservationHandler(Attraction attraction, int dayOfYear) {
+        this.attraction = Objects.requireNonNull(attraction);
+        this.dayOfYear = dayOfYear;
+
+        LocalTime openingTime = attraction.getOpeningTime();
+        LocalTime closingTime = attraction.getClosingTime();
+        int slotDuration = attraction.getSlotDuration();
+        this.firstSlotMinuteOfDay = openingTime.getMinute() + openingTime.getHour() * 60;
+
+        // slotCount is calculated as: slotCount = ceiling(totalMinutesOpen / slotDuration)
+        int closingTimeMinuteOfDay = closingTime.getMinute() + closingTime.getHour() * 60;
+        this.slotCount = (closingTimeMinuteOfDay - firstSlotMinuteOfDay + slotDuration - 1) / slotDuration;
+        if (this.slotCount <= 0)
+            throw new IllegalArgumentException("The attraction must have at least one time slot");
+
+        this.slotConfirmedRequests = (Map<UUID, Reservation>[]) new Map[slotCount];
+        this.slotPendingRequests = (Queue<Reservation>[]) new Queue[slotCount];
+    }
+
+    /**
+     * Creates a new ReservationHandler for the given attraction and day of year, and includes the internal confirmed
+     * and pending data structures.
+     * THIS CONSTRUCTOR IS INTENDED ONLY FOR TESTING. Use the other constructor for everything else.
+     */
+    public ReservationHandler(Attraction attraction, int dayOfYear, Map<UUID, Reservation>[] slotConfirmedRequests, Queue<Reservation>[] slotPendingRequests) {
         this.attraction = Objects.requireNonNull(attraction);
         this.dayOfYear = dayOfYear;
 
@@ -65,8 +92,8 @@ public class ReservationHandler {
         if (this.slotCount <= 0)
             throw new IllegalArgumentException("The attraction must have at least one time slot");
 
-        this.slotConfirmedRequests = (Map<UUID, Reservation>[]) new Map[slotCount];
-        this.slotPendingRequests = (Queue<Reservation>[]) new Queue[slotCount];
+        this.slotConfirmedRequests = slotConfirmedRequests;
+        this.slotPendingRequests = slotPendingRequests;
     }
 
     private Map<UUID, Reservation> getOrCreateSlotConfirmedRequests(int slotIndex) {
@@ -116,6 +143,10 @@ public class ReservationHandler {
 
     public int getDayOfYear() {
         return dayOfYear;
+    }
+
+    public int getSlotCount() {
+        return slotCount;
     }
 
     /**

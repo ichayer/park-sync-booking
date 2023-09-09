@@ -5,10 +5,8 @@ import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
-import ar.edu.itba.pod.grpc.server.utils.Constants;
 import com.google.protobuf.BoolValue;
 import io.grpc.stub.StreamObserver;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -19,6 +17,8 @@ import java.time.LocalTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AdminServiceImplTest {
@@ -70,7 +70,7 @@ public class AdminServiceImplTest {
                 .build();
 
         adminService.addAttraction(request, booleanResponseObserver);
-        Assert.assertTrue(attractions.containsKey(ATTRACTION_NAME));
+        assertTrue(attractions.containsKey(ATTRACTION_NAME));
     }
 
     @Test
@@ -87,9 +87,9 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.containsKey(ATTRACTION_NAME));
-        Assert.assertTrue(attractions.containsKey(ANOTHER_ATTRACTION_NAME));
-        Assert.assertEquals(2, attractions.size());
+        assertTrue(attractions.containsKey(ATTRACTION_NAME));
+        assertTrue(attractions.containsKey(ANOTHER_ATTRACTION_NAME));
+        assertEquals(2, attractions.size());
     }
 
     @Test
@@ -107,8 +107,8 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.containsKey(ATTRACTION_NAME));
-        Assert.assertEquals(1, attractions.size());
+        assertTrue(attractions.containsKey(ATTRACTION_NAME));
+        assertEquals(1, attractions.size());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -136,7 +136,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -150,7 +150,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -164,7 +164,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -178,7 +178,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -192,7 +192,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -206,7 +206,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -220,7 +220,7 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, booleanResponseObserver);
 
-        Assert.assertTrue(attractions.isEmpty());
+        assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -233,9 +233,9 @@ public class AdminServiceImplTest {
 
         adminService.addTicket(request, booleanResponseObserver);
 
-        Assert.assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        Assert.assertNotNull(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
-        Assert.assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
+        assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        assertNotNull(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
+        assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
     }
 
     @Test
@@ -249,7 +249,7 @@ public class AdminServiceImplTest {
         adminService.addTicket(request, booleanResponseObserver);
 
         for (int i = 0; i < ticketsByDay.length; i++)
-            Assert.assertTrue(ticketsByDay[i].isEmpty());
+            assertTrue(ticketsByDay[i].isEmpty());
     }
 
     @Test
@@ -263,7 +263,7 @@ public class AdminServiceImplTest {
         adminService.addTicket(request, booleanResponseObserver);
 
         for (int i = 0; i < ticketsByDay.length; i++)
-            Assert.assertTrue(ticketsByDay[i].isEmpty());
+            assertTrue(ticketsByDay[i].isEmpty());
     }
 
     @Test
@@ -279,9 +279,9 @@ public class AdminServiceImplTest {
 
         adminService.addTicket(request, booleanResponseObserver);
 
-        Assert.assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        Assert.assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
-        Assert.assertEquals(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID), ticket);
+        assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
+        assertEquals(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID), ticket);
     }
 
     @Test
@@ -297,9 +297,9 @@ public class AdminServiceImplTest {
 
         adminService.addTicket(request, booleanResponseObserver);
 
-        Assert.assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        Assert.assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
-        Assert.assertEquals(ticket, ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
+        assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
+        assertEquals(ticket, ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
     }
 
     @Test
@@ -315,13 +315,13 @@ public class AdminServiceImplTest {
 
         adminService.addTicket(request, booleanResponseObserver);
 
-        Assert.assertTrue(ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        Assert.assertEquals(1, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].size());
-        Assert.assertEquals(ticket, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
+        assertTrue(ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        assertEquals(1, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].size());
+        assertEquals(ticket, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
 
-        Assert.assertEquals(DEFAULT_VISITOR_ID_UUID, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getVisitorId());
-        Assert.assertEquals(OTHER_VALID_DAY_OF_YEAR, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getDayOfYear());
-        Assert.assertEquals(TicketType.FULL_DAY, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getTicketType());
+        assertEquals(DEFAULT_VISITOR_ID_UUID, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getVisitorId());
+        assertEquals(OTHER_VALID_DAY_OF_YEAR, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getDayOfYear());
+        assertEquals(TicketType.FULL_DAY, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getTicketType());
     }
 
 }

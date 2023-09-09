@@ -22,8 +22,8 @@ public class AttractionHandler {
     }
 
     /**
-     * Creates a AttractionHandler with the given attraction and ticket maps. This constructor is intended only for testing.
-     * Use the default constructor for everything else.
+     * Creates a AttractionHandler with the given attraction and ticket maps.
+     * THIS CONSTRUCTOR IS INTENDED ONLY FOR TESTING. Use the default constructor for everything else.
      */
     public AttractionHandler(ConcurrentMap<String, Attraction> attractions, ConcurrentMap<UUID, Ticket>[] ticketsByDay) {
         this.attractions = attractions;

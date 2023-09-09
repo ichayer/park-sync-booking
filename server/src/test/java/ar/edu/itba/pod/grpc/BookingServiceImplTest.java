@@ -5,7 +5,6 @@ import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -19,6 +18,8 @@ import java.time.LocalTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BookingServiceImplTest {
@@ -61,6 +62,6 @@ public class BookingServiceImplTest {
         Mockito.verify(attractionResponseObserver).onNext(responseCaptor.capture());
         GetAttractionsResponse capturedResponse = responseCaptor.getValue();
 
-        Assert.assertEquals(1, capturedResponse.getAttractionList().size());
+        assertEquals(1, capturedResponse.getAttractionList().size());
     }
 }
