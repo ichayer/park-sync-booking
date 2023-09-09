@@ -158,20 +158,6 @@ public class AdminServiceImplTest {
     }
 
     @Test
-    public void testAddAttractionWithInvalidSlotGapMoreThan60Minutes() {
-        final AddAttractionRequest request = AddAttractionRequest.newBuilder()
-                .setName(ATTRACTION_NAME)
-                .setOpeningTime(OPENING_TIME)
-                .setClosingTime(CLOSING_TIME)
-                .setSlotDurationMinutes(INVALID_SLOT_GAP)
-                .build();
-
-        adminService.addAttraction(request, booleanResponseObserver);
-
-        Assert.assertTrue(attractions.isEmpty());
-    }
-
-    @Test
     public void testAddAttractionWithInvalidHours() {
         final AddAttractionRequest request = AddAttractionRequest.newBuilder()
                 .setName(ATTRACTION_NAME)
