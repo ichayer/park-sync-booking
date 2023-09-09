@@ -2,28 +2,32 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class AttractionHandler {
 
-    private final Map<String, Attraction> attractions;
-    private final Map<UUID, Map<Integer, Ticket>> tickets;
+    private final ConcurrentMap<String, Attraction> attractions;
+    private final ConcurrentMap<UUID, Ticket>[] ticketsByDay;
 
     public AttractionHandler() {
         this.attractions = new ConcurrentHashMap<>();
-        this.tickets = new ConcurrentHashMap<>();
+        this.ticketsByDay = (ConcurrentMap<UUID, Ticket>[]) new ConcurrentMap[Constants.DAYS_IN_YEAR];
+        for (int i = 0; i < ticketsByDay.length; i++)
+            ticketsByDay[i] = new ConcurrentHashMap<>();
     }
 
     /**
      * Creates a AttractionHandler with the given attraction and ticket maps. This constructor is intended only for testing.
      * Use the default constructor for everything else.
      */
-    public AttractionHandler(Map<String, Attraction> attractions, Map<UUID, Map<Integer, Ticket>> tickets) {
+    public AttractionHandler(ConcurrentMap<String, Attraction> attractions, ConcurrentMap<UUID, Ticket>[] ticketsByDay) {
         this.attractions = attractions;
-        this.tickets = tickets;
+        this.ticketsByDay = ticketsByDay;
     }
 
     public boolean createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
@@ -44,20 +48,10 @@ public class AttractionHandler {
     }
 
     public boolean addTicket(UUID visitorId, int dayOfYear, TicketType ticketType) {
-        Map<Integer, Ticket> visitorTickets = tickets.computeIfAbsent(visitorId, k -> new HashMap<>());
-        if (visitorTickets.containsKey(dayOfYear)){
-            return false;
-        }
-        visitorTickets.put(dayOfYear, new Ticket(visitorId, dayOfYear, ticketType));
-        return true;
-    }
-
-    public boolean visitorHasTicketForDay(UUID visitorId, int dayOfYear) {
-        return tickets.containsKey(visitorId) && tickets.get(visitorId).containsKey(dayOfYear);
-    }
-
-    public boolean visitorCanBookForDay(UUID visitorId, int dayOfYear, LocalTime slotTime) {
-        return visitorHasTicketForDay(visitorId, dayOfYear) && tickets.get(visitorId).get(dayOfYear).canBook(slotTime);
+        ConcurrentMap<UUID, Ticket> visitorTickets = ticketsByDay[dayOfYear - 1];
+        Ticket ticket = new Ticket(visitorId, dayOfYear, ticketType);
+        boolean success = visitorTickets.putIfAbsent(visitorId, ticket) == null;
+        return success;
     }
 
     public MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
@@ -65,15 +59,17 @@ public class AttractionHandler {
         if (attraction == null)
             return MakeReservationResult.ATTRACTION_NOT_FOUND;
 
-        Map<Integer, Ticket> visitorTickets = tickets.get(visitorId);
-        Ticket ticket;
-        if (visitorTickets == null || (ticket = visitorTickets.get(dayOfYear)) == null)
+        Ticket ticket = ticketsByDay[dayOfYear - 1].get(visitorId);
+        if (ticket == null)
             return MakeReservationResult.MISSING_PASS;
 
-        // TODO: Increment "bookings" count in the ticket in a thread-safe and transactional manner. THIS IS NOT OK.
-        if (!ticket.attemptToBook(slotTime))
-            return MakeReservationResult.MISSING_PASS;
-
-        return attraction.makeReservation(ticket, slotTime);
+        synchronized (ticket) {
+            if (!ticket.canBook(slotTime))
+                return MakeReservationResult.MISSING_PASS;
+            MakeReservationResult result = attraction.tryMakeReservation(ticket, slotTime);
+            if (result.isSuccess())
+                ticket.addBook(slotTime);
+            return result;
+        }
     }
 }

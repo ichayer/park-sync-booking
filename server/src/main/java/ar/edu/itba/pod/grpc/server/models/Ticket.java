@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Ticket {
-
     private final UUID visitorId;
     private final int dayOfYear;
     private final TicketType ticketType;
@@ -22,13 +21,12 @@ public class Ticket {
         return this.ticketType.canBook(this.bookings, slotTime);
     }
 
-    public synchronized boolean attemptToBook(LocalTime slotTime) {
-        if (canBook(slotTime)) {
-            this.bookings++;
-            return true;
-        }
+    public void addBook(LocalTime slotTime) {
+        this.bookings++;
+    }
 
-        return false;
+    public void removeBook(LocalTime slotTime) {
+        this.bookings--;
     }
 
     public UUID getVisitorId() {

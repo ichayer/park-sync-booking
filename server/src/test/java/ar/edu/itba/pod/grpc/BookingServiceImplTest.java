@@ -16,19 +16,20 @@ import org.mockito.junit.MockitoJUnitRunner;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
 
 import java.time.LocalTime;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BookingServiceImplTest {
     private static final String ATTRACTION_NAME = "attractionName";
     private static final LocalTime TIME_FROM = LocalTime.of(10, 0);
     private static final LocalTime TIME_TO = LocalTime.of(18, 0);
-    private static final Map<String, Attraction> attractions = new ConcurrentHashMap<>();
-    private static final Map<UUID, Map<Integer, Ticket>> tickets = new ConcurrentHashMap<>();
-    private static final AttractionHandler ATTRACTION_HANDLER = new AttractionHandler(attractions, tickets);
-    private static final BookingServiceImpl bookingService = new BookingServiceImpl(ATTRACTION_HANDLER);
+    private static final ConcurrentMap<String, Attraction> attractions = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<UUID, Ticket>[] ticketsByDay = TestUtils.generateTicketsByDayMaps();
+
+    private final AttractionHandler attractionHandler = new AttractionHandler(attractions, ticketsByDay);
+    private final BookingServiceImpl bookingService = new BookingServiceImpl(attractionHandler);
     @Mock
     private static StreamObserver<ReservationResponse> reservationResponseObserver;
     @Mock
@@ -37,7 +38,8 @@ public class BookingServiceImplTest {
     @BeforeEach
     public void setUp() {
         attractions.clear();
-        tickets.clear();
+        for (int i = 0; i < ticketsByDay.length; i++)
+            ticketsByDay[i].clear();
     }
 
     // https://stackoverflow.com/questions/49871975/how-to-test-and-mock-a-grpc-service-written-in-java-using-mockito

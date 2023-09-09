@@ -2,13 +2,12 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
 import java.util.Objects;
 
 public class Attraction {
-    private static final int DAYS_OF_THE_YEAR = 365;
-
     private final String name;
     private final LocalTime openingTime;
     private final LocalTime closingTime;
@@ -20,7 +19,9 @@ public class Attraction {
         this.openingTime = Objects.requireNonNull(openingTime);
         this.closingTime = Objects.requireNonNull(closingTime);
         this.slotDuration = slotDuration;
-        this.reservationHandlers = new ReservationHandler[DAYS_OF_THE_YEAR];
+        this.reservationHandlers = new ReservationHandler[Constants.DAYS_IN_YEAR];
+        for (int i = 0; i < reservationHandlers.length; i++)
+            reservationHandlers[i] = new ReservationHandler(this, i + 1);
     }
 
     public String getName() {
@@ -42,19 +43,18 @@ public class Attraction {
         return slotDuration;
     }
 
+    /**
+     * Attempts to set slot capacity, failing if capacity is already set.
+     */
     public DefineSlotCapacityResult trySetSlotCapacity(int dayOfYear, int slotCapacity) {
-        ReservationHandler reservationHandler;
-        synchronized (this) {
-            reservationHandler = reservationHandlers[dayOfYear - 1];
-            if (reservationHandler == null) {
-                reservationHandler = reservationHandlers[dayOfYear - 1] = new ReservationHandler(this, dayOfYear);
-            }
-        }
-
+        ReservationHandler reservationHandler = reservationHandlers[dayOfYear - 1];
         return reservationHandler.defineSlotCapacity(slotCapacity);
     }
 
-    public MakeReservationResult makeReservation(Ticket ticket, LocalTime slotTime) {
+    /**
+     * Attempts to make a reservation for a given ticket (which includes visitorId and dayOfYear) and time slot.
+     */
+    public MakeReservationResult tryMakeReservation(Ticket ticket, LocalTime slotTime) {
         return reservationHandlers[ticket.getDayOfYear() - 1].makeReservation(ticket, slotTime);
     }
 }
