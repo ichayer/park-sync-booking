@@ -1,5 +1,8 @@
 package ar.edu.itba.pod.grpc.server.models;
 
+import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
+import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+
 import java.time.LocalTime;
 import java.util.Objects;
 

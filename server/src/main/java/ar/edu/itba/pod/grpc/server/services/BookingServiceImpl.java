@@ -3,7 +3,7 @@ package ar.edu.itba.pod.grpc.server.services;
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
-import ar.edu.itba.pod.grpc.server.models.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;

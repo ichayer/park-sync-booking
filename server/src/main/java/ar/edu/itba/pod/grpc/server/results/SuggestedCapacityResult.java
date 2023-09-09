@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.grpc.server.models;
+package ar.edu.itba.pod.grpc.server.results;
 
 import java.time.LocalTime;
 
