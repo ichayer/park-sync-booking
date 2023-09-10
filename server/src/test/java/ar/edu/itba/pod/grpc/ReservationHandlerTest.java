@@ -3,7 +3,9 @@ package ar.edu.itba.pod.grpc;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.models.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,10 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
@@ -27,7 +26,7 @@ public class ReservationHandlerTest {
     private static final LocalTime INVALID_TIME1 = LocalTime.of(16, 0);
     private static final int ATTRACTION_SLOT_DURATION1 = 50;
     private static final int DAY_OF_YEAR = 69;
-    private static final LocalTime[] VALID_TIME_SLOTS1 = new LocalTime[] {
+    private static final LocalTime[] VALID_TIME_SLOTS1 = new LocalTime[]{
             LocalTime.of(10, 0), LocalTime.of(10, 50), LocalTime.of(11, 40),
             LocalTime.of(12, 30), LocalTime.of(13, 20), LocalTime.of(14, 10),
             LocalTime.of(15, 0), LocalTime.of(15, 50)
@@ -39,7 +38,7 @@ public class ReservationHandlerTest {
     private static final LocalTime INVALID_TIME2 = LocalTime.of(10, 0);
     private static final int ATTRACTION_SLOT_DURATION2 = 30;
     private static final int ATTRACTION_SLOT_CAPACITY2 = 15;
-    private static final LocalTime[] VALID_TIME_SLOTS2 = new LocalTime[] {
+    private static final LocalTime[] VALID_TIME_SLOTS2 = new LocalTime[]{
             LocalTime.of(4, 0), LocalTime.of(4, 30), LocalTime.of(5, 0),
             LocalTime.of(5, 30), LocalTime.of(6, 0), LocalTime.of(6, 30),
             LocalTime.of(7, 0), LocalTime.of(7, 30), LocalTime.of(8, 0),
@@ -87,6 +86,7 @@ public class ReservationHandlerTest {
         when(attraction2.getSlotDuration()).thenReturn(ATTRACTION_SLOT_DURATION2);
         reservationHandler2 = new ReservationHandler(attraction2, DAY_OF_YEAR, ATTRACTION_SLOT_CAPACITY2, slotConfirmedRequests2, slotPendingRequests2);
     }
+
 
     @Test
     public void testSlotCountIncludesLastSlot() {
@@ -265,5 +265,148 @@ public class ReservationHandlerTest {
 
         assertTrue(slotPendingRequests1[3] == null || slotPendingRequests1[3].isEmpty());
         assertTrue(slotConfirmedRequests1[3] == null || slotConfirmedRequests1[3].isEmpty());
+    }
+
+    @Test
+    public void testSuggestedCapacitySlotCapacityAlreadyDefined() {
+
+        assertThrows(CapacityAlreadyDefinedException.class, () -> reservationHandler2.getSuggestedCapacity());
+
+    }
+
+    private ReservationHandler createReservationHandlerWithPendingRequests(List<Integer> pendingReservationsPerSlot) {
+        long user = 99999999;
+        for (int i = 0; i < slotPendingRequests1.length && i < pendingReservationsPerSlot.size(); ++i) {
+            slotPendingRequests1[i] = new LinkedHashMap<>();
+
+            for (int j = 0; j < pendingReservationsPerSlot.get(i); j++) {
+                UUID uuid = UUID.fromString(user-- + "-7dec-11d0-a765-00a0c91e6bf6");
+                slotPendingRequests1[i].put(uuid, new Reservation(new Ticket(uuid, DAY_OF_YEAR, TicketType.FULL_DAY), attraction1, VALID_TIME_SLOTS1[i], false));
+            }
+        }
+        return new ReservationHandler(attraction1, DAY_OF_YEAR, -1, slotConfirmedRequests1, slotPendingRequests1);
+    }
+
+    @Test
+    public void testSuggestedCapacityEqualFullySlots() {
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(Arrays.asList(3, 3, 3, 3, 3, 3, 3, 3));
+
+        SuggestedCapacityResult result = reservationHandler.getSuggestedCapacity();
+
+        assertEquals(3, result.maxPendingReservationCount());
+        assertEquals(VALID_TIME_SLOTS1[0], result.slotTime());
+    }
+
+    @Test
+    public void testSuggestedCapacityManySlots() {
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8));
+
+        SuggestedCapacityResult result = reservationHandler.getSuggestedCapacity();
+
+        assertEquals(8, result.maxPendingReservationCount());
+        assertEquals(VALID_TIME_SLOTS1[7], result.slotTime());
+    }
+
+    @Test
+    public void testSuggestedCapacityManySlots2() {
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(Arrays.asList(8, 7, 6, 5, 4, 3, 2, 1));
+
+        SuggestedCapacityResult result = reservationHandler.getSuggestedCapacity();
+
+        assertEquals(8, result.maxPendingReservationCount());
+        assertEquals(VALID_TIME_SLOTS1[0], result.slotTime());
+    }
+
+
+    @Test
+    public void testDefineSlotCapacityCapacityAlreadyDefined() {
+
+        assertThrows(CapacityAlreadyDefinedException.class, () -> reservationHandler2.defineSlotCapacity(50));
+    }
+
+    @Test
+    public void testDefineSlotCapacityAlgorithmAllFit() {
+        int capacity = 10;
+        List<Integer> pendingReservations = Arrays.asList(8, 7, 6, 5, 4, 3, 2, 1);
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(pendingReservations);
+
+        DefineSlotCapacityResult result = reservationHandler.defineSlotCapacity(capacity);
+
+        assertEquals(10, reservationHandler.getSlotCapacity());
+        assertEquals(pendingReservations.stream().mapToInt(Integer::intValue).sum(), result.bookingsConfirmed());
+        assertEquals(0, result.bookingsRelocated());
+        assertEquals(0, result.bookingsCancelled());
+    }
+
+    @Test
+    public void testDefineSlotCapacityAlgorithmSomeRelocatedOneSlot() {
+        int capacity = 10;
+        List<Integer> pendingReservations = Arrays.asList(11, 7, 12, 5, 12, 3, 2, 1);
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(pendingReservations);
+
+        DefineSlotCapacityResult result = reservationHandler.defineSlotCapacity(capacity);
+
+        assertEquals(10, reservationHandler.getSlotCapacity());
+        assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? num : capacity).sum(), result.bookingsConfirmed());
+        assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum(), result.bookingsRelocated());
+        assertEquals(0, result.bookingsCancelled());
+    }
+
+    @Test
+    public void testDefineSlotCapacityAlgorithmRelocateAllSlots() {
+        int capacity = 10;
+        List<Integer> pendingReservations = Arrays.asList(80, 0, 0, 0, 0, 0, 0, 0);
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(pendingReservations);
+
+        DefineSlotCapacityResult result = reservationHandler.defineSlotCapacity(capacity);
+
+        assertEquals(capacity, reservationHandler.getSlotCapacity());
+        assertEquals(10, result.bookingsConfirmed());
+        assertEquals(70, result.bookingsRelocated());
+        assertEquals(0, result.bookingsCancelled());
+    }
+
+    @Test
+    public void testDefineSlotCapacityAlgorithmCancelLast() {
+        int capacity = 10;
+        List<Integer> pendingReservations = Arrays.asList(81, 0, 0, 0, 0, 0, 0, 0);
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(pendingReservations);
+
+        DefineSlotCapacityResult result = reservationHandler.defineSlotCapacity(capacity);
+
+        assertEquals(capacity, reservationHandler.getSlotCapacity());
+        assertEquals(10, result.bookingsConfirmed());
+        assertEquals(70, result.bookingsRelocated());
+        assertEquals(1, result.bookingsCancelled());
+    }
+
+    @Test
+    public void testDefineSlotCapacityAlgorithmRelocationFromStart() {
+        int capacity = 10;
+        List<Integer> pendingReservations = Arrays.asList(51, 2, 5, 75, 8, 6, 0, 0);
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(pendingReservations);
+
+        DefineSlotCapacityResult result = reservationHandler.defineSlotCapacity(capacity);
+
+        assertEquals(capacity, reservationHandler.getSlotCapacity());
+        assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? num : capacity).sum(), result.bookingsConfirmed());
+        int cancelled = pendingReservations.stream().mapToInt(Integer::intValue).sum() - capacity * 8;
+        assertEquals(cancelled, result.bookingsCancelled());
+        assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum() - cancelled, result.bookingsRelocated());
+    }
+
+    @Test
+    public void testDefineSlotCapacityAlgorithmRelocationFromStart2() {
+        int capacity = 10;
+        List<Integer> pendingReservations = Arrays.asList(100, 0, 84, 1, 2, 5, 7, 5);
+        ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(pendingReservations);
+
+        DefineSlotCapacityResult result = reservationHandler.defineSlotCapacity(capacity);
+
+        assertEquals(capacity, reservationHandler.getSlotCapacity());
+        assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? num : capacity).sum(), result.bookingsConfirmed());
+        int cancelled = pendingReservations.stream().mapToInt(Integer::intValue).sum() - capacity * 8;
+        assertEquals(cancelled, result.bookingsCancelled());
+        assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum() - cancelled, result.bookingsRelocated());
     }
 }

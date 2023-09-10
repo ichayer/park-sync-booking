@@ -377,7 +377,7 @@ public class ReservationHandler {
      */
     public synchronized SuggestedCapacityResult getSuggestedCapacity() {
         if (slotCapacity != -1)
-            return null;
+           return null;
 
         if (slotCount == 0)
             return SuggestedCapacityResult.EMPTY;
@@ -391,9 +391,6 @@ public class ReservationHandler {
                 maxPendingReservationCount = slotPendingRequests[i].size();
             }
         }
-
-        if (indexOfMax == 0 && maxPendingReservationCount == 0)
-            return SuggestedCapacityResult.EMPTY;
 
         return new SuggestedCapacityResult(maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
     }
