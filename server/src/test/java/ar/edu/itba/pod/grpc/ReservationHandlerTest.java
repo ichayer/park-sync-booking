@@ -270,8 +270,9 @@ public class ReservationHandlerTest {
     @Test
     public void testSuggestedCapacitySlotCapacityAlreadyDefined() {
 
-        assertThrows(CapacityAlreadyDefinedException.class, () -> reservationHandler2.getSuggestedCapacity());
+        SuggestedCapacityResult result = reservationHandler2.getSuggestedCapacity();
 
+        assertNull(result);
     }
 
     private ReservationHandler createReservationHandlerWithPendingRequests(List<Integer> pendingReservationsPerSlot) {
