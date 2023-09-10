@@ -2,6 +2,7 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -58,5 +59,18 @@ public class Reservation {
             throw new IllegalStateException("This reservation is already confirmed");
 
         this.dateConfirmed = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Reservation that = (Reservation) o;
+        return Objects.equals(ticket, that.ticket) && Objects.equals(attraction, that.attraction) && Objects.equals(slotTime, that.slotTime) && Objects.equals(dateConfirmed, that.dateConfirmed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ticket, attraction, slotTime, dateConfirmed);
     }
 }

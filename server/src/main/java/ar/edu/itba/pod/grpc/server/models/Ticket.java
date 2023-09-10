@@ -44,4 +44,17 @@ public class Ticket {
     public int getBookings() {
         return bookings;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Ticket ticket = (Ticket) o;
+        return dayOfYear == ticket.dayOfYear && bookings == ticket.bookings && Objects.equals(visitorId, ticket.visitorId) && ticketType == ticket.ticketType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(visitorId, dayOfYear, ticketType, bookings);
+    }
 }
