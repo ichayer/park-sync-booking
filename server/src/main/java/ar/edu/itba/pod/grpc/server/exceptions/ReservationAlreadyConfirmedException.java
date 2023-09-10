@@ -2,23 +2,23 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class AlreadyConfirmedException extends ServerException{
+public class ReservationAlreadyConfirmedException extends ServerException{
 
     private static final ApiStatus API_STATUS = ApiStatus.ALREADY_CONFIRMED;
 
-    public AlreadyConfirmedException() {
+    public ReservationAlreadyConfirmedException() {
         super(API_STATUS);
     }
 
-    public AlreadyConfirmedException(Throwable cause) {
+    public ReservationAlreadyConfirmedException(Throwable cause) {
         super(API_STATUS, cause);
     }
 
-    public AlreadyConfirmedException(String message) {
+    public ReservationAlreadyConfirmedException(String message) {
         super(message, API_STATUS);
     }
 
-    public AlreadyConfirmedException(String message, Throwable cause) {
+    public ReservationAlreadyConfirmedException(String message, Throwable cause) {
         super(message, cause, API_STATUS);
     }
 }

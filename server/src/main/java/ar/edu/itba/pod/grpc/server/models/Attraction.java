@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
+import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
@@ -53,7 +54,7 @@ public class Attraction {
     /**
      * Attempts to make a reservation for a given ticket (which includes visitorId and dayOfYear) and time slot.
      */
-    public Reservation tryMakeReservation(Ticket ticket, LocalTime slotTime) {
+    public MakeReservationResult tryMakeReservation(Ticket ticket, LocalTime slotTime) {
         return reservationHandlers[ticket.getDayOfYear() - 1].makeReservation(ticket, slotTime);
     }
 }

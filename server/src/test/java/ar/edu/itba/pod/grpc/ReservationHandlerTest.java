@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.grpc;
 
+import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.models.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
@@ -127,19 +128,17 @@ public class ReservationHandlerTest {
         assertFalse(reservationHandler2.isSlotTimeValid(ATTRACTION_CLOSING_TIME2));
     }
 
-    @Test
+    @Test(expected = InvalidSlotException.class)
     public void testMakeReservationWithInvalidTime() {
-        MakeReservationResult result = reservationHandler1.makeReservation(TICKET1, INVALID_TIME1);
-        assertFalse(result.isSuccess());
+        reservationHandler1.makeReservation(TICKET1, INVALID_TIME1);
     }
 
     @Test
     public void testMakeReservationSlotCapacityUndefined() {
         MakeReservationResult result = reservationHandler1.makeReservation(TICKET1, VALID_TIME_SLOTS1[3]);
 
-        assertTrue(result.isSuccess());
         assertFalse(result.reservation().isConfirmed());
-        assertEquals(MakeReservationResult.Status.QUEUED, result.status());
+        assertFalse(result.isConfirmed());
         assertEquals(attraction1, result.reservation().getAttraction());
         assertEquals(DAY_OF_YEAR, result.reservation().getDayOfYear());
         assertEquals(TICKET1, result.reservation().getTicket());
@@ -154,11 +153,11 @@ public class ReservationHandlerTest {
         Reservation existingReservation = new Reservation(TICKET1, attraction1, VALID_TIME_SLOTS1[3], false);
         slotPendingRequests1[3].put(TICKET1.getVisitorId(), existingReservation);
 
-        MakeReservationResult result = reservationHandler1.makeReservation(TICKET1, VALID_TIME_SLOTS1[3]);
+        assertThrows(
+                ReservationAlreadyExistsException.class,
+                () -> reservationHandler1.makeReservation(TICKET1, VALID_TIME_SLOTS1[3])
+        );
 
-        assertFalse(result.isSuccess());
-        assertNull(result.reservation());
-        assertEquals(MakeReservationResult.Status.ALREADY_EXISTS, result.status());
         assertTrue(slotConfirmedRequests1[3] == null || slotConfirmedRequests1[3].isEmpty());
         assertSame(existingReservation, slotPendingRequests1[3].get(TICKET1.getVisitorId()));
     }
@@ -167,9 +166,8 @@ public class ReservationHandlerTest {
     public void testMakeReservationSlotCapacityDefined() {
         MakeReservationResult result = reservationHandler2.makeReservation(TICKET2, VALID_TIME_SLOTS2[3]);
 
-        assertTrue(result.isSuccess());
         assertTrue(result.reservation().isConfirmed());
-        assertEquals(MakeReservationResult.Status.CONFIRMED, result.status());
+        assertTrue(result.isConfirmed());
         assertEquals(attraction2, result.reservation().getAttraction());
         assertEquals(DAY_OF_YEAR, result.reservation().getDayOfYear());
         assertEquals(TICKET2, result.reservation().getTicket());
@@ -184,11 +182,11 @@ public class ReservationHandlerTest {
         Reservation existingReservation = new Reservation(TICKET2, attraction2, VALID_TIME_SLOTS2[3], false);
         slotPendingRequests2[3].put(TICKET2.getVisitorId(), existingReservation);
 
-        MakeReservationResult result = reservationHandler2.makeReservation(TICKET2, VALID_TIME_SLOTS2[3]);
+        assertThrows(
+                ReservationAlreadyExistsException.class,
+                () -> reservationHandler2.makeReservation(TICKET2, VALID_TIME_SLOTS2[3])
+        );
 
-        assertFalse(result.isSuccess());
-        assertNull(result.reservation());
-        assertEquals(MakeReservationResult.Status.ALREADY_EXISTS, result.status());
         assertTrue(slotConfirmedRequests2[3] == null || slotConfirmedRequests2[3].isEmpty());
         assertSame(existingReservation, slotPendingRequests2[3].get(TICKET2.getVisitorId()));
     }
@@ -199,18 +197,18 @@ public class ReservationHandlerTest {
         Reservation existingReservation = new Reservation(TICKET2, attraction2, VALID_TIME_SLOTS2[3], true);
         slotConfirmedRequests2[3].put(TICKET2.getVisitorId(), existingReservation);
 
-        MakeReservationResult result = reservationHandler2.makeReservation(TICKET2, VALID_TIME_SLOTS2[3]);
+        assertThrows(
+                ReservationAlreadyExistsException.class,
+                () -> reservationHandler2.makeReservation(TICKET2, VALID_TIME_SLOTS2[3])
+        );
 
-        assertFalse(result.isSuccess());
-        assertNull(result.reservation());
-        assertEquals(MakeReservationResult.Status.ALREADY_EXISTS, result.status());
         assertTrue(slotPendingRequests2[3] == null || slotPendingRequests2[3].isEmpty());
         assertSame(existingReservation, slotConfirmedRequests2[3].get(TICKET2.getVisitorId()));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = CapacityNotDefinedException.class)
     public void testConfirmReservationBeforeSlotCapacityDefined() {
-        reservationHandler2.confirmReservation(TICKET1.getVisitorId(), VALID_TIME_SLOTS1[3]);
+        reservationHandler1.confirmReservation(TICKET1.getVisitorId(), VALID_TIME_SLOTS1[3]);
     }
 
     @Test
@@ -226,12 +224,12 @@ public class ReservationHandlerTest {
         assertSame(existingReservation, slotConfirmedRequests2[3].get(TICKET2.getVisitorId()));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ReservationNotFoundException.class)
     public void testConfirmReservationWhenNonExisting() {
-        reservationHandler1.confirmReservation(TICKET1.getVisitorId(), VALID_TIME_SLOTS1[3]);
+        reservationHandler2.confirmReservation(TICKET2.getVisitorId(), VALID_TIME_SLOTS2[3]);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ReservationAlreadyConfirmedException.class)
     public void testConfirmReservationWhenAlreadyConfirmed() {
         slotConfirmedRequests2[3] = new HashMap<>();
         Reservation existingReservation = new Reservation(TICKET2, attraction2, VALID_TIME_SLOTS2[3], true);
@@ -252,7 +250,7 @@ public class ReservationHandlerTest {
         assertTrue(slotConfirmedRequests2[3] == null || slotConfirmedRequests2[3].isEmpty());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ReservationNotFoundException.class)
     public void testCancelReservationWhenNonExisting() {
         reservationHandler1.cancelReservation(TICKET1.getVisitorId(), VALID_TIME_SLOTS1[3]);
     }

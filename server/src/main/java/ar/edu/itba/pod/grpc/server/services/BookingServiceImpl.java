@@ -7,6 +7,7 @@ import ar.edu.itba.pod.grpc.server.exceptions.InvalidSlotException;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
+import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
@@ -84,7 +85,7 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
 
 
         BookingState bookingState;
-        Reservation result = attractionHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
+        MakeReservationResult result = attractionHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
         bookingState = result.isConfirmed() ? BookingState.RESERVATION_STATUS_CONFIRMED : BookingState.RESERVATION_STATUS_PENDING;
 
         responseObserver.onNext(ReservationResponse.newBuilder().setState(bookingState).build());
