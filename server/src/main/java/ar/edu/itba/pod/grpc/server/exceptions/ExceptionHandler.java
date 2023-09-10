@@ -31,7 +31,7 @@ public class ExceptionHandler implements ServerInterceptor {
             } catch (ServerException ex) {
                 handleException(ex, serverCall, metadata);
             } catch (RuntimeException ex) {
-                handleException(new ServerException(Status.UNKNOWN, ApiStatus.UNKNOWN, ex), serverCall, metadata);
+                handleException(new  UnknownException(ex), serverCall, metadata);
             }
         }
 
@@ -42,7 +42,7 @@ public class ExceptionHandler implements ServerInterceptor {
             } catch (ServerException ex) {
                 handleException(ex, serverCall, metadata);
             } catch (RuntimeException ex) {
-                handleException(new ServerException(Status.UNKNOWN, ApiStatus.UNKNOWN, ex), serverCall, metadata);
+                handleException(new UnknownException(ex), serverCall, metadata);
             }
         }
 
