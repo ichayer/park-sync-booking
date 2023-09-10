@@ -30,4 +30,5 @@ message Notification {
   NotificationType type = 1;
   int32 slotCapacity = 2;
   string slotTime = 3;
+  string relocatedTo = 4;
 }
