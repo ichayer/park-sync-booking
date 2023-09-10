@@ -1,23 +1,26 @@
 package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
+import com.google.rpc.context.AttributeContext;
 import io.grpc.Status;
 
 public class ServerException extends RuntimeException{
 
-    public ServerException(String message) {
-        super(message);
+    private final Status status;
+    private final ApiStatus apiStatus;
+
+    public ServerException(Status status, ApiStatus apiStatus) {
+        this.apiStatus = apiStatus;
+        this.status = status;
     }
 
-    public ServerException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ServerException(Throwable cause) {
+    public ServerException(Status status, ApiStatus apiStatus, Throwable cause) {
         super(cause);
+        this.apiStatus = apiStatus;
+        this.status = status;
     }
 
     io.grpc.Status getStatus() {
-        return Status.UNKNOWN.withDescription(ApiStatus.UNKNOWN.getMessageCode());
+        return status.withDescription(apiStatus.getMessageCode());
     }
 }
