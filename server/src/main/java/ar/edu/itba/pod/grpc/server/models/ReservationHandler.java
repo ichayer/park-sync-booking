@@ -258,7 +258,7 @@ public class ReservationHandler {
 
                 if (relocated) {
                     if (reservationObserver != null)
-                        reservationObserver.onRelocated(reservationToRelocate);
+                        reservationObserver.onRelocated(reservationToRelocate, getSlotTimeByIndex(relocateSlotIndex));
                     bookingsRelocated++;
                 } else {
                     if (reservationObserver != null)

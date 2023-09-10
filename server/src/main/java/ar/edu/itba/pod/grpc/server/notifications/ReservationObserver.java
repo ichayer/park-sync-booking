@@ -3,6 +3,8 @@ package ar.edu.itba.pod.grpc.server.notifications;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 
+import java.time.LocalTime;
+
 /**
  * Receives notifications about reservations such as status changes, and when slot capacity is set.
  */
@@ -27,7 +29,7 @@ public interface ReservationObserver {
     /**
      * Called whenever a pending reservation was relocated (and remains pending).
      */
-    void onRelocated(Reservation reservation);
+    void onRelocated(Reservation reservation, LocalTime newSlotTime);
 
     /**
      * Called whenever a previously pending reservation was cancelled.

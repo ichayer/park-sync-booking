@@ -4,6 +4,7 @@ import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotExistsException;
 import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
 import ar.edu.itba.pod.grpc.server.exceptions.TicketAlreadyExistsException;
+import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
@@ -17,12 +18,14 @@ public class AttractionHandler {
 
     private final ConcurrentMap<String, Attraction> attractions;
     private final ConcurrentMap<UUID, Ticket>[] ticketsByDay;
+    private final ReservationObserver reservationObserver;
 
-    public AttractionHandler() {
+    public AttractionHandler(ReservationObserver reservationObserver) {
         this.attractions = new ConcurrentHashMap<>();
         this.ticketsByDay = (ConcurrentMap<UUID, Ticket>[]) new ConcurrentMap[Constants.DAYS_IN_YEAR];
         for (int i = 0; i < ticketsByDay.length; i++)
             ticketsByDay[i] = new ConcurrentHashMap<>();
+        this.reservationObserver = reservationObserver;
     }
 
     /**
@@ -32,10 +35,11 @@ public class AttractionHandler {
     public AttractionHandler(ConcurrentMap<String, Attraction> attractions, ConcurrentMap<UUID, Ticket>[] ticketsByDay) {
         this.attractions = attractions;
         this.ticketsByDay = ticketsByDay;
+        this.reservationObserver = null;
     }
 
     public void createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
-        Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration);
+        Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration, reservationObserver);
         if(this.attractions.putIfAbsent(attractionName, attraction) != null){
             throw new AttractionAlreadyExistsException();
         }
