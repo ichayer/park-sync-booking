@@ -2,7 +2,6 @@ package ar.edu.itba.pod.grpc.notificationClient.actions;
 
 import ar.edu.itba.pod.grpc.AttractionNotificationServiceGrpc;
 import ar.edu.itba.pod.grpc.NotificationResponse;
-import ar.edu.itba.pod.grpc.bookingClient.actions.CancelAction;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
