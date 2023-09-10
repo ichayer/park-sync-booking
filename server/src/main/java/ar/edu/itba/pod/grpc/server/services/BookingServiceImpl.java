@@ -70,7 +70,7 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
         UUID visitorId = ParseUtils.parseId(request.getVisitorId());
 
         BookingState bookingState;
-        MakeReservationResult result = attractionHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
+        MakeReservationResult result = attractionHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime);
         bookingState = result.isConfirmed() ? BookingState.RESERVATION_STATUS_CONFIRMED : BookingState.RESERVATION_STATUS_PENDING;
 
         responseObserver.onNext(ReservationResponse.newBuilder().setState(bookingState).build());

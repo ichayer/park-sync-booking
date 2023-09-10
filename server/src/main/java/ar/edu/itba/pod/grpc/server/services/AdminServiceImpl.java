@@ -29,7 +29,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
         int slotDuration = ParseUtils.checkValidDuration(request.getSlotDurationMinutes());
 
         if (!openTime.isBefore(closeTime))
-            throw new InvalidSlotException();
+            throw new InvalidOpeningAndClosingTimeException();
 
         attractionHandler.createAttraction(attractionName, openTime, closeTime, slotDuration);
 
