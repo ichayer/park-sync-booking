@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -288,6 +289,30 @@ public class ReservationHandlerTest {
         return new ReservationHandler(attraction1, DAY_OF_YEAR, -1, slotConfirmedRequests1, slotPendingRequests1);
     }
 
+    private void checkConsistentState(Map<UUID, Reservation>[] confirmed, LinkedHashMap<UUID, Reservation>[] pending, List<Integer> originalPendingNumbers, int capacity){
+
+        for(int i = 0 ; i < confirmed.length ; ++i){
+            Map<UUID, Reservation> current = confirmed[i];
+
+            // Expected confirmed bookings
+            int expectedSizeConfirmation = originalPendingNumbers.get(i) > capacity ? capacity : originalPendingNumbers.get(i);
+            assertEquals(expectedSizeConfirmation, current.size());
+
+            // All the confirmed bookings should be confirmed
+            current.values().forEach((reservation)-> assertTrue(reservation.isConfirmed()));
+
+            // Check correct time slot
+            LocalTime indexDate = VALID_TIME_SLOTS1[i];
+            current.values().forEach((reservation)-> assertEquals(reservation.getSlotTime(), indexDate));
+
+            LinkedHashMap<UUID, Reservation> currentPendingList = pending[i];
+            assertTrue(expectedSizeConfirmation + currentPendingList.size() <= capacity);
+            currentPendingList.values().forEach((reservation)-> assertFalse(reservation.isConfirmed()));
+            currentPendingList.values().forEach((reservation)-> assertEquals(reservation.getSlotTime(), indexDate));
+        }
+
+    }
+
     @Test
     public void testSuggestedCapacityEqualFullySlots() {
         ReservationHandler reservationHandler = createReservationHandlerWithPendingRequests(Arrays.asList(3, 3, 3, 3, 3, 3, 3, 3));
@@ -337,6 +362,7 @@ public class ReservationHandlerTest {
         assertEquals(pendingReservations.stream().mapToInt(Integer::intValue).sum(), result.bookingsConfirmed());
         assertEquals(0, result.bookingsRelocated());
         assertEquals(0, result.bookingsCancelled());
+        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -351,6 +377,8 @@ public class ReservationHandlerTest {
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? num : capacity).sum(), result.bookingsConfirmed());
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum(), result.bookingsRelocated());
         assertEquals(0, result.bookingsCancelled());
+        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
+
     }
 
     @Test
