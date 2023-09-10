@@ -1,9 +1,7 @@
 package ar.edu.itba.pod.grpc.bookingClient.actions;
 
 import ar.edu.itba.pod.grpc.*;
-import ar.edu.itba.pod.grpc.adminClient.actions.TicketsAction;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
-import ar.edu.itba.pod.grpc.exceptions.ServerErrorReceived;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
 import org.slf4j.Logger;
@@ -13,7 +11,6 @@ import java.util.List;
 
 public class AvailabilityAction implements Action {
 
-    CheckAvailabilityStatus status;
     List<AvailabilitySlot> slots;
     private static final Logger logger = LoggerFactory.getLogger(AvailabilityAction.class);
     @Override
@@ -40,26 +37,21 @@ public class AvailabilityAction implements Action {
 
         AvailabilityResponse response = client.checkAttractionAvailability(request);
 
-        status = response.getStatus();
         slots = response.getSlotList();
         return this;
     }
 
     @Override
     public void showResults() {
-        if (status == CheckAvailabilityStatus.CHECK_AVAILABILITY_SUCCESS) {
-            System.out.printf("%-7s | %9s | %9s | %9s | %-7s\n",
-                    "Slot", "Capacity", "Pending", "Confirmed", "Attraction");
-            for (AvailabilitySlot slot : slots) {
-                System.out.printf("%-7s | %9d | %9d | %9d | %-7s\n",
-                        slot.getSlot(),
-                        slot.getSlotCapacity(),
-                        slot.getBookingsPending(),
-                        slot.getBookingsConfirmed(),
-                        slot.getAttractionName());
-            }
-        } else {
-            throw new ServerErrorReceived("Error: Unable to retrieve availability information.");
+        System.out.printf("%-7s | %9s | %9s | %9s | %-7s\n",
+                "Slot", "Capacity", "Pending", "Confirmed", "Attraction");
+        for (AvailabilitySlot slot : slots) {
+            System.out.printf("%-7s | %9d | %9d | %9d | %-7s\n",
+                    slot.getSlot(),
+                    slot.getSlotCapacity(),
+                    slot.getBookingsPending(),
+                    slot.getBookingsConfirmed(),
+                    slot.getAttractionName());
         }
     }
 }

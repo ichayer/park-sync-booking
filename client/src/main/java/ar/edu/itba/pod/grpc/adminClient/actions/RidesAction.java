@@ -38,14 +38,18 @@ public class RidesAction implements Action {
                         .setSlotDurationMinutes(Integer.parseInt(fields[3]))
                         .build();
                 logger.info("Sending ride request {}", request);
-                com.google.protobuf.BoolValue response = stub.addAttraction(request);
-                 if (response.getValue()) {
-                     logger.info("ride {} added", fields[0]);
-                     attractionsAdded++;
-                 } else {
-                     logger.info("ride {} could not be added", fields[0]);
-                     attractionsFailed++;
-                 }
+                try{
+                    com.google.protobuf.BoolValue response = stub.addAttraction(request);
+                    if (response.getValue()) {
+                        logger.info("ride {} added", fields[0]);
+                        attractionsAdded++;
+                    } else {
+                        logger.info("ride {} could not be added", fields[0]);
+                        attractionsFailed++;
+                    }
+                }catch (Exception e) {
+                    attractionsFailed++;
+                }
             }
         }
         fileIterator.close();

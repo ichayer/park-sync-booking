@@ -3,7 +3,6 @@ package ar.edu.itba.pod.grpc.adminClient.actions;
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.PassType;
 import ar.edu.itba.pod.grpc.AddTicketRequest;
-import ar.edu.itba.pod.grpc.adminClient.AdminClient;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
@@ -31,30 +30,35 @@ public class TicketsAction implements Action {
         CsvFileIterator fileIterator = new CsvFileIterator(arguments.getFilename());
         while (fileIterator.hasNext()) {
             String[] fields = fileIterator.next();
-            if (fields.length == 3) {
-                PassType passType = mapPassType(fields[1]);
-                if (passType != PassType.PASS_TYPE_UNKNOWN) {
-                    AddTicketRequest request = AddTicketRequest.newBuilder()
-                            .setVisitorId(fields[0])
-                            .setPassType(passType)
-                            .setDayOfYear(Integer.parseInt(fields[2]))
-                            .build();
-                    logger.info("Sending ticket request {}", request);
-                     com.google.protobuf.BoolValue response = stub.addTicket(request);
-                     if (response.getValue()) {
-                         logger.info("ticket for user {} added", fields[0]);
-                         ticketsAdded++;
-                     } else {
-                         logger.info("ticket for user {} could not be added", fields[0]);
-                         ticketsFailed++;
-                     }
-                }
-                else{
-                    logger.error("Unknown pass type {}", fields[1]);
-                }
-            }
-            else{
+            if(fields.length != 3){
                 logger.error("Invalid file format, got {} fields, expected 3 ", fields.length);
+                continue;
+            }
+            PassType passType = mapPassType(fields[1]);
+            if (passType == PassType.PASS_TYPE_UNKNOWN) {
+                logger.error("Unknown pass type {}", fields[1]);
+                continue;
+            }
+            AddTicketRequest request = AddTicketRequest.newBuilder()
+                    .setVisitorId(fields[0])
+                    .setPassType(passType)
+                    .setDayOfYear(Integer.parseInt(fields[2]))
+                    .build();
+            logger.info("Sending ticket request {}", request);
+
+            try {
+                com.google.protobuf.BoolValue response = stub.addTicket(request);
+
+                if (response.getValue()) {
+                    logger.info("ticket for user {} added", fields[0]);
+                    ticketsAdded++;
+                } else {
+                    logger.info("ticket for user {} could not be added", fields[0]);
+                    ticketsFailed++;
+                }
+            }catch (Exception e){
+                logger.info("ticket for user {} could not be added", fields[0]);
+                ticketsFailed++;
             }
         }
         fileIterator.close();
