@@ -23,12 +23,16 @@ public class GenericClient {
             Map.entry("ATTRACTION_NOT_EXISTS", "Attraction does not exist."),
             Map.entry("INVALID_DAY", "Invalid day."),
             Map.entry("NEGATIVE_CAPACITY", "Capacity cannot be negative."),
-            Map.entry("CAPACITY_ALREADY_LOADED", "Capacity has already been loaded."),
+            Map.entry("CAPACITY_ALREADY_DEFINED", "Capacity has already been loaded."),
             Map.entry("INVALID_SLOT", "Invalid slot."),
             Map.entry("RESERVATION_ALREADY_EXISTS", "Reservation already exists."),
             Map.entry("MISSING_PASS", "Client does not have a valid pass."),
             Map.entry("NO_CAPACITY", "No capacity available."),
             Map.entry("ALREADY_CONFIRMED", "Reservation already confirmed."),
+            Map.entry("ATTRACTION_ALREADY_EXISTS", "Attraction already exists."),
+            Map.entry("TICKET_ALREADY_EXISTS", "The user already has a ticket."),
+            Map.entry("EMPTY_ATTRACTION", "Attraction name cannot be empty."),
+            Map.entry("INVALID_TICKET_TYPE", "The given ticket type is invalid"),
             Map.entry("RESERVATION_NOT_FOUND", "Reservation not found."));
     ;
 

@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
 
 option java_package = "ar.edu.itba.pod.grpc";
 option java_multiple_files = true;
 
 service AdminService {
-  rpc AddAttraction(AddAttractionRequest) returns (google.protobuf.BoolValue);
-  rpc AddTicket(AddTicketRequest) returns (google.protobuf.BoolValue);
+  rpc AddAttraction(AddAttractionRequest) returns (google.protobuf.Empty);
+  rpc AddTicket(AddTicketRequest) returns (google.protobuf.Empty);
   rpc AddCapacity(AddCapacityRequest) returns (AddCapacityResponse);
 }
 
@@ -31,14 +31,14 @@ message AddTicketRequest {
   int32 dayOfYear = 3;
 }
 
-enum AddCapacityStatus {
-  ADD_CAPACITY_STATUS_UNKNOWN = 0;
-  ADD_CAPACITY_STATUS_SUCCESS = 1;
-  ADD_CAPACITY_STATUS_NOT_EXISTS = 2;
-  ADD_CAPACITY_STATUS_INVALID_DAY = 3;
-  ADD_CAPACITY_STATUS_NEGATIVE_CAPACITY = 4;
-  ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED = 5;
-}
+//enum AddCapacityStatus {
+//  ADD_CAPACITY_STATUS_UNKNOWN = 0;
+//  ADD_CAPACITY_STATUS_SUCCESS = 1;
+//  ADD_CAPACITY_STATUS_NOT_EXISTS = 2;
+//  ADD_CAPACITY_STATUS_INVALID_DAY = 3;
+//  ADD_CAPACITY_STATUS_NEGATIVE_CAPACITY = 4;
+//  ADD_CAPACITY_STATUS_CAPACITY_ALREADY_LOADED = 5;
+//}
 
 message AddCapacityRequest {
   string attractionName = 1;
@@ -47,7 +47,7 @@ message AddCapacityRequest {
 }
 
 message AddCapacityResponse {
-  AddCapacityStatus status = 1;
+//  AddCapacityStatus status = 1;
   int32 confirmedBookings = 2;
   int32 relocatedBookings = 3;
   int32 cancelledBookings = 4;

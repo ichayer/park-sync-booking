@@ -1,5 +1,8 @@
 package ar.edu.itba.pod.grpc.server.models;
 
+import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
+import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotExistsException;
+import ar.edu.itba.pod.grpc.server.exceptions.TicketAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
@@ -30,15 +33,17 @@ public class AttractionHandler {
         this.ticketsByDay = ticketsByDay;
     }
 
-    public boolean createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
+    public void createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
         Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration);
-        return this.attractions.putIfAbsent(attractionName, attraction) == null;
+        if(this.attractions.putIfAbsent(attractionName, attraction) != null){
+            throw new AttractionAlreadyExistsException();
+        }
     }
 
     public DefineSlotCapacityResult setSlotCapacityForAttraction(String attractionName, int dayOfYear, int slotCapacity) {
         Attraction attraction = attractions.get(attractionName);
         if (attraction == null)
-            return DefineSlotCapacityResult.ATTRACTION_NOT_FOUND;
+            throw new AttractionNotExistsException();
 
         return attraction.trySetSlotCapacity(dayOfYear, slotCapacity);
     }
@@ -47,11 +52,12 @@ public class AttractionHandler {
         return Collections.unmodifiableCollection(this.attractions.values());
     }
 
-    public boolean addTicket(UUID visitorId, int dayOfYear, TicketType ticketType) {
+    public void addTicket(UUID visitorId, int dayOfYear, TicketType ticketType) {
         ConcurrentMap<UUID, Ticket> visitorTickets = ticketsByDay[dayOfYear - 1];
         Ticket ticket = new Ticket(visitorId, dayOfYear, ticketType);
-        boolean success = visitorTickets.putIfAbsent(visitorId, ticket) == null;
-        return success;
+        if(visitorTickets.putIfAbsent(visitorId, ticket) != null){
+            throw new TicketAlreadyExistsException();
+        }
     }
 
     public MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {

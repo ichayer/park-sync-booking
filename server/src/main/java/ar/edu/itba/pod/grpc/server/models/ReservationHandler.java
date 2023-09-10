@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.grpc.server.models;
 
+import ar.edu.itba.pod.grpc.server.exceptions.CapacityAlreadyDefinedException;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
@@ -165,11 +166,11 @@ public class ReservationHandler {
 
     /**
      * Sets the slot capacity, if it isn't already set.
-     * @throws IllegalStateException if slot capacity is already defined.
+     * @throws CapacityAlreadyDefinedException if slot capacity is already defined.
      */
     public synchronized DefineSlotCapacityResult defineSlotCapacity(int slotCapacity) {
         if (this.slotCapacity != -1)
-            return DefineSlotCapacityResult.CAPACITY_ALREADY_SET;
+            throw new CapacityAlreadyDefinedException();
 
         this.slotCapacity = slotCapacity;
 
@@ -234,7 +235,7 @@ public class ReservationHandler {
             }
         }
 
-        return new DefineSlotCapacityResult(DefineSlotCapacityResult.Status.SUCCESS, bookingsConfirmed, bookingsRelocated, bookingsCancelled);
+        return new DefineSlotCapacityResult(bookingsConfirmed, bookingsRelocated, bookingsCancelled);
     }
 
     /**

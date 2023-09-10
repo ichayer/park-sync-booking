@@ -47,15 +47,9 @@ public class TicketsAction implements Action {
             logger.info("Sending ticket request {}", request);
 
             try {
-                com.google.protobuf.BoolValue response = stub.addTicket(request);
-
-                if (response.getValue()) {
-                    logger.info("ticket for user {} added", fields[0]);
-                    ticketsAdded++;
-                } else {
-                    logger.info("ticket for user {} could not be added", fields[0]);
-                    ticketsFailed++;
-                }
+                stub.addTicket(request);
+                logger.info("ticket for user {} added", fields[0]);
+                ticketsAdded++;
             }catch (Exception e){
                 logger.info("ticket for user {} could not be added", fields[0]);
                 ticketsFailed++;
