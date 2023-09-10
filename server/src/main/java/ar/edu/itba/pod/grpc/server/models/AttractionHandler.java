@@ -2,9 +2,9 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotExistsException;
+import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
 import ar.edu.itba.pod.grpc.server.exceptions.TicketAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
-import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
@@ -60,21 +60,20 @@ public class AttractionHandler {
         }
     }
 
-    public MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
+    public Reservation makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
         Attraction attraction = attractions.get(attractionName);
         if (attraction == null)
-            return MakeReservationResult.ATTRACTION_NOT_FOUND;
+            throw new AttractionNotExistsException();
 
         Ticket ticket = ticketsByDay[dayOfYear - 1].get(visitorId);
         if (ticket == null)
-            return MakeReservationResult.MISSING_PASS;
+            throw new MissingPassException();
 
         synchronized (ticket) {
             if (!ticket.canBook(slotTime))
-                return MakeReservationResult.MISSING_PASS;
-            MakeReservationResult result = attraction.tryMakeReservation(ticket, slotTime);
-            if (result.isSuccess())
-                ticket.addBook(slotTime);
+                throw new MissingPassException();
+            Reservation result = attraction.tryMakeReservation(ticket, slotTime);
+            ticket.addBook(slotTime);
             return result;
         }
     }

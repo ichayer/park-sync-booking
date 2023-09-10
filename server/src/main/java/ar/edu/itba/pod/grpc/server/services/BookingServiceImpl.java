@@ -3,7 +3,7 @@ package ar.edu.itba.pod.grpc.server.services;
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
-import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
@@ -91,25 +91,9 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
         }
 
         BookingState bookingState;
-        MakeReservationResult result = attractionHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
-        if (result.isSuccess()) {
-            status = ReservationStatus.BOOKING_STATUS_SUCCESS;
-            bookingState = switch (result.status()) {
-                case QUEUED -> BookingState.RESERVATION_STATUS_PENDING;
-                case CONFIRMED -> BookingState.RESERVATION_STATUS_CONFIRMED;
-                default -> BookingState.RESERVATION_STATUS_UNKNOWN;
-            };
-        } else {
-            bookingState = BookingState.RESERVATION_STATUS_UNKNOWN;
-            status = switch (result.status()) {
-                case MISSING_PASS -> ReservationStatus.BOOKING_STATUS_MISSING_PASS;
-                case ALREADY_EXISTS -> ReservationStatus.BOOKING_STATUS_ALREADY_EXISTS;
-                case ATTRACTION_NOT_FOUND -> ReservationStatus.BOOKING_STATUS_ATTRACTION_NOT_FOUND;
-                case INVALID_SLOT_TIME -> ReservationStatus.BOOKING_STATUS_INVALID_SLOT;
-                case OUT_OF_CAPACITY -> ReservationStatus.BOOKING_STATUS_NO_CAPACITY;
-                default -> ReservationStatus.BOOKING_STATUS_UNKNOWN;
-            };
-        }
+        Reservation result = attractionHandler.makeReservation(attractionName, visitorId, dayOfYear, slotTime.get());
+        status = ReservationStatus.BOOKING_STATUS_SUCCESS;
+        bookingState = result.isConfirmed() ? BookingState.RESERVATION_STATUS_CONFIRMED : BookingState.RESERVATION_STATUS_PENDING;
 
         responseObserver.onNext(ReservationResponse.newBuilder().setStatus(status).setState(bookingState).build());
         responseObserver.onCompleted();
