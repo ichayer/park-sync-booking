@@ -210,6 +210,7 @@ public class ReservationHandler {
                 continue;
 
             Map<UUID, Reservation> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
+            LocalTime slotIndexTime = getSlotTimeByIndex(slotIndex);
 
             // Dequeue the first N requests from the pending queue and confirm them (N = slotCapacity).
             Iterator<Reservation> iterator = requests.values().iterator();
@@ -221,7 +222,7 @@ public class ReservationHandler {
                 confirmed.put(next.getVisitorId(), next);
                 bookingsConfirmed++;
                 if (reservationObserver != null)
-                    reservationObserver.onConfirmed(next);
+                    reservationObserver.onConfirmed(next, slotIndexTime);
             }
         }
 
@@ -230,6 +231,8 @@ public class ReservationHandler {
             LinkedHashMap<UUID, Reservation> requests = slotPendingRequests[slotIndex];
             if (requests == null || requests.isEmpty())
                 continue;
+
+            LocalTime slotIndexTime = getSlotTimeByIndex(slotIndex);
 
             int amountToRelocate = slotConfirmedRequests[slotIndex].size() + requests.size() - slotCapacity;
             Iterator<Reservation> requestsIterator = requests.values().iterator();
@@ -250,6 +253,8 @@ public class ReservationHandler {
                     if (relocateSlotTotal < slotCapacity) {
                         relocateSlotPending = getOrCreateSlotPendingRequests(relocateSlotIndex);
                         relocated = relocateSlotPending.putIfAbsent(reservationToRelocate.getVisitorId(), reservationToRelocate) == null;
+                        if (relocated)
+                            reservationToRelocate.setSlotTime(getSlotTimeByIndex(relocateSlotIndex));
                     }
 
                     if (!relocated)
@@ -258,11 +263,11 @@ public class ReservationHandler {
 
                 if (relocated) {
                     if (reservationObserver != null)
-                        reservationObserver.onRelocated(reservationToRelocate, getSlotTimeByIndex(relocateSlotIndex));
+                        reservationObserver.onRelocated(reservationToRelocate, slotIndexTime, reservationToRelocate.getSlotTime());
                     bookingsRelocated++;
                 } else {
                     if (reservationObserver != null)
-                        reservationObserver.onCancelled(reservationToRelocate);
+                        reservationObserver.onCancelled(reservationToRelocate, slotIndexTime);
                     bookingsCancelled++;
                 }
             }
@@ -278,7 +283,7 @@ public class ReservationHandler {
         if (confirmed != null && confirmed.size() >= slotCapacity && pendings != null) {
             if (reservationObserver != null) {
                 for (Reservation r : pendings.values())
-                    reservationObserver.onCancelled(r);
+                    reservationObserver.onCancelled(r, r.getSlotTime());
             }
             pendings.clear();
         }
@@ -305,7 +310,7 @@ public class ReservationHandler {
                 throw new ReservationAlreadyExistsException();
 
             if (reservationObserver != null)
-                reservationObserver.onCreated(reservation, false);
+                reservationObserver.onCreated(reservation, reservation.getSlotTime(), false);
             return new MakeReservationResult(reservation, false);
         }
 
@@ -331,7 +336,7 @@ public class ReservationHandler {
         cancelPendingReservationsForSlotIfFull(slotIndex);
 
         if (reservationObserver != null)
-            reservationObserver.onCreated(reservation, true);
+            reservationObserver.onCreated(reservation, reservation.getSlotTime(), true);
         return new MakeReservationResult(reservation, true);
     }
 
@@ -361,13 +366,13 @@ public class ReservationHandler {
         if (success) {
             reservation.setAsConfirmed();
             if (reservationObserver != null)
-                reservationObserver.onConfirmed(reservation);
+                reservationObserver.onConfirmed(reservation, reservation.getSlotTime());
             cancelPendingReservationsForSlotIfFull(slotIndex);
         } else {
             // This should never happen, as checks are in place to ensure a pending reservation is never left where
             // there is already a confirmed one. We leave this here to be thorough.
             if (reservationObserver != null)
-                reservationObserver.onCancelled(reservation);
+                reservationObserver.onCancelled(reservation, reservation.getSlotTime());
         }
     }
 
@@ -388,7 +393,7 @@ public class ReservationHandler {
         }
 
         if (reservationObserver != null)
-            reservationObserver.onCancelled(reservation);
+            reservationObserver.onCancelled(reservation, reservation.getSlotTime());
     }
 
     /**

@@ -19,20 +19,20 @@ public interface ReservationObserver {
      * Called whenever a new reservation is created.
      * @implNote To avoid race conditions, use the isConfirmed param instead of reservation.isConfirmed().
      */
-    void onCreated(Reservation reservation, boolean isConfirmed);
+    void onCreated(Reservation reservation, LocalTime slotTime, boolean isConfirmed);
 
     /**
      * Called whenever a previously pending reservation was confirmed.
      */
-    void onConfirmed(Reservation reservation);
+    void onConfirmed(Reservation reservation, LocalTime slotTime);
 
     /**
      * Called whenever a pending reservation was relocated (and remains pending).
      */
-    void onRelocated(Reservation reservation, LocalTime newSlotTime);
+    void onRelocated(Reservation reservation, LocalTime prevSlotTime, LocalTime newSlotTime);
 
     /**
      * Called whenever a previously pending reservation was cancelled.
      */
-    void onCancelled(Reservation reservation);
+    void onCancelled(Reservation reservation, LocalTime slotTime);
 }

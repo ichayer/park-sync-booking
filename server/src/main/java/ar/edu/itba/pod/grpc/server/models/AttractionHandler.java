@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
-import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotExistsException;
+import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotFoundException;
 import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
 import ar.edu.itba.pod.grpc.server.exceptions.TicketAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
@@ -38,6 +38,18 @@ public class AttractionHandler {
         this.reservationObserver = null;
     }
 
+    /**
+     * Gets an attraction by name.
+     * @throws AttractionNotFoundException If no attraction is found with that name.
+     */
+    public Attraction getAttraction(String attractionName) {
+        Attraction attraction = this.attractions.get(attractionName);
+        if (attraction == null)
+            throw new AttractionNotFoundException();
+
+        return attraction;
+    }
+
     public void createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
         Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration, reservationObserver);
         if(this.attractions.putIfAbsent(attractionName, attraction) != null){
@@ -48,7 +60,7 @@ public class AttractionHandler {
     public DefineSlotCapacityResult setSlotCapacityForAttraction(String attractionName, int dayOfYear, int slotCapacity) {
         Attraction attraction = attractions.get(attractionName);
         if (attraction == null)
-            throw new AttractionNotExistsException();
+            throw new AttractionNotFoundException();
 
         return attraction.trySetSlotCapacity(dayOfYear, slotCapacity);
     }
@@ -68,7 +80,7 @@ public class AttractionHandler {
     public MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
         Attraction attraction = attractions.get(attractionName);
         if (attraction == null)
-            throw new AttractionNotExistsException();
+            throw new AttractionNotFoundException();
 
         Ticket ticket = ticketsByDay[dayOfYear - 1].get(visitorId);
         if (ticket == null)
