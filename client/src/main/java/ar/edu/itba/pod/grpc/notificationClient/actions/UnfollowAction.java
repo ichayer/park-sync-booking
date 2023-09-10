@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 public class UnfollowAction implements Action {
 
-    private Arguments arguments
+    private Arguments arguments;
 
     private static final Logger logger = LoggerFactory.getLogger(UnfollowAction.class);
 
