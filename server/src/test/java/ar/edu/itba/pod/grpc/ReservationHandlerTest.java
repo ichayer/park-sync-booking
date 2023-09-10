@@ -378,7 +378,6 @@ public class ReservationHandlerTest {
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum(), result.bookingsRelocated());
         assertEquals(0, result.bookingsCancelled());
         checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
-
     }
 
     @Test
@@ -393,6 +392,7 @@ public class ReservationHandlerTest {
         assertEquals(10, result.bookingsConfirmed());
         assertEquals(70, result.bookingsRelocated());
         assertEquals(0, result.bookingsCancelled());
+        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -407,6 +407,7 @@ public class ReservationHandlerTest {
         assertEquals(10, result.bookingsConfirmed());
         assertEquals(70, result.bookingsRelocated());
         assertEquals(1, result.bookingsCancelled());
+        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -422,6 +423,7 @@ public class ReservationHandlerTest {
         int cancelled = pendingReservations.stream().mapToInt(Integer::intValue).sum() - capacity * 8;
         assertEquals(cancelled, result.bookingsCancelled());
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum() - cancelled, result.bookingsRelocated());
+        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -437,5 +439,6 @@ public class ReservationHandlerTest {
         int cancelled = pendingReservations.stream().mapToInt(Integer::intValue).sum() - capacity * 8;
         assertEquals(cancelled, result.bookingsCancelled());
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum() - cancelled, result.bookingsRelocated());
+        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 }
