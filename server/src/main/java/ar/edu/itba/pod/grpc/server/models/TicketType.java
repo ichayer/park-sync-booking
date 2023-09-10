@@ -6,22 +6,36 @@ import java.time.LocalTime;
 import java.util.Optional;
 
 public enum TicketType {
-
     FULL_DAY {
         @Override
-        public boolean canBook(int bookings, LocalTime sloTime) {
+        public boolean isSlotTimeValid(LocalTime slotTime) {
+            return true;
+        }
+
+        @Override
+        public boolean isBookingsCountValid(int bookings) {
             return bookings < 3;
         }
     },
     HALF_DAY {
         @Override
-        public boolean canBook(int bookings, LocalTime sloTime) {
-            return sloTime.isAfter(LocalTime.of(14,0));
+        public boolean isSlotTimeValid(LocalTime slotTime) {
+            return slotTime.isAfter(LocalTime.of(14,0));
+        }
+
+        @Override
+        public boolean isBookingsCountValid(int bookings) {
+            return true;
         }
     },
     UNLIMITED {
         @Override
-        public boolean canBook(int bookings, LocalTime sloTime) {
+        public boolean isSlotTimeValid(LocalTime slotTime) {
+            return true;
+        }
+
+        @Override
+        public boolean isBookingsCountValid(int bookings) {
             return true;
         }
     };
@@ -44,5 +58,10 @@ public enum TicketType {
         };
     }
 
-    public abstract boolean canBook(int bookings, LocalTime sloTime);
+    public abstract boolean isSlotTimeValid(LocalTime slotTime);
+    public abstract boolean isBookingsCountValid(int bookings);
+
+    public boolean canBook(int bookings, LocalTime slotTime) {
+        return isBookingsCountValid(bookings) && isSlotTimeValid(slotTime);
+    }
 }
