@@ -285,7 +285,7 @@ public class ReservationHandlerTest {
                 slotPendingRequests1[i].put(uuid, new Reservation(new Ticket(uuid, DAY_OF_YEAR, TicketType.FULL_DAY), attraction1, VALID_TIME_SLOTS1[i], false));
             }
         }
-        return new ReservationHandler(attraction1, DAY_OF_YEAR, -1, slotConfirmedRequests1, slotPendingRequests1);
+        return new ReservationHandler(attraction1, DAY_OF_YEAR, null, -1, slotConfirmedRequests1, slotPendingRequests1);
     }
 
     @Test
