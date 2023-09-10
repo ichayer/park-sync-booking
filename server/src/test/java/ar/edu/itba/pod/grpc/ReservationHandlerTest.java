@@ -79,13 +79,13 @@ public class ReservationHandlerTest {
         when(attraction1.getOpeningTime()).thenReturn(ATTRACTION_OPENING_TIME1);
         when(attraction1.getClosingTime()).thenReturn(ATTRACTION_CLOSING_TIME1);
         when(attraction1.getSlotDuration()).thenReturn(ATTRACTION_SLOT_DURATION1);
-        reservationHandler1 = new ReservationHandler(attraction1, DAY_OF_YEAR, -1, slotConfirmedRequests1, slotPendingRequests1);
+        reservationHandler1 = new ReservationHandler(attraction1, DAY_OF_YEAR, null, -1, slotConfirmedRequests1, slotPendingRequests1);
 
         // when(attraction2.getName()).thenReturn(ATTRACTION_NAME2);
         when(attraction2.getOpeningTime()).thenReturn(ATTRACTION_OPENING_TIME2);
         when(attraction2.getClosingTime()).thenReturn(ATTRACTION_CLOSING_TIME2);
         when(attraction2.getSlotDuration()).thenReturn(ATTRACTION_SLOT_DURATION2);
-        reservationHandler2 = new ReservationHandler(attraction2, DAY_OF_YEAR, ATTRACTION_SLOT_CAPACITY2, slotConfirmedRequests2, slotPendingRequests2);
+        reservationHandler2 = new ReservationHandler(attraction2, DAY_OF_YEAR, null, ATTRACTION_SLOT_CAPACITY2, slotConfirmedRequests2, slotPendingRequests2);
     }
 
     @Test

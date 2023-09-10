@@ -6,16 +6,28 @@ option java_package = "ar.edu.itba.pod.grpc";
 option java_multiple_files = true;
 
 service AttractionNotificationService {
-  rpc Follow(NotificationRequest) returns (NotificationResponse);
-  rpc Unfollow(NotificationRequest) returns (NotificationResponse);
+  rpc Follow(NotificationRequest) returns (stream Notification);
+  rpc Unfollow(NotificationRequest) returns (google.protobuf.Empty);
 }
 
 message NotificationRequest {
-  string ride_name = 1;
-  string visitor_id = 2;
-  int32 day_of_year = 3;
+  string rideName = 1;
+  string visitorId = 2;
+  int32 dayOfYear = 3;
 }
 
-message NotificationResponse {
-  string message = 1;
+enum NotificationType {
+  NOTIFICATION_TYPE_UNKNOWN = 0;
+  NOTIFICATION_TYPE_BOOKING_SLOT_CAPACITY_SET = 1;
+  NOTIFICATION_TYPE_BOOKING_CREATED_PENDING = 2;
+  NOTIFICATION_TYPE_BOOKING_CREATED_CONFIRMED = 3;
+  NOTIFICATION_TYPE_BOOKING_RELOCATED = 4;
+  NOTIFICATION_TYPE_BOOKING_CONFIRMED = 5;
+  NOTIFICATION_TYPE_BOOKING_CANCELLED = 6;
+}
+
+message Notification {
+  NotificationType type = 1;
+  int32 slotCapacity = 2;
+  string slotTime = 3;
 }

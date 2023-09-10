@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.exceptions.*;
+import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
@@ -41,6 +42,11 @@ public class ReservationHandler {
     private int slotCapacity = -1;
 
     /**
+     * A ReservationObserver that listens to reservation changes from this ReservationHandler.
+     */
+    private ReservationObserver reservationObserver;
+
+    /**
      * Stores the confirmed set of visitors for each slot. The slots are stored ordered by time ascending.
      * Note: all elements in this array start as null and are created as needed.
      */
@@ -56,9 +62,10 @@ public class ReservationHandler {
     /**
      * Creates a new ReservationHandler for the given attraction and day of year.
      */
-    public ReservationHandler(Attraction attraction, int dayOfYear) {
+    public ReservationHandler(Attraction attraction, int dayOfYear, ReservationObserver reservationObserver) {
         this.attraction = Objects.requireNonNull(attraction);
         this.dayOfYear = dayOfYear;
+        this.reservationObserver = reservationObserver;
 
         LocalTime openingTime = attraction.getOpeningTime();
         LocalTime closingTime = attraction.getClosingTime();
@@ -80,10 +87,11 @@ public class ReservationHandler {
      * and pending data structures.
      * THIS CONSTRUCTOR IS INTENDED ONLY FOR TESTING. Use the other constructor for everything else.
      */
-    public ReservationHandler(Attraction attraction, int dayOfYear, int slotCapacity, Map<UUID, Reservation>[] slotConfirmedRequests, LinkedHashMap<UUID, Reservation>[] slotPendingRequests) {
+    public ReservationHandler(Attraction attraction, int dayOfYear, ReservationObserver reservationObserver, int slotCapacity, Map<UUID, Reservation>[] slotConfirmedRequests, LinkedHashMap<UUID, Reservation>[] slotPendingRequests) {
         this.attraction = Objects.requireNonNull(attraction);
         this.dayOfYear = dayOfYear;
         this.slotCapacity = slotCapacity;
+        this.reservationObserver = reservationObserver;
 
         LocalTime openingTime = attraction.getOpeningTime();
         LocalTime closingTime = attraction.getClosingTime();
@@ -187,6 +195,8 @@ public class ReservationHandler {
             throw new CapacityAlreadyDefinedException();
 
         this.slotCapacity = slotCapacity;
+        if (reservationObserver != null)
+            reservationObserver.onSlotCapacitySet(attraction, dayOfYear, slotCapacity);
 
         // Apply the reservation relocation algorithm to confirm the pending requests into the slots, or relocate.
 
@@ -210,7 +220,8 @@ public class ReservationHandler {
 
                 confirmed.put(next.getVisitorId(), next);
                 bookingsConfirmed++;
-                // TODO: Alert that the request was confirmed.
+                if (reservationObserver != null)
+                    reservationObserver.onConfirmed(next);
             }
         }
 
@@ -223,7 +234,7 @@ public class ReservationHandler {
             int amountToRelocate = slotConfirmedRequests[slotIndex].size() + requests.size() - slotCapacity;
             Iterator<Reservation> requestsIterator = requests.values().iterator();
             for (int i = 0; i < amountToRelocate; i++) {
-                Reservation visitorToRelocate = requestsIterator.next();
+                Reservation reservationToRelocate = requestsIterator.next();
                 requestsIterator.remove();
 
                 // Implementation note: When a ticket is attempted to be moved but the destination time slot is invalid
@@ -231,14 +242,14 @@ public class ReservationHandler {
                 // the future where the valid time slots aren't contiguous, this algorithm will have to be adapted.
                 boolean relocated = false;
                 int relocateSlotIndex = slotIndex + 1;
-                while (!relocated && relocateSlotIndex < slotCount && visitorToRelocate.getTicket().getTicketType().isSlotTimeValid(getSlotTimeByIndex(relocateSlotIndex))) {
+                while (!relocated && relocateSlotIndex < slotCount && reservationToRelocate.getTicket().getTicketType().isSlotTimeValid(getSlotTimeByIndex(relocateSlotIndex))) {
                     Map<UUID, Reservation> relocateSlotConfirmed = getOrCreateSlotConfirmedRequests(relocateSlotIndex);
                     LinkedHashMap<UUID, Reservation> relocateSlotPending = slotPendingRequests[relocateSlotIndex];
                     int relocateSlotTotal = relocateSlotConfirmed.size() + (relocateSlotPending == null ? 0 : relocateSlotPending.size());
 
                     if (relocateSlotTotal < slotCapacity) {
                         relocateSlotPending = getOrCreateSlotPendingRequests(relocateSlotIndex);
-                        relocated = relocateSlotPending.putIfAbsent(visitorToRelocate.getVisitorId(), visitorToRelocate) == null;
+                        relocated = relocateSlotPending.putIfAbsent(reservationToRelocate.getVisitorId(), reservationToRelocate) == null;
                     }
 
                     if (!relocated)
@@ -246,10 +257,12 @@ public class ReservationHandler {
                 }
 
                 if (relocated) {
-                    // TODO: Alert that the request was relocated.
+                    if (reservationObserver != null)
+                        reservationObserver.onRelocated(reservationToRelocate);
                     bookingsRelocated++;
                 } else {
-                    // TODO: Alert that the request was cancelled.
+                    if (reservationObserver != null)
+                        reservationObserver.onCancelled(reservationToRelocate);
                     bookingsCancelled++;
                 }
             }
@@ -263,8 +276,9 @@ public class ReservationHandler {
         LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
 
         if (confirmed != null && confirmed.size() >= slotCapacity && pendings != null) {
-            for (Reservation r : pendings.values()) {
-                // TODO: Notify reservation cancelled.
+            if (reservationObserver != null) {
+                for (Reservation r : pendings.values())
+                    reservationObserver.onCancelled(r);
             }
             pendings.clear();
         }
@@ -290,7 +304,8 @@ public class ReservationHandler {
             if (getOrCreateSlotPendingRequests(slotIndex).putIfAbsent(reservation.getVisitorId(), reservation) != null)
                 throw new ReservationAlreadyExistsException();
 
-            // TODO: Notify new pending reservation created.
+            if (reservationObserver != null)
+                reservationObserver.onCreated(reservation, false);
             return new MakeReservationResult(reservation, false);
         }
 
@@ -315,7 +330,8 @@ public class ReservationHandler {
         // If max capacity was reached for this slot, cancel all its pending reservations.
         cancelPendingReservationsForSlotIfFull(slotIndex);
 
-        //  TODO: Notify new confirmed reservation created.
+        if (reservationObserver != null)
+            reservationObserver.onCreated(reservation, true);
         return new MakeReservationResult(reservation, true);
     }
 
@@ -344,10 +360,14 @@ public class ReservationHandler {
 
         if (success) {
             reservation.setAsConfirmed();
-            // TODO: Notify reservation confirmed.
+            if (reservationObserver != null)
+                reservationObserver.onConfirmed(reservation);
             cancelPendingReservationsForSlotIfFull(slotIndex);
         } else {
-            // TODO: Notify reservation cancelled? (due to internal server error, this should never happen)
+            // This should never happen, as checks are in place to ensure a pending reservation is never left where
+            // there is already a confirmed one. We leave this here to be thorough.
+            if (reservationObserver != null)
+                reservationObserver.onCancelled(reservation);
         }
     }
 
@@ -367,7 +387,8 @@ public class ReservationHandler {
                 throw new ReservationNotFoundException();
         }
 
-        // TODO: Notify reservation cancelled.
+        if (reservationObserver != null)
+            reservationObserver.onCancelled(reservation);
     }
 
     /**
