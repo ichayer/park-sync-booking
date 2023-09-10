@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class OutOfCapacityException extends ServerException{
+public class OutOfCapacityException extends ServerException {
 
     private static final ApiStatus API_STATUS = ApiStatus.OUT_OF_CAPACITY;
 

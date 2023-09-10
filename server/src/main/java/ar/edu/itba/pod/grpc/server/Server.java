@@ -2,8 +2,10 @@ package ar.edu.itba.pod.grpc.server;
 
 import ar.edu.itba.pod.grpc.server.exceptions.ExceptionHandler;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.notifications.NotificationRouter;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
+import ar.edu.itba.pod.grpc.server.services.NotificationServiceImpl;
 import io.grpc.ServerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +18,15 @@ public class Server {
     public static void main(String[] args) throws InterruptedException, IOException {
         logger.info("Server Starting ...");
 
-        AttractionHandler attractionHandler = new AttractionHandler();
+        NotificationRouter notificationRouter = new NotificationRouter();
+        AttractionHandler attractionHandler = new AttractionHandler(notificationRouter);
+
         int port = 50051;
         io.grpc.Server server = ServerBuilder.forPort(port)
                 .intercept(new ExceptionHandler())
                 .addService(new AdminServiceImpl(attractionHandler))
                 .addService(new BookingServiceImpl(attractionHandler))
+                .addService(new NotificationServiceImpl(attractionHandler, notificationRouter))
                 .build()
                 .start();
         logger.info("Server started, listening on " + port);

@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.grpc.server.models;
 
+import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
@@ -14,17 +15,21 @@ public class Attraction {
     private final int slotDuration;
     private final ReservationHandler[] reservationHandlers;
 
-    public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration) {
+    public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration, ReservationObserver reservationObserver) {
         this.name = Objects.requireNonNull(name);
         this.openingTime = Objects.requireNonNull(openingTime);
         this.closingTime = Objects.requireNonNull(closingTime);
         this.slotDuration = slotDuration;
         this.reservationHandlers = new ReservationHandler[Constants.DAYS_IN_YEAR];
         for (int i = 0; i < reservationHandlers.length; i++)
-            reservationHandlers[i] = new ReservationHandler(this, i + 1);
+            reservationHandlers[i] = new ReservationHandler(this, i + 1, reservationObserver);
     }
 
-    public String getName() {
+    public Attraction(String name, LocalTime openingTime, LocalTime closingTime, int slotDuration) {
+        this(name, openingTime, closingTime, slotDuration, null);
+    }
+
+        public String getName() {
         return name;
     }
 

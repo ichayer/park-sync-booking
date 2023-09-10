@@ -1,24 +1,20 @@
 package ar.edu.itba.pod.grpc.server.exceptions;
 
-import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 import io.grpc.*;
 
 public class ExceptionHandler implements ServerInterceptor {
 
     @Override
-    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> serverCall, Metadata metadata,
-                                                                 ServerCallHandler<ReqT, RespT> serverCallHandler) {
+    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> serverCall, Metadata metadata, ServerCallHandler<ReqT, RespT> serverCallHandler) {
         ServerCall.Listener<ReqT> listener = serverCallHandler.startCall(serverCall, metadata);
         return new ExceptionHandlingServerCallListener<>(listener, serverCall, metadata);
     }
 
-    private static class ExceptionHandlingServerCallListener<ReqT, RespT>
-            extends ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT> {
+    private static class ExceptionHandlingServerCallListener<ReqT, RespT> extends ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT> {
         private final ServerCall<ReqT, RespT> serverCall;
         private final Metadata metadata;
 
-        ExceptionHandlingServerCallListener(ServerCall.Listener<ReqT> listener, ServerCall<ReqT, RespT> serverCall,
-                                            Metadata metadata) {
+        ExceptionHandlingServerCallListener(ServerCall.Listener<ReqT> listener, ServerCall<ReqT, RespT> serverCall, Metadata metadata) {
             super(listener);
             this.serverCall = serverCall;
             this.metadata = metadata;
@@ -31,7 +27,7 @@ public class ExceptionHandler implements ServerInterceptor {
             } catch (ServerException ex) {
                 handleException(ex, serverCall, metadata);
             } catch (RuntimeException ex) {
-                handleException(new  UnknownException(ex), serverCall, metadata);
+                handleException(new UnknownException(ex), serverCall, metadata);
             }
         }
 
@@ -49,6 +45,5 @@ public class ExceptionHandler implements ServerInterceptor {
         private void handleException(ServerException exception, ServerCall<ReqT, RespT> serverCall, Metadata metadata) {
             serverCall.close(exception.getStatus(), metadata);
         }
-
     }
 }

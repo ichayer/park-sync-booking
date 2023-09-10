@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class NegativeCapacityException extends ServerException{
+public class NegativeCapacityException extends ServerException {
 
     private static final ApiStatus API_STATUS = ApiStatus.NEGATIVE_CAPACITY;
 

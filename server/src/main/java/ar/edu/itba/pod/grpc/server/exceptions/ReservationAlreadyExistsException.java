@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class ReservationAlreadyExistsException  extends ServerException{
+public class ReservationAlreadyExistsException extends ServerException {
 
     private static final ApiStatus API_STATUS = ApiStatus.RESERVATION_ALREADY_EXISTS;
 

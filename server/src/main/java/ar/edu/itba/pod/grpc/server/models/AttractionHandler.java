@@ -1,9 +1,10 @@
 package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
-import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotExistsException;
+import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotFoundException;
 import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
 import ar.edu.itba.pod.grpc.server.exceptions.TicketAlreadyExistsException;
+import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
@@ -17,12 +18,14 @@ public class AttractionHandler {
 
     private final ConcurrentMap<String, Attraction> attractions;
     private final ConcurrentMap<UUID, Ticket>[] ticketsByDay;
+    private final ReservationObserver reservationObserver;
 
-    public AttractionHandler() {
+    public AttractionHandler(ReservationObserver reservationObserver) {
         this.attractions = new ConcurrentHashMap<>();
         this.ticketsByDay = (ConcurrentMap<UUID, Ticket>[]) new ConcurrentMap[Constants.DAYS_IN_YEAR];
         for (int i = 0; i < ticketsByDay.length; i++)
             ticketsByDay[i] = new ConcurrentHashMap<>();
+        this.reservationObserver = reservationObserver;
     }
 
     /**
@@ -32,10 +35,23 @@ public class AttractionHandler {
     public AttractionHandler(ConcurrentMap<String, Attraction> attractions, ConcurrentMap<UUID, Ticket>[] ticketsByDay) {
         this.attractions = attractions;
         this.ticketsByDay = ticketsByDay;
+        this.reservationObserver = null;
+    }
+
+    /**
+     * Gets an attraction by name.
+     * @throws AttractionNotFoundException If no attraction is found with that name.
+     */
+    public Attraction getAttraction(String attractionName) {
+        Attraction attraction = this.attractions.get(attractionName);
+        if (attraction == null)
+            throw new AttractionNotFoundException();
+
+        return attraction;
     }
 
     public void createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
-        Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration);
+        Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration, reservationObserver);
         if(this.attractions.putIfAbsent(attractionName, attraction) != null){
             throw new AttractionAlreadyExistsException();
         }
@@ -44,7 +60,7 @@ public class AttractionHandler {
     public DefineSlotCapacityResult setSlotCapacityForAttraction(String attractionName, int dayOfYear, int slotCapacity) {
         Attraction attraction = attractions.get(attractionName);
         if (attraction == null)
-            throw new AttractionNotExistsException();
+            throw new AttractionNotFoundException();
 
         return attraction.trySetSlotCapacity(dayOfYear, slotCapacity);
     }
@@ -64,7 +80,7 @@ public class AttractionHandler {
     public MakeReservationResult makeReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
         Attraction attraction = attractions.get(attractionName);
         if (attraction == null)
-            throw new AttractionNotExistsException();
+            throw new AttractionNotFoundException();
 
         Ticket ticket = ticketsByDay[dayOfYear - 1].get(visitorId);
         if (ticket == null)

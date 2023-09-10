@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class ReservationNotFoundException  extends ServerException{
+public class ReservationNotFoundException extends ServerException {
 
     private static final ApiStatus API_STATUS = ApiStatus.RESERVATION_NOT_FOUND;
 
