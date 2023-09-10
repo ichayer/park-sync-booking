@@ -39,15 +39,11 @@ public class RidesAction implements Action {
                         .build();
                 logger.info("Sending ride request {}", request);
                 try{
-                    com.google.protobuf.BoolValue response = stub.addAttraction(request);
-                    if (response.getValue()) {
-                        logger.info("ride {} added", fields[0]);
-                        attractionsAdded++;
-                    } else {
-                        logger.info("ride {} could not be added", fields[0]);
-                        attractionsFailed++;
-                    }
+                    stub.addAttraction(request);
+                    logger.info("ride {} added", fields[0]);
+                    attractionsAdded++;
                 }catch (Exception e) {
+                    logger.info("ride {} could not be added", fields[0]);
                     attractionsFailed++;
                 }
             }

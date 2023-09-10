@@ -2,7 +2,6 @@ package ar.edu.itba.pod.grpc.bookingClient.actions;
 
 import ar.edu.itba.pod.grpc.BookingRequest;
 import ar.edu.itba.pod.grpc.BookingServiceGrpc;
-import ar.edu.itba.pod.grpc.ConfirmationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +12,7 @@ public class ConfirmAction extends BoookingAction {
     @Override
     protected void sendServerMessage(BookingRequest bookingRequest, BookingServiceGrpc.BookingServiceBlockingStub stub) {
         logger.info("Sending confirm request {}", bookingRequest);
-        ConfirmationResponse response = stub.confirmReservation(bookingRequest);
+        stub.confirmReservation(bookingRequest);
     }
 
     @Override

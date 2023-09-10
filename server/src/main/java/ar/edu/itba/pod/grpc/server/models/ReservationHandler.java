@@ -1,7 +1,10 @@
 package ar.edu.itba.pod.grpc.server.models;
 
+import ar.edu.itba.pod.grpc.server.exceptions.CapacityAlreadyDefinedException;
+import ar.edu.itba.pod.grpc.server.exceptions.InvalidSlotException;
+import ar.edu.itba.pod.grpc.server.exceptions.OutOfCapacityException;
+import ar.edu.itba.pod.grpc.server.exceptions.ReservationAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
-import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
 
 import java.time.LocalTime;
@@ -168,11 +171,11 @@ public class ReservationHandler {
 
     /**
      * Sets the slot capacity, if it isn't already set.
-     * @throws IllegalStateException if slot capacity is already defined.
+     * @throws CapacityAlreadyDefinedException if slot capacity is already defined.
      */
     public synchronized DefineSlotCapacityResult defineSlotCapacity(int slotCapacity) {
         if (this.slotCapacity != -1)
-            return DefineSlotCapacityResult.CAPACITY_ALREADY_SET;
+            throw new CapacityAlreadyDefinedException();
 
         this.slotCapacity = slotCapacity;
 
@@ -243,20 +246,19 @@ public class ReservationHandler {
             }
         }
 
-        return new DefineSlotCapacityResult(DefineSlotCapacityResult.Status.SUCCESS, bookingsConfirmed, bookingsRelocated, bookingsCancelled);
+        return new DefineSlotCapacityResult(bookingsConfirmed, bookingsRelocated, bookingsCancelled);
     }
 
     /**
      * Attempts to make a reservation for a given visitor and time slot.
-     * @return A MakeReservationResult with the result of the operation. If the result is an error, the
-     * <code>.reservation</code> value will be null.
-     * @implNote To check for success or status, use <code>.status</code> instead of reading fields from the
-     * <code>.reservation</code>. This will avoid race conditions.
+     * @return A Reservation
+     * @throws InvalidSlotException, ReservationAlreadyExistsException, OutOfCapacityException,
+     * ReservationAlreadyExistsException,
      */
-    public synchronized MakeReservationResult makeReservation(Ticket ticket, LocalTime slotTime) {
+    public synchronized Reservation makeReservation(Ticket ticket, LocalTime slotTime) {
         final int slotIndex = getSlotIndex(slotTime);
         if (slotIndex == -1)
-            return MakeReservationResult.INVALID_SLOT_TIME;
+            throw new InvalidSlotException();
 
         // The behavior of this method changes depending on whether slot capacities have been defined:
         // - If slot capacities have not been defined, the reservation is queued until they are.
@@ -265,30 +267,29 @@ public class ReservationHandler {
         if (slotCapacity == -1) {
             // Slot capacity has not been defined, queue the reservation.
             Reservation reservation = new Reservation(ticket, attraction, slotTime, false);
-            boolean success = getOrCreateSlotPendingRequests(slotIndex).putIfAbsent(reservation.getVisitorId(), reservation) == null;
-            if (!success)
-                return MakeReservationResult.ALREADY_EXISTS;
+            if (getOrCreateSlotPendingRequests(slotIndex).putIfAbsent(reservation.getVisitorId(), reservation) != null)
+                throw new ReservationAlreadyExistsException();
 
             // TODO: Notify new pending reservation created.
-            return new MakeReservationResult(MakeReservationResult.Status.QUEUED, reservation);
+            return reservation;
         }
 
         // Slot capacity has been defined, attempt the reservation right now.
         final Map<UUID, Reservation> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
         if (confirmed.size() >= slotCapacity)
-            return MakeReservationResult.OUT_OF_CAPACITY;
+            throw new OutOfCapacityException();
 
         // Check if the reservation already exists as pending
         // TODO: Decide if the way to handle this side case is to raise an error or confirm the pending reservation.
         LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
         if (pendings != null && pendings.containsKey(ticket.getVisitorId()))
-            return MakeReservationResult.ALREADY_EXISTS;
+            throw new ReservationAlreadyExistsException();
 
         // TODO: Discuss replacing with confirmed.computeIfAbsent. The issue with that function is that we can't differentiate the return value.
         Reservation reservation = new Reservation(ticket, attraction, slotTime, true);
         boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), reservation) == null;
         if (!success)
-            return MakeReservationResult.ALREADY_EXISTS;
+            throw new ReservationAlreadyExistsException();
 
         // TODO: Decide if pending reservations are cancelled automatically when a slot fills up, or if the confirmation fails when the user attempts it.
         // If max capacity was reached for this slot, cancel all its pending reservations.
@@ -300,7 +301,7 @@ public class ReservationHandler {
         }
 
         //  TODO: Notify new confirmed reservation created.
-        return new MakeReservationResult(MakeReservationResult.Status.CONFIRMED, reservation);
+        return reservation;
     }
 
     public synchronized void confirmReservation(UUID visitorId, LocalTime slotTime) {

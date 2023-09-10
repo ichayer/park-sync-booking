@@ -14,12 +14,6 @@ message DayOfYearRequest {
   int32 dayOfYear = 1;
 }
 
-enum SuggestedCapacityStatus {
-  SUGGESTED_CAPACITY_STATUS_UNKNOWN = 0;
-  SUGGESTED_CAPACITY_STATUS_SUCCESS = 1;
-  SUGGESTED_CAPACITY_STATUS_INVALID_DAY = 2;
-}
-
 message SuggestedCapacity {
   string attractionName = 1;
   int32 maxPendingReservations = 2;
@@ -27,18 +21,11 @@ message SuggestedCapacity {
 }
 
 message SuggestedCapacitiesResponse {
-  SuggestedCapacityStatus status = 1;
   repeated SuggestedCapacity suggestedCapacity = 2;
 }
 
-enum ConfirmedCapacityStatus {
-  CONFIRMED_RESERVATION_STATUS_UNKNOWN = 0;
-  CONFIRMED_RESERVATION_STATUS_SUCCESS = 1;
-  CONFIRMED_RESERVATION_STATUS_INVALID_DAY = 2;
-}
 
 message ConfirmedReservationsResponse {
-  ConfirmedCapacityStatus status = 1;
   repeated ConfirmedReservation confirmedReservation = 2;
 }
 

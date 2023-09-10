@@ -9,8 +9,8 @@ service BookingService {
   rpc GetAttractions(google.protobuf.Empty) returns (GetAttractionsResponse);
   rpc CheckAttractionAvailability(AvailabilityRequest) returns (AvailabilityResponse);
   rpc ReserveAttraction(BookingRequest) returns (ReservationResponse);
-  rpc ConfirmReservation(BookingRequest) returns (ConfirmationResponse);
-  rpc CancelReservation(BookingRequest) returns (CancellationResponse);
+  rpc ConfirmReservation(BookingRequest) returns (google.protobuf.Empty);
+  rpc CancelReservation(BookingRequest) returns (google.protobuf.Empty);
 }
 
 message Attraction {
@@ -30,17 +30,8 @@ message AvailabilityRequest {
   string slotTo = 4;
 }
 
-enum CheckAvailabilityStatus {
-  CHECK_AVAILABILITY_UNKNOWN = 0;
-  CHECK_AVAILABILITY_SUCCESS = 1;
-  CHECK_AVAILABILITY_ATTRACTION_NOT_FOUND = 2;
-  CHECK_AVAILABILITY_INVALID_DAY = 3;
-  CHECK_AVAILABILITY_INVALID_SLOT = 4;
-}
-
 message AvailabilityResponse {
-  CheckAvailabilityStatus status = 1;
-  repeated AvailabilitySlot slot = 2;
+  repeated AvailabilitySlot slot = 1;
 }
 
 message AvailabilitySlot {
@@ -64,48 +55,6 @@ enum BookingState {
   RESERVATION_STATUS_CONFIRMED = 2;
 }
 
-enum ReservationStatus {
-  BOOKING_STATUS_UNKNOWN = 0;
-  BOOKING_STATUS_SUCCESS = 1;
-  BOOKING_STATUS_ALREADY_EXISTS = 2;
-  BOOKING_STATUS_ATTRACTION_NOT_FOUND = 3;
-  BOOKING_STATUS_INVALID_DAY = 4;
-  BOOKING_STATUS_INVALID_SLOT = 5;
-  BOOKING_STATUS_MISSING_PASS = 6;
-  BOOKING_STATUS_NO_CAPACITY = 7;
-}
-
 message ReservationResponse {
-  ReservationStatus status = 1;
-  BookingState state = 2;
-}
-
-enum ConfirmationStatus {
-  CONFIRMATION_STATUS_UNKNOWN = 0;
-  CONFIRMATION_STATUS_SUCCESS = 1;
-  CONFIRMATION_STATUS_NO_CAPACITY = 2;
-  CONFIRMATION_STATUS_ALREADY_CONFIRMED = 3;
-  CONFIRMATION_STATUS_RESERVATION_NOT_FOUND = 4;
-  CONFIRMATION_STATUS_ATTRACTION_NOT_FOUND = 5;
-  CONFIRMATION_STATUS_INVALID_DAY = 6;
-  CONFIRMATION_STATUS_INVALID_SLOT = 7;
-  CONFIRMATION_STATUS_MISSING_PASS = 8;
-}
-
-message ConfirmationResponse {
-  ConfirmationStatus status = 1;
-}
-
-enum CancellationStatus {
-  CANCELLATION_STATUS_UNKNOWN = 0;
-  CANCELLATION_STATUS_SUCCESS = 1;
-  CANCELLATION_STATUS_RESERVATION_NOT_FOUND = 2;
-  CANCELLATION_STATUS_ATTRACTION_NOT_FOUND = 3;
-  CANCELLATION_STATUS_INVALID_DAY = 4;
-  CANCELLATION_STATUS_INVALID_SLOT = 5;
-  CANCELLATION_STATUS_MISSING_PASS = 6;
-}
-
-message CancellationResponse {
-  CancellationStatus status = 1;
+  BookingState state = 1;
 }

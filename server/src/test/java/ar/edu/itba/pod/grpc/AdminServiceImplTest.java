@@ -1,12 +1,15 @@
 package ar.edu.itba.pod.grpc;
 
+import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import com.google.protobuf.BoolValue;
+import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -49,7 +52,7 @@ public class AdminServiceImplTest {
     private final AdminServiceImpl adminService = new AdminServiceImpl(attractionHandler);
 
     @Mock
-    private StreamObserver<BoolValue> booleanResponseObserver;
+    private StreamObserver<Empty> emptyStreamObserver;
     @Mock
     private StreamObserver<AddCapacityResponse> capacityResponseObserver;
 
@@ -69,7 +72,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        adminService.addAttraction(request, emptyStreamObserver);
         assertTrue(attractions.containsKey(ATTRACTION_NAME));
     }
 
@@ -85,7 +88,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        adminService.addAttraction(request, emptyStreamObserver);
 
         assertTrue(attractions.containsKey(ATTRACTION_NAME));
         assertTrue(attractions.containsKey(ANOTHER_ATTRACTION_NAME));
@@ -105,7 +108,7 @@ public class AdminServiceImplTest {
 
         attractions.put(attraction.getName(), attraction);
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(AttractionAlreadyExistsException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.containsKey(ATTRACTION_NAME));
         assertEquals(1, attractions.size());
@@ -120,7 +123,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(EmptyAttractionException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -134,7 +137,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(NO_SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -148,7 +151,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(NEGATIVE_SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -162,7 +165,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -176,7 +179,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -190,7 +193,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -204,7 +207,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -218,7 +221,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        adminService.addAttraction(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -231,7 +234,7 @@ public class AdminServiceImplTest {
                 .setPassType(PassType.PASS_TYPE_FULL_DAY)
                 .build();
 
-        adminService.addTicket(request, booleanResponseObserver);
+        adminService.addTicket(request, emptyStreamObserver);
 
         assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
         assertNotNull(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
@@ -246,7 +249,7 @@ public class AdminServiceImplTest {
                 .setPassType(PassType.PASS_TYPE_FULL_DAY)
                 .build();
 
-        adminService.addTicket(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidDayException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
         for (int i = 0; i < ticketsByDay.length; i++)
             assertTrue(ticketsByDay[i].isEmpty());
@@ -260,7 +263,7 @@ public class AdminServiceImplTest {
                 .setPassType(PassType.PASS_TYPE_FULL_DAY)
                 .build();
 
-        adminService.addTicket(request, booleanResponseObserver);
+        Assert.assertThrows(InvalidDayException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
         for (int i = 0; i < ticketsByDay.length; i++)
             assertTrue(ticketsByDay[i].isEmpty());
@@ -277,7 +280,7 @@ public class AdminServiceImplTest {
                 .setPassType(PassType.PASS_TYPE_FULL_DAY)
                 .build();
 
-        adminService.addTicket(request, booleanResponseObserver);
+        Assert.assertThrows(TicketAlreadyExistsException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
         assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
         assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
@@ -295,7 +298,7 @@ public class AdminServiceImplTest {
                 .setPassType(PassType.PASS_TYPE_HALF_DAY)
                 .build();
 
-        adminService.addTicket(request, booleanResponseObserver);
+        Assert.assertThrows(TicketAlreadyExistsException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
         assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
         assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
@@ -313,7 +316,7 @@ public class AdminServiceImplTest {
                 .setPassType(PassType.PASS_TYPE_FULL_DAY)
                 .build();
 
-        adminService.addTicket(request, booleanResponseObserver);
+        Assert.assertThrows(TicketAlreadyExistsException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
         assertTrue(ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
         assertEquals(1, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].size());
