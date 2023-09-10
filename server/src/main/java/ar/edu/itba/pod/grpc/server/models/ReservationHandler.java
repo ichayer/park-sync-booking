@@ -12,6 +12,8 @@ import java.util.*;
  */
 public class ReservationHandler {
 
+    // TODO: On reservation cancelled, decrement the amount of bookings in the Ticket instance.
+
     /**
      * The attraction for which this ReservationHandler manages reservations.
      */
@@ -48,7 +50,7 @@ public class ReservationHandler {
      * therefore are ordered chronologically.
      * Note: all elements in this array start as null and are created as needed.
      */
-    private final Queue<Reservation>[] slotPendingRequests;
+    private final LinkedHashMap<UUID, Reservation>[] slotPendingRequests;
 
     /**
      * Creates a new ReservationHandler for the given attraction and day of year.
@@ -69,7 +71,7 @@ public class ReservationHandler {
             throw new IllegalArgumentException("The attraction must have at least one time slot");
 
         this.slotConfirmedRequests = (Map<UUID, Reservation>[]) new Map[slotCount];
-        this.slotPendingRequests = (Queue<Reservation>[]) new Queue[slotCount];
+        this.slotPendingRequests = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[slotCount];
     }
 
     /**
@@ -77,9 +79,10 @@ public class ReservationHandler {
      * and pending data structures.
      * THIS CONSTRUCTOR IS INTENDED ONLY FOR TESTING. Use the other constructor for everything else.
      */
-    public ReservationHandler(Attraction attraction, int dayOfYear, Map<UUID, Reservation>[] slotConfirmedRequests, Queue<Reservation>[] slotPendingRequests) {
+    public ReservationHandler(Attraction attraction, int dayOfYear, int slotCapacity, Map<UUID, Reservation>[] slotConfirmedRequests, LinkedHashMap<UUID, Reservation>[] slotPendingRequests) {
         this.attraction = Objects.requireNonNull(attraction);
         this.dayOfYear = dayOfYear;
+        this.slotCapacity = slotCapacity;
 
         LocalTime openingTime = attraction.getOpeningTime();
         LocalTime closingTime = attraction.getClosingTime();
@@ -104,10 +107,10 @@ public class ReservationHandler {
         return confirmed;
     }
 
-    private Queue<Reservation> getOrCreateSlotPendingRequests(int slotIndex) {
-        Queue<Reservation> pending = slotPendingRequests[slotIndex];
+    private LinkedHashMap<UUID, Reservation> getOrCreateSlotPendingRequests(int slotIndex) {
+        LinkedHashMap<UUID, Reservation> pending = slotPendingRequests[slotIndex];
         if (pending == null)
-            pending = slotPendingRequests[slotIndex] = new LinkedList<>();
+            pending = slotPendingRequests[slotIndex] = new LinkedHashMap<>();
 
         return pending;
     }
@@ -180,15 +183,19 @@ public class ReservationHandler {
         int bookingsCancelled = 0;
 
         for (int slotIndex = 0; slotIndex < slotPendingRequests.length; slotIndex++) {
-            Queue<Reservation> requests = slotPendingRequests[slotIndex];
+            LinkedHashMap<UUID, Reservation> requests = slotPendingRequests[slotIndex];
             if (requests == null || requests.isEmpty())
                 continue;
 
             Map<UUID, Reservation> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
 
-            // Dequeue the first N requests from the pending queue and confirm them. (N = slotCapacity)
-            Reservation next;
-            while (confirmed.size() < slotCapacity && (next = requests.poll()) != null) {
+            // Dequeue the first N requests from the pending queue and confirm them (N = slotCapacity).
+            Iterator<Reservation> iterator = requests.values().iterator();
+            while (confirmed.size() < slotCapacity && iterator.hasNext()) {
+                Reservation next = iterator.next();
+                iterator.remove();
+                next.setAsConfirmed();
+
                 confirmed.put(next.getVisitorId(), next);
                 bookingsConfirmed++;
                 // TODO: Alert that the request was confirmed.
@@ -196,32 +203,34 @@ public class ReservationHandler {
         }
 
         // Attempt to relocate forward all pending requests, traversing by slot chronologically.
-        int relocateSlotIndex = 0;
-        for (int slotIndex = 0; slotIndex < slotPendingRequests.length && relocateSlotIndex < slotCount; slotIndex++) {
-            Queue<Reservation> requests = slotPendingRequests[slotIndex];
+        for (int slotIndex = 0; slotIndex < slotPendingRequests.length; slotIndex++) {
+            LinkedHashMap<UUID, Reservation> requests = slotPendingRequests[slotIndex];
             if (requests == null || requests.isEmpty())
                 continue;
 
-            relocateSlotIndex = Math.max(relocateSlotIndex, slotIndex + 1);
-
-            // TODO: Check that the time a reservation was relocated to is valid for the ticket.
             int amountToRelocate = slotConfirmedRequests[slotIndex].size() + requests.size() - slotCapacity;
+            Iterator<Reservation> requestsIterator = requests.values().iterator();
             for (int i = 0; i < amountToRelocate; i++) {
-                Reservation visitorToRelocate = requests.remove();
-                boolean relocated = false;
+                Reservation visitorToRelocate = requestsIterator.next();
+                requestsIterator.remove();
 
-                while (!relocated && relocateSlotIndex < slotCount) {
+                // Implementation note: When a ticket is attempted to be moved but the destination time slot is invalid
+                // due to the ticket type, no further time slots are attempted. If a new ticket type is implemented in
+                // the future where the valid time slots aren't contiguous, this algorithm will have to be adapted.
+                boolean relocated = false;
+                int relocateSlotIndex = slotIndex + 1;
+                while (!relocated && relocateSlotIndex < slotCount && visitorToRelocate.getTicket().getTicketType().isSlotTimeValid(getSlotTimeByIndex(relocateSlotIndex))) {
                     Map<UUID, Reservation> relocateSlotConfirmed = getOrCreateSlotConfirmedRequests(relocateSlotIndex);
-                    Queue<Reservation> relocateSlotPending = slotPendingRequests[relocateSlotIndex];
+                    LinkedHashMap<UUID, Reservation> relocateSlotPending = slotPendingRequests[relocateSlotIndex];
                     int relocateSlotTotal = relocateSlotConfirmed.size() + (relocateSlotPending == null ? 0 : relocateSlotPending.size());
 
                     if (relocateSlotTotal < slotCapacity) {
                         relocateSlotPending = getOrCreateSlotPendingRequests(relocateSlotIndex);
-                        relocateSlotPending.add(visitorToRelocate);
-                        relocated = true;
-                    } else {
-                        relocateSlotIndex++;
+                        relocated = relocateSlotPending.putIfAbsent(visitorToRelocate.getVisitorId(), visitorToRelocate) == null;
                     }
+
+                    if (!relocated)
+                        relocateSlotIndex++;
                 }
 
                 if (relocated) {
@@ -256,8 +265,11 @@ public class ReservationHandler {
         if (slotCapacity == -1) {
             // Slot capacity has not been defined, queue the reservation.
             Reservation reservation = new Reservation(ticket, attraction, slotTime, false);
+            boolean success = getOrCreateSlotPendingRequests(slotIndex).putIfAbsent(reservation.getVisitorId(), reservation) == null;
+            if (!success)
+                return MakeReservationResult.ALREADY_EXISTS;
+
             // TODO: Notify new pending reservation created.
-            getOrCreateSlotPendingRequests(slotIndex).add(reservation);
             return new MakeReservationResult(MakeReservationResult.Status.QUEUED, reservation);
         }
 
@@ -266,15 +278,68 @@ public class ReservationHandler {
         if (confirmed.size() >= slotCapacity)
             return MakeReservationResult.OUT_OF_CAPACITY;
 
-        // TODO: Consider replacing with confirmed.computeIfAbsent
+        // Check if the reservation already exists as pending
+        // TODO: Decide if the way to handle this side case is to raise an error or confirm the pending reservation.
+        LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
+        if (pendings != null && pendings.containsKey(ticket.getVisitorId()))
+            return MakeReservationResult.ALREADY_EXISTS;
+
+        // TODO: Discuss replacing with confirmed.computeIfAbsent. The issue with that function is that we can't differentiate the return value.
         Reservation reservation = new Reservation(ticket, attraction, slotTime, true);
         boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), reservation) == null;
-        if (success) {
-            //  TODO: Notify new confirmed reservation created.
-            return new MakeReservationResult(MakeReservationResult.Status.CONFIRMED, reservation);
+        if (!success)
+            return MakeReservationResult.ALREADY_EXISTS;
+
+        // TODO: Decide if pending reservations are cancelled automatically when a slot fills up, or if the confirmation fails when the user attempts it.
+        // If max capacity was reached for this slot, cancel all its pending reservations.
+        if (confirmed.size() >= slotCapacity && pendings != null) {
+            for (Reservation r : pendings.values()) {
+                // TODO: Notify reservation cancelled.
+            }
+            pendings.clear();
         }
 
-        return MakeReservationResult.ALREADY_EXISTS;
+        //  TODO: Notify new confirmed reservation created.
+        return new MakeReservationResult(MakeReservationResult.Status.CONFIRMED, reservation);
+    }
+
+    public synchronized void confirmReservation(UUID visitorId, LocalTime slotTime) {
+        // TODO: Pretty up this method's interface (waiting for exception handling before doing this)
+        int slotIndex = getSlotIndex(slotTime);
+        if (slotIndex == -1)
+            throw new IllegalStateException("Invalid slot");
+
+        LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
+        Reservation reservation;
+        if (pendings == null || (reservation = pendings.remove(visitorId)) == null)
+            throw new IllegalArgumentException("Reservation not found");
+
+        Map<UUID, Reservation> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
+        boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), reservation) == null;
+
+        if (success) {
+            reservation.setAsConfirmed();
+            // TODO: Notify reservation cancelled? (due to internal server error, this should never happen)
+        } else {
+            // TODO: Notify reservation confirmed.
+        }
+    }
+
+    public synchronized void cancelReservation(UUID visitorId, LocalTime slotTime) {
+        // TODO: Pretty up this method's interface (waiting for exception handling before doing this)
+        int slotIndex = getSlotIndex(slotTime);
+        if (slotIndex == -1)
+            throw new IllegalStateException("Invalid slot");
+
+        LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
+        Reservation reservation = null;
+        if (pendings == null || (reservation = pendings.remove(visitorId)) == null) {
+            Map<UUID, Reservation> confirmed = slotConfirmedRequests[slotIndex];
+            if (confirmed == null || (reservation = confirmed.remove(visitorId)) == null)
+                throw new IllegalArgumentException("Reservation not found");
+        }
+
+        // TODO: Notify reservation cancelled.
     }
 
     /**
