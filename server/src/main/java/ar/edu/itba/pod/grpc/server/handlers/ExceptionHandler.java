@@ -1,5 +1,7 @@
-package ar.edu.itba.pod.grpc.server.exceptions;
+package ar.edu.itba.pod.grpc.server.handlers;
 
+import ar.edu.itba.pod.grpc.server.exceptions.ServerException;
+import ar.edu.itba.pod.grpc.server.exceptions.UnknownException;
 import io.grpc.*;
 
 public class ExceptionHandler implements ServerInterceptor {

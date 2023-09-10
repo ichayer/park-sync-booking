@@ -5,7 +5,7 @@ import ar.edu.itba.pod.grpc.Notification;
 import ar.edu.itba.pod.grpc.NotificationRequest;
 import ar.edu.itba.pod.grpc.NotificationType;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.notifications.NotificationRouter;
 import ar.edu.itba.pod.grpc.server.notifications.NotificationStreamObserver;

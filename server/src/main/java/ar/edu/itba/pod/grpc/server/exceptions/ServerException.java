@@ -24,7 +24,7 @@ public class ServerException extends RuntimeException {
         this.apiStatus = apiStatus;
     }
 
-    io.grpc.Status getStatus() {
+    public io.grpc.Status getStatus() {
         return apiStatus.getStatus().withDescription(apiStatus.getMessageCode());
     }
 }

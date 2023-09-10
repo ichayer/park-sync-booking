@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc;
 
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
-import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Test;

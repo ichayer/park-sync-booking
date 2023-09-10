@@ -1,9 +1,12 @@
-package ar.edu.itba.pod.grpc.server.models;
+package ar.edu.itba.pod.grpc.server.handlers;
 
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotFoundException;
 import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
 import ar.edu.itba.pod.grpc.server.exceptions.TicketAlreadyExistsException;
+import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.Ticket;
+import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;

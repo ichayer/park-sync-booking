@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
-import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.utils.ParseUtils;
@@ -10,7 +10,6 @@ import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 
 import java.time.LocalTime;
-import java.util.Optional;
 import java.util.UUID;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {

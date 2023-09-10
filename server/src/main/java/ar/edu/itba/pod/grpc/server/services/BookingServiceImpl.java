@@ -1,11 +1,9 @@
 package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
-import ar.edu.itba.pod.grpc.server.exceptions.EmptyAttractionException;
-import ar.edu.itba.pod.grpc.server.exceptions.InvalidDayException;
 import ar.edu.itba.pod.grpc.server.exceptions.InvalidSlotException;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.ParseUtils;
 import com.google.protobuf.Empty;

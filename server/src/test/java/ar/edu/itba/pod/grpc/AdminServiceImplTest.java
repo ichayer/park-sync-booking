@@ -2,11 +2,10 @@ package ar.edu.itba.pod.grpc;
 
 import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
-import com.google.protobuf.BoolValue;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Assert;

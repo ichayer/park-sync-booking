@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.grpc.server;
 
-import ar.edu.itba.pod.grpc.server.exceptions.ExceptionHandler;
-import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.ExceptionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.notifications.NotificationRouter;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;

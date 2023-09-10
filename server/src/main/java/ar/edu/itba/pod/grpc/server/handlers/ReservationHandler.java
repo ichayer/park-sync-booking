@@ -1,6 +1,9 @@
-package ar.edu.itba.pod.grpc.server.models;
+package ar.edu.itba.pod.grpc.server.handlers;
 
 import ar.edu.itba.pod.grpc.server.exceptions.*;
+import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.Reservation;
+import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
