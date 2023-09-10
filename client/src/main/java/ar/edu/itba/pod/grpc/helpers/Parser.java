@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.grpc.helpers;
 
+import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import io.grpc.ManagedChannelBuilder;
 
 import java.util.Map;
@@ -29,12 +30,12 @@ public class Parser {
         for (String arg : args) {
             String[] parts = arg.split("=");
             if (parts.length != 2) {
-                throw new IllegalArgumentException("Arguments must have the format -Dargument=value");
+                throw new IllegalClientArgumentException("Arguments must have the format -Dargument=value");
             }
             try {
                 OPTIONS.getOrDefault(parts[0], Parser::invalidArgument).accept(parts[1], arguments);
             } catch (Exception e) {
-                throw new IllegalArgumentException(e.getMessage());
+                throw new IllegalClientArgumentException(e.getMessage());
             }
         }
         return arguments.build();
