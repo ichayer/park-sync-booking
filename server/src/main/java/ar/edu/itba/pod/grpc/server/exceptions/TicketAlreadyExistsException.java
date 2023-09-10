@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class TicketAlreadyExistsException extends ServerException{
+public class TicketAlreadyExistsException extends ServerException {
 
     private static final ApiStatus API_STATUS = ApiStatus.TICKET_ALREADY_EXISTS;
 

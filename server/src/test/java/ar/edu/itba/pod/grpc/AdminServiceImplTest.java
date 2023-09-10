@@ -137,7 +137,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(NO_SLOT_GAP)
                 .build();
 
-        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
+        Assert.assertThrows(InvalidDurationException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -151,7 +151,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(NEGATIVE_SLOT_GAP)
                 .build();
 
-        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
+        Assert.assertThrows(InvalidDurationException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }
@@ -165,7 +165,7 @@ public class AdminServiceImplTest {
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
 
-        Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
+        Assert.assertThrows(InvalidOpeningAndClosingTimeException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
         assertTrue(attractions.isEmpty());
     }

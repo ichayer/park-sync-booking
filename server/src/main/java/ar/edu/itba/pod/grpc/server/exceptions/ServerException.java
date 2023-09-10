@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class ServerException extends RuntimeException{
+public class ServerException extends RuntimeException {
     private final ApiStatus apiStatus;
 
     public ServerException(ApiStatus apiStatus) {
