@@ -2,9 +2,9 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class AttractionNotExistsException extends ServerException{
+public class AttractionNotExistsException extends ServerException {
 
-    private static final ApiStatus API_STATUS = ApiStatus.ATTRACTION_NOT_EXISTS;
+    private static final ApiStatus API_STATUS = ApiStatus.ATTRACTION_NOT_FOUND;
 
     public AttractionNotExistsException() {
         super(API_STATUS);

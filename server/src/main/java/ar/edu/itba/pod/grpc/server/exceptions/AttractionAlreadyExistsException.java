@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class AttractionAlreadyExistsException  extends ServerException{
+public class AttractionAlreadyExistsException extends ServerException {
 
     private static final ApiStatus API_STATUS = ApiStatus.ATTRACTION_ALREADY_EXISTS;
 

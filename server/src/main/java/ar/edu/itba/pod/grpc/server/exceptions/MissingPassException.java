@@ -2,7 +2,7 @@ package ar.edu.itba.pod.grpc.server.exceptions;
 
 import ar.edu.itba.pod.grpc.errorHandling.ApiStatus;
 
-public class MissingPassException extends ServerException{
+public class MissingPassException extends ServerException {
 
     private static final ApiStatus API_STATUS = ApiStatus.MISSING_PASS;
 

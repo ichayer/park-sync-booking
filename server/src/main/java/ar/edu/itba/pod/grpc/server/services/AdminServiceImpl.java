@@ -5,8 +5,7 @@ import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.models.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
-import ar.edu.itba.pod.grpc.server.utils.LocalTimeUtils;
-import com.google.protobuf.BoolValue;
+import ar.edu.itba.pod.grpc.server.utils.ParseUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 
@@ -24,51 +23,37 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     @Override
     public void addAttraction(AddAttractionRequest request, StreamObserver<Empty> responseObserver) {
-        String attractionName = request.getName();
-        Optional<LocalTime> openTime = LocalTimeUtils.parseTimeOrEmpty(request.getOpeningTime());
-        Optional<LocalTime> closeTime = LocalTimeUtils.parseTimeOrEmpty(request.getClosingTime());
-        int slotDuration = request.getSlotDurationMinutes();
+        String attractionName = ParseUtils.checkAttractionName(request.getName());
+        LocalTime openTime = ParseUtils.parseTime(request.getOpeningTime());
+        LocalTime closeTime = ParseUtils.parseTime(request.getClosingTime());
+        int slotDuration = ParseUtils.checkValidDuration(request.getSlotDurationMinutes());
 
-        if (openTime.isEmpty() || closeTime.isEmpty() || slotDuration <= 0 || openTime.get().isAfter(closeTime.get())) {
+        if (!openTime.isBefore(closeTime))
             throw new InvalidSlotException();
-        }
 
-        if(attractionName.isEmpty()){
-            throw new EmptyAttractionException();
-        }
-
-        attractionHandler.createAttraction(attractionName, openTime.get(), closeTime.get(), slotDuration);
+        attractionHandler.createAttraction(attractionName, openTime, closeTime, slotDuration);
 
         responseObserver.onCompleted();
     }
 
     @Override
     public void addTicket(AddTicketRequest request, StreamObserver<Empty> responseObserver) {
-        int dayOfYear = request.getDayOfYear();
+        int dayOfYear = ParseUtils.checkValidDayOfYear(request.getDayOfYear());
 
-        if(dayOfYear < 1 || dayOfYear > 365){
-            throw new InvalidDayException();
-        }
+        TicketType ticketType = TicketType.fromPassType(request.getPassType()).orElseThrow(InvalidDayException::new);
+        UUID visitorId = ParseUtils.parseId(request.getVisitorId());
 
-        Optional<TicketType> ticketType = TicketType.fromPassType(request.getPassType());
-        UUID visitorId = UUID.fromString(request.getVisitorId());
-        attractionHandler.addTicket(visitorId, dayOfYear, ticketType.orElseThrow(InvalidDayException::new));
-
+        attractionHandler.addTicket(visitorId, dayOfYear, ticketType);
         responseObserver.onCompleted();
     }
 
     @Override
     public void addCapacity(AddCapacityRequest request, StreamObserver<AddCapacityResponse> responseObserver) {
+        String attractionName = ParseUtils.checkAttractionName(request.getAttractionName());
+        int dayOfYear = ParseUtils.checkValidDayOfYear(request.getDayOfYear());
+        int capacity = ParseUtils.checkValidCapacity(request.getCapacity());
 
-        if (request.getDayOfYear() < 1 || request.getDayOfYear() > 365) {
-            throw new InvalidDayException();
-        } else if (request.getCapacity() < 0) {
-            throw new NegativeCapacityException();
-        }
-
-
-        DefineSlotCapacityResult result = attractionHandler.setSlotCapacityForAttraction(request.getAttractionName(), request.getDayOfYear(), request.getCapacity());
-
+        DefineSlotCapacityResult result = attractionHandler.setSlotCapacityForAttraction(attractionName, dayOfYear, capacity);
 
         responseObserver.onNext(AddCapacityResponse.newBuilder()
                 .setCancelledBookings(result.bookingsCancelled())
