@@ -2,12 +2,15 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
+import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Attraction {
     private final String name;
@@ -62,5 +65,40 @@ public class Attraction {
      */
     public MakeReservationResult tryMakeReservation(Ticket ticket, LocalTime slotTime) {
         return reservationHandlers[ticket.getDayOfYear() - 1].makeReservation(ticket, slotTime);
+    }
+
+    /**
+     * Gets the availability for a given time slot.
+     */
+    public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
+        return reservationHandlers[dayOfYear - 1].getAvailability(slotFrom, slotTo);
+    }
+
+    /**
+     * Gets the reservation handler for a given day of year. Only used for testing purposes
+     */
+    public ReservationHandler getReservationHandler(int dayOfYear) {
+        return reservationHandlers[dayOfYear - 1];
+    }
+
+    /**
+     * Sets the reservation handler for a given day of year. Only used for testing purposes
+     */
+    public void setReservationHandler(int dayOfYear, ReservationHandler reservationHandler) {
+        reservationHandlers[dayOfYear - 1] = reservationHandler;
+    }
+
+    /**
+     * Confirms a reservation for a given visitorId, day of year and time slot.
+     */
+    public void confirmReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        reservationHandlers[dayOfYear - 1].confirmReservation(visitorId, slotTime);
+    }
+
+    /**
+     * Cancels a reservation for a given visitorId, day of year and time slot.
+     */
+    public void cancelReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        reservationHandlers[dayOfYear - 1].cancelReservation(visitorId, slotTime);
     }
 }

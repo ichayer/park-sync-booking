@@ -21,7 +21,7 @@ public class Ticket {
         return this.ticketType.canBook(this.bookings, slotTime);
     }
 
-    public void addBook(LocalTime slotTime) {
+    public void addBook() {
         this.bookings++;
     }
 
@@ -43,6 +43,10 @@ public class Ticket {
 
     public int getBookings() {
         return bookings;
+    }
+
+    public void setBookings(int bookings) {
+        this.bookings = bookings;
     }
 
     @Override
