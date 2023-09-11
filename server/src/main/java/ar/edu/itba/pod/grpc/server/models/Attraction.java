@@ -10,6 +10,7 @@ import ar.edu.itba.pod.grpc.server.utils.Constants;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Attraction {
     private final String name;
@@ -85,5 +86,12 @@ public class Attraction {
      */
     public void setReservationHandler(int dayOfYear, ReservationHandler reservationHandler) {
         reservationHandlers[dayOfYear - 1] = reservationHandler;
+    }
+
+    /**
+     * Confirms a reservation for a given visitorId, day of year and time slot.
+     */
+    public void confirmReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        reservationHandlers[dayOfYear - 1].confirmReservation(visitorId, slotTime);
     }
 }

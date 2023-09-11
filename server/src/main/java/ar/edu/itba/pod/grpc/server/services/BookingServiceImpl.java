@@ -105,7 +105,14 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
 
     @Override
     public void confirmReservation(BookingRequest request, StreamObserver<Empty> responseObserver) {
-        super.confirmReservation(request, responseObserver);
+        String attractionName = ParseUtils.checkAttractionName(request.getAttractionName());
+        int dayOfYear = ParseUtils.checkValidDayOfYear(request.getDayOfYear());
+        LocalTime slotTime = ParseUtils.parseTime(request.getSlot());
+        UUID visitorId = ParseUtils.parseId(request.getVisitorId());
+
+        attractionHandler.confirmReservation(attractionName, visitorId, dayOfYear, slotTime);
+        responseObserver.onNext(Empty.newBuilder().build());
+        responseObserver.onCompleted();
     }
 
     @Override

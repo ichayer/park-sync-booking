@@ -111,4 +111,16 @@ public class AttractionHandler {
 
         return attraction.getAvailabilityForAttraction(dayOfYear, slotFrom, slotTo);
     }
+
+    /**
+     * Gets the availability for all attractions, for a given day of year and time slot.
+     * @throws AttractionNotFoundException If no attraction is found with that name.
+     */
+    public void confirmReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        Attraction attraction = attractions.get(attractionName);
+        if (attraction == null)
+            throw new AttractionNotFoundException();
+
+        attraction.confirmReservation(visitorId, dayOfYear, slotTime);
+    }
 }

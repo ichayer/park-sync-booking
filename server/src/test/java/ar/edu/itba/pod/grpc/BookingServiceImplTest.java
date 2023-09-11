@@ -1,9 +1,6 @@
 package ar.edu.itba.pod.grpc;
 
-import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotFoundException;
-import ar.edu.itba.pod.grpc.server.exceptions.CheckAvailabilityInvalidArgumentException;
-import ar.edu.itba.pod.grpc.server.exceptions.InvalidDayException;
-import ar.edu.itba.pod.grpc.server.exceptions.InvalidSlotException;
+import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
@@ -409,5 +406,206 @@ public class BookingServiceImplTest {
             Assertions.assertEquals(1, capturedResponse.getSlot(i).getBookingsPending());
             Assertions.assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
         }
+    }
+
+    @Test
+    public void testConfirmReservationFailureLessThan0Days() {
+        Assertions.assertThrows(InvalidDayException.class, () -> {
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName(ATTRACTION_NAME)
+                            .setDayOfYear(INVALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureMoreThan365Days() {
+        Assertions.assertThrows(InvalidDayException.class, () -> {
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName(ATTRACTION_NAME)
+                            .setDayOfYear(OTHER_INVALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureEmptyAttractionName() {
+        Assertions.assertThrows(EmptyAttractionException.class, () -> {
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName("")
+                            .setDayOfYear(VALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureBlankAttractionName() {
+        Assertions.assertThrows(EmptyAttractionException.class, () -> {
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName("  ")
+                            .setDayOfYear(VALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureNoAttraction() {
+        Assertions.assertThrows(AttractionNotFoundException.class, () -> {
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName(NON_EXISTING_ATTRACTION_NAME)
+                            .setDayOfYear(VALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureNoCapacityDefined() {
+        Assertions.assertThrows(CapacityNotDefinedException.class, () -> {
+            Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
+            Attraction attractionSpy = Mockito.spy(attraction);
+            attractions.put(ATTRACTION_NAME, attractionSpy);
+            ReservationHandler reservationHandler = attraction.getReservationHandler(VALID_DAY_OF_YEAR);
+            ReservationHandler reservationHandlerSpy = Mockito.spy(reservationHandler);
+            attractionSpy.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandlerSpy);
+
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName(ATTRACTION_NAME)
+                            .setDayOfYear(VALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureReservationAlreadyConfirmed() {
+        Assertions.assertThrows(ReservationAlreadyConfirmedException.class, () -> {
+            Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
+            Attraction attractionSpy = Mockito.spy(attraction);
+            attractions.put(ATTRACTION_NAME, attractionSpy);
+
+            Map<UUID, Reservation>[] confirmedReservations = (Map<UUID, Reservation>[]) new Map[TOTAL_SLOTS];
+
+            Reservation reservation = Mockito.mock(Reservation.class);
+            confirmedReservations[0] = new ConcurrentHashMap<>();
+            confirmedReservations[0].put(VISITOR_ID, reservation);
+
+            ReservationHandler reservationHandler = new ReservationHandler(attractionSpy,
+                    VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                    SLOT_CAPACITY, confirmedReservations, new LinkedHashMap[TOTAL_SLOTS]);
+
+            ReservationHandler reservationHandlerSpy = Mockito.spy(reservationHandler);
+            attractionSpy.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandlerSpy);
+
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName(ATTRACTION_NAME)
+                            .setDayOfYear(VALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureReservationNotFound() {
+        Assertions.assertThrows(ReservationNotFoundException.class, () -> {
+            Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
+            Attraction attractionSpy = Mockito.spy(attraction);
+            attractions.put(ATTRACTION_NAME, attractionSpy);
+
+            Map<UUID, Reservation>[] confirmedReservations = (Map<UUID, Reservation>[]) new Map[TOTAL_SLOTS];
+
+            confirmedReservations[0] = new ConcurrentHashMap<>();
+
+            ReservationHandler reservationHandler = new ReservationHandler(attractionSpy,
+                    VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                    SLOT_CAPACITY, confirmedReservations, new LinkedHashMap[TOTAL_SLOTS]);
+
+            ReservationHandler reservationHandlerSpy = Mockito.spy(reservationHandler);
+            attractionSpy.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandlerSpy);
+
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName(ATTRACTION_NAME)
+                            .setDayOfYear(VALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservationFailureInvalidSlot() {
+        Assertions.assertThrows(InvalidSlotException.class, () -> {
+            Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
+            Attraction attractionSpy = Mockito.spy(attraction);
+            attractions.put(ATTRACTION_NAME, attractionSpy);
+
+            Map<UUID, Reservation>[] confirmedReservations = (Map<UUID, Reservation>[]) new Map[TOTAL_SLOTS];
+
+            confirmedReservations[0] = new ConcurrentHashMap<>();
+
+            ReservationHandler reservationHandler = new ReservationHandler(attractionSpy,
+                    VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                    SLOT_CAPACITY, confirmedReservations, new LinkedHashMap[TOTAL_SLOTS]);
+
+            ReservationHandler reservationHandlerSpy = Mockito.spy(reservationHandler);
+            attractionSpy.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandlerSpy);
+
+            bookingService.confirmReservation(BookingRequest.newBuilder()
+                            .setAttractionName(ATTRACTION_NAME)
+                            .setDayOfYear(VALID_DAY_OF_YEAR)
+                            .setSlot(ParseUtils.formatTime(TIME_TO_LOCAL_TIME))
+                            .setVisitorId(VISITOR_ID.toString())
+                            .build(),
+                    Mockito.mock(StreamObserver.class));
+        });
+    }
+
+    @Test
+    public void testConfirmReservation() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
+        Attraction attractionSpy = Mockito.spy(attraction);
+        attractions.put(ATTRACTION_NAME, attractionSpy);
+        LinkedHashMap<UUID, Reservation>[] pendingReservations = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[TOTAL_SLOTS];
+        pendingReservations[0] = new LinkedHashMap<>();
+
+        Reservation reservation = new Reservation(Mockito.mock(Ticket.class), Mockito.mock(Attraction.class), TIME_FROM_LOCAL_TIME, false);
+        Reservation reservationSpy = Mockito.spy(reservation);
+        pendingReservations[0].put(VISITOR_ID, reservationSpy);
+
+        ReservationHandler reservationHandler = new ReservationHandler(attractionSpy,
+                VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                SLOT_CAPACITY, new Map[TOTAL_SLOTS], pendingReservations);
+
+        ReservationHandler reservationHandlerSpy = Mockito.spy(reservationHandler);
+        attractionSpy.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandlerSpy);
+
+        bookingService.confirmReservation(BookingRequest.newBuilder()
+                        .setAttractionName(ATTRACTION_NAME)
+                        .setDayOfYear(VALID_DAY_OF_YEAR)
+                        .setSlot(ParseUtils.formatTime(TIME_FROM_LOCAL_TIME))
+                        .setVisitorId(VISITOR_ID.toString())
+                        .build(),
+                Mockito.mock(StreamObserver.class));
+
+        Assertions.assertTrue(reservationSpy.isConfirmed());
     }
 }
