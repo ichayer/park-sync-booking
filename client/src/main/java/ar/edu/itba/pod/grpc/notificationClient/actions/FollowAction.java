@@ -10,6 +10,9 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 public class FollowAction implements Action {
 
     private static final Logger logger = LoggerFactory.getLogger(FollowAction.class);
@@ -31,6 +34,8 @@ public class FollowAction implements Action {
                 .build();
 
         logger.info("Sending follow request {}", request);
+
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
 
 
         AttractionNotificationServiceGrpc.AttractionNotificationServiceStub asyncStub =
@@ -75,19 +80,27 @@ public class FollowAction implements Action {
             @Override
             public void onError(Throwable t) {
                 logger.error("Error: {}", t.getMessage());
+                completableFuture.complete("Error");
             }
 
             @Override
             public void onCompleted() {
                 System.out.println("End.");
+                completableFuture.complete("Ok");
             }
         });
+
+        try {
+            completableFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
         return this;
     }
 
     @Override
     public void showResults() {
-
+        return;
     }
 }

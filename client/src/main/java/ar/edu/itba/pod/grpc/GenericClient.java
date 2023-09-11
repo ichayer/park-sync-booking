@@ -2,6 +2,7 @@ package ar.edu.itba.pod.grpc;
 
 import ar.edu.itba.pod.grpc.exceptions.IOClientFileError;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
+import ar.edu.itba.pod.grpc.exceptions.NotificationInterruptedException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.Parser;
 import ar.edu.itba.pod.grpc.interfaces.ActionMapper;
@@ -9,8 +10,6 @@ import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -51,7 +50,7 @@ public class GenericClient {
             actionMapper.getAction(arguments.getAction()).execute(arguments).showResults();
         }
 
-        catch (IllegalClientArgumentException | IOClientFileError e) {
+        catch (IllegalClientArgumentException | IOClientFileError | NotificationInterruptedException e) {
             System.out.println("Client error: " + e.getMessage());
         }
         catch (StatusRuntimeException e) {
