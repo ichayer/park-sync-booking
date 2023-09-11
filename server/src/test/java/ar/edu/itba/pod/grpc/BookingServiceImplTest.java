@@ -6,15 +6,13 @@ import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalTime;
@@ -63,7 +61,7 @@ public class BookingServiceImplTest {
         Mockito.verify(attractionResponseObserver).onNext(responseCaptor.capture());
         GetAttractionsResponse capturedResponse = responseCaptor.getValue();
 
-        Assert.assertEquals(1, capturedResponse.getAttractionList().size());
+        Assertions.assertEquals(1, capturedResponse.getAttractionList().size());
     }
 
     @Test
@@ -76,6 +74,6 @@ public class BookingServiceImplTest {
         Mockito.verify(attractionResponseObserver).onNext(responseCaptor.capture());
         GetAttractionsResponse capturedResponse = responseCaptor.getValue();
 
-        Assert.assertEquals(0, capturedResponse.getAttractionList().size());
+        Assertions.assertEquals(0, capturedResponse.getAttractionList().size());
     }
 }

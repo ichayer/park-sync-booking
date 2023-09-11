@@ -9,6 +9,7 @@ import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +20,6 @@ import java.time.LocalTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static org.junit.Assert.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AdminServiceImplTest {
@@ -72,7 +71,7 @@ public class AdminServiceImplTest {
                 .build();
 
         adminService.addAttraction(request, emptyStreamObserver);
-        assertTrue(attractions.containsKey(ATTRACTION_NAME));
+        Assertions.assertTrue(attractions.containsKey(ATTRACTION_NAME));
     }
 
     @Test
@@ -89,9 +88,9 @@ public class AdminServiceImplTest {
 
         adminService.addAttraction(request, emptyStreamObserver);
 
-        assertTrue(attractions.containsKey(ATTRACTION_NAME));
-        assertTrue(attractions.containsKey(ANOTHER_ATTRACTION_NAME));
-        assertEquals(2, attractions.size());
+        Assertions.assertTrue(attractions.containsKey(ATTRACTION_NAME));
+        Assertions.assertTrue(attractions.containsKey(ANOTHER_ATTRACTION_NAME));
+        Assertions.assertEquals(2, attractions.size());
     }
 
     @Test
@@ -109,8 +108,8 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(AttractionAlreadyExistsException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.containsKey(ATTRACTION_NAME));
-        assertEquals(1, attractions.size());
+        Assertions.assertTrue(attractions.containsKey(ATTRACTION_NAME));
+        Assertions.assertEquals(1, attractions.size());
     }
 
     @Test
@@ -124,7 +123,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(EmptyAttractionException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -138,7 +137,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(InvalidDurationException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -152,7 +151,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(InvalidDurationException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -166,7 +165,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(InvalidOpeningAndClosingTimeException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -180,7 +179,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -194,7 +193,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -208,7 +207,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -222,7 +221,7 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(InvalidSlotException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
-        assertTrue(attractions.isEmpty());
+        Assertions.assertTrue(attractions.isEmpty());
     }
 
     @Test
@@ -235,9 +234,9 @@ public class AdminServiceImplTest {
 
         adminService.addTicket(request, emptyStreamObserver);
 
-        assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        assertNotNull(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
-        assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
+        Assertions.assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        Assertions.assertNotNull(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
+        Assertions.assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
     }
 
     @Test
@@ -251,7 +250,7 @@ public class AdminServiceImplTest {
         Assert.assertThrows(InvalidDayException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
         for (int i = 0; i < ticketsByDay.length; i++)
-            assertTrue(ticketsByDay[i].isEmpty());
+            Assertions.assertTrue(ticketsByDay[i].isEmpty());
     }
 
     @Test
@@ -265,7 +264,7 @@ public class AdminServiceImplTest {
         Assert.assertThrows(InvalidDayException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
         for (int i = 0; i < ticketsByDay.length; i++)
-            assertTrue(ticketsByDay[i].isEmpty());
+            Assertions.assertTrue(ticketsByDay[i].isEmpty());
     }
 
     @Test
@@ -281,9 +280,9 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(TicketAlreadyExistsException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
-        assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
-        assertEquals(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID), ticket);
+        Assertions.assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        Assertions.assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
+        Assertions.assertEquals(ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID), ticket);
     }
 
     @Test
@@ -299,9 +298,9 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(TicketAlreadyExistsException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
-        assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
-        assertEquals(ticket, ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
+        Assertions.assertTrue(ticketsByDay[VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        Assertions.assertEquals(1, ticketsByDay[VALID_DAY_OF_YEAR - 1].size());
+        Assertions.assertEquals(ticket, ticketsByDay[VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
     }
 
     @Test
@@ -317,13 +316,13 @@ public class AdminServiceImplTest {
 
         Assert.assertThrows(TicketAlreadyExistsException.class, () -> adminService.addTicket(request, emptyStreamObserver));
 
-        assertTrue(ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
-        assertEquals(1, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].size());
-        assertEquals(ticket, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
+        Assertions.assertTrue(ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].containsKey(DEFAULT_VISITOR_ID_UUID));
+        Assertions.assertEquals(1, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].size());
+        Assertions.assertEquals(ticket, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID));
 
-        assertEquals(DEFAULT_VISITOR_ID_UUID, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getVisitorId());
-        assertEquals(OTHER_VALID_DAY_OF_YEAR, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getDayOfYear());
-        assertEquals(TicketType.FULL_DAY, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getTicketType());
+        Assertions.assertEquals(DEFAULT_VISITOR_ID_UUID, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getVisitorId());
+        Assertions.assertEquals(OTHER_VALID_DAY_OF_YEAR, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getDayOfYear());
+        Assertions.assertEquals(TicketType.FULL_DAY, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getTicketType());
     }
 
 }
