@@ -94,4 +94,11 @@ public class Attraction {
     public void confirmReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
         reservationHandlers[dayOfYear - 1].confirmReservation(visitorId, slotTime);
     }
+
+    /**
+     * Cancels a reservation for a given visitorId, day of year and time slot.
+     */
+    public void cancelReservation(UUID visitorId, int dayOfYear, LocalTime slotTime) {
+        reservationHandlers[dayOfYear - 1].cancelReservation(visitorId, slotTime);
+    }
 }

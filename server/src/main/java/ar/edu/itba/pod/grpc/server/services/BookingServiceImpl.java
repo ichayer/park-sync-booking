@@ -117,6 +117,13 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
 
     @Override
     public void cancelReservation(BookingRequest request, StreamObserver<Empty> responseObserver) {
-        super.cancelReservation(request, responseObserver);
+        String attractionName = ParseUtils.checkAttractionName(request.getAttractionName());
+        int dayOfYear = ParseUtils.checkValidDayOfYear(request.getDayOfYear());
+        LocalTime slotTime = ParseUtils.parseTime(request.getSlot());
+        UUID visitorId = ParseUtils.parseId(request.getVisitorId());
+
+        attractionHandler.cancelReservation(attractionName, visitorId, dayOfYear, slotTime);
+        responseObserver.onNext(Empty.newBuilder().build());
+        responseObserver.onCompleted();
     }
 }
