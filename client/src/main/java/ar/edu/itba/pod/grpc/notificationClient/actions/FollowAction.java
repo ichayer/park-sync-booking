@@ -74,12 +74,12 @@ public class FollowAction implements Action {
 
             @Override
             public void onError(Throwable t) {
-                System.err.println("Error: " + t.getMessage());
+                logger.error("Error: {}", t.getMessage());
             }
 
             @Override
             public void onCompleted() {
-                // TODO: check if we want to do sth
+                System.out.println("End.");
             }
         });
 

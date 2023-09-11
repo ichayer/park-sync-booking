@@ -32,6 +32,8 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
         attractionHandler.createAttraction(attractionName, openTime, closeTime, slotDuration);
 
+
+        responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
     }
 
@@ -43,6 +45,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
         UUID visitorId = ParseUtils.parseId(request.getVisitorId());
 
         attractionHandler.addTicket(visitorId, dayOfYear, ticketType);
+        responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
     }
 

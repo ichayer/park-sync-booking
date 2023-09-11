@@ -52,6 +52,7 @@ public class TicketsAction implements Action {
                 ticketsAdded++;
             }catch (Exception e){
                 logger.info("ticket for user {} could not be added", fields[0]);
+                logger.info("reason: {}", e.getMessage());
                 ticketsFailed++;
             }
         }

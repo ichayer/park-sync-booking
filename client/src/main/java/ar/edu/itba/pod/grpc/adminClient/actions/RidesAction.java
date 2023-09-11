@@ -44,6 +44,7 @@ public class RidesAction implements Action {
                     attractionsAdded++;
                 }catch (Exception e) {
                     logger.info("ride {} could not be added", fields[0]);
+                    logger.info("reason: {}", e.getMessage());
                     attractionsFailed++;
                 }
             }
