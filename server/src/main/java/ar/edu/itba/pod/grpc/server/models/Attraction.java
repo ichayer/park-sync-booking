@@ -72,4 +72,18 @@ public class Attraction {
     public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         return reservationHandlers[dayOfYear - 1].getAvailability(slotFrom, slotTo);
     }
+
+    /**
+     * Gets the reservation handler for a given day of year. Only used for testing purposes
+     */
+    public ReservationHandler getReservationHandler(int dayOfYear) {
+        return reservationHandlers[dayOfYear - 1];
+    }
+
+    /**
+     * Sets the reservation handler for a given day of year. Only used for testing purposes
+     */
+    public void setReservationHandler(int dayOfYear, ReservationHandler reservationHandler) {
+        reservationHandlers[dayOfYear - 1] = reservationHandler;
+    }
 }
