@@ -9,11 +9,11 @@ import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalTime;
 import java.util.UUID;
@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static org.junit.Assert.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AdminServiceImplTest {
     private static final String ATTRACTION_NAME = "attractionName";
     private static final String ANOTHER_ATTRACTION_NAME = "anotherAttractionName";

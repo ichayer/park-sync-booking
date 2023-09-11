@@ -1,27 +1,28 @@
 package ar.edu.itba.pod.grpc;
 
 import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.models.Ticket;
+import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
-import org.junit.Test;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.junit.Assert.*;
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class BookingServiceImplTest {
     private static final String ATTRACTION_NAME = "attractionName";
     private static final LocalTime TIME_FROM = LocalTime.of(10, 0);
@@ -62,6 +63,19 @@ public class BookingServiceImplTest {
         Mockito.verify(attractionResponseObserver).onNext(responseCaptor.capture());
         GetAttractionsResponse capturedResponse = responseCaptor.getValue();
 
-        assertEquals(1, capturedResponse.getAttractionList().size());
+        Assert.assertEquals(1, capturedResponse.getAttractionList().size());
+    }
+
+    @Test
+    public void testGetAttractionsWithNoAttraction() {
+        attractionResponseObserver = Mockito.mock(StreamObserver.class);
+
+        bookingService.getAttractions(Empty.newBuilder().build(), attractionResponseObserver);
+
+        ArgumentCaptor<GetAttractionsResponse> responseCaptor = ArgumentCaptor.forClass(GetAttractionsResponse.class);
+        Mockito.verify(attractionResponseObserver).onNext(responseCaptor.capture());
+        GetAttractionsResponse capturedResponse = responseCaptor.getValue();
+
+        Assert.assertEquals(0, capturedResponse.getAttractionList().size());
     }
 }
