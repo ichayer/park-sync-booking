@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.grpc.server.handlers;
 
+import ar.edu.itba.pod.grpc.AvailabilitySlot;
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotFoundException;
 import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
@@ -8,6 +9,7 @@ import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
+import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
@@ -96,5 +98,17 @@ public class AttractionHandler {
             ticket.addBook(slotTime);
             return result;
         }
+    }
+
+    /**
+     * Gets the availability for a given attraction, day of year and time slot.
+     * @throws AttractionNotFoundException If no attraction is found with that name.
+     */
+    public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(String attractionName, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
+        Attraction attraction = attractions.get(attractionName);
+        if (attraction == null)
+            throw new AttractionNotFoundException();
+
+        return attraction.getAvailabilityForAttraction(dayOfYear, slotFrom, slotTo);
     }
 }

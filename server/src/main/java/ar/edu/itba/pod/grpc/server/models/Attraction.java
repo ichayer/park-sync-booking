@@ -2,11 +2,13 @@ package ar.edu.itba.pod.grpc.server.models;
 
 import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
+import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.Objects;
 
 public class Attraction {
@@ -62,5 +64,12 @@ public class Attraction {
      */
     public MakeReservationResult tryMakeReservation(Ticket ticket, LocalTime slotTime) {
         return reservationHandlers[ticket.getDayOfYear() - 1].makeReservation(ticket, slotTime);
+    }
+
+    /**
+     * Gets the availability for a given time slot.
+     */
+    public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
+        return reservationHandlers[dayOfYear - 1].getAvailability(slotFrom, slotTo);
     }
 }

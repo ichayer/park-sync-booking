@@ -1,10 +1,12 @@
 package ar.edu.itba.pod.grpc.server.handlers;
 
+import ar.edu.itba.pod.grpc.AvailabilitySlot;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
+import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
@@ -422,5 +424,33 @@ public class ReservationHandler {
         }
 
         return new SuggestedCapacityResult(maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
+    }
+
+    /**
+     * Gets the availability for a given time slot.
+     * @param slotFrom The start of the time slot, inclusive.
+     * @param slotTo The end of the time slot.
+     * @implNote If slotTo is null, all slots availability from slotFrom to the last one are returned.
+     * @return A collection of AttractionAvailabilityResult, one for each slot in the given range.
+     * @throws InvalidSlotException if the slotFrom or slotTo times are invalid.
+     */
+    public Collection<AttractionAvailabilityResult> getAvailability(LocalTime slotFrom, LocalTime slotTo) {
+        int slotFromIndex = getSlotIndexOrThrow(slotFrom);
+        int slotToIndex = (Objects.isNull(slotTo) ? slotCount - 1 : getSlotIndexOrThrow(slotTo));
+
+        List<AttractionAvailabilityResult> availabilitySlots = new ArrayList<>();
+        for (int slotIndex = slotFromIndex; slotIndex <= slotToIndex; slotIndex++) {
+            Map<UUID, Reservation> confirmed = slotConfirmedRequests[slotIndex];
+            LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
+            LocalTime slotTime = getSlotTimeByIndex(slotIndex);
+
+            int confirmedCount = confirmed == null ? 0 : confirmed.size();
+            int pendingCount = pendings == null ? 0 : pendings.size();
+
+            // TODO: Right now, slotCapacity value could be -1. Wouldn't be better to return a String that says "Not defined"?
+            availabilitySlots.add(new AttractionAvailabilityResult(this.attraction.getName(), slotTime, this.slotCapacity, confirmedCount, pendingCount));
+        }
+
+        return Collections.unmodifiableCollection(availabilitySlots);
     }
 }
