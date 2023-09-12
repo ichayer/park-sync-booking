@@ -17,14 +17,13 @@ import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.utils.ParseUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalTime;
 import java.util.LinkedHashMap;
@@ -33,9 +32,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-@ExtendWith(MockitoExtension.class)
+@RunWith(MockitoJUnitRunner.class)
 public class BookingServiceImplTest {
     private static final String ATTRACTION_NAME = "attractionName";
     private static final String ANOTHER_ATTRACTION_NAME = "anotherAttractionName";
@@ -63,7 +62,7 @@ public class BookingServiceImplTest {
     @Mock
     private static StreamObserver<GetAttractionsResponse> attractionResponseObserver;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         attractions.clear();
         for (int i = 0; i < ticketsByDay.length; i++)
@@ -251,11 +250,11 @@ public class BookingServiceImplTest {
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
         assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for(int i = 0; i< TOTAL_SLOTS; i++) {
-            Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
-            Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
-            Assertions.assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
+            assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
+            assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
+            assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
         }
     }
 
@@ -283,11 +282,11 @@ public class BookingServiceImplTest {
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
         assertEquals(limit + 1, capturedResponse.getSlotList().size());
         for(int i = 0; i< limit + 1; i++) {
-            Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
-            Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
-            Assertions.assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
+            assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
+            assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
+            assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
         }
     }
 
@@ -321,18 +320,18 @@ public class BookingServiceImplTest {
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
         assertEquals(2 * TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for (int i = 0; i < TOTAL_SLOTS; i++) {
-            Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
-            Assertions.assertEquals(ANOTHER_ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
-            Assertions.assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
+            assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
+            assertEquals(ANOTHER_ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
+            assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
         }
         for (int i = TOTAL_SLOTS; i < 2 * TOTAL_SLOTS; i++) {
-            Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
-            Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
-            Assertions.assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) (i - TOTAL_SLOTS) * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
+            assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
+            assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
+            assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) (i - TOTAL_SLOTS) * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
         }
     }
 
@@ -367,11 +366,11 @@ public class BookingServiceImplTest {
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
         assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for (int i = 0; i < TOTAL_SLOTS; i++) {
-            Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
-            Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
-            Assertions.assertEquals(1, capturedResponse.getSlot(i).getBookingsConfirmed());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
-            Assertions.assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
+            assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
+            assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
+            assertEquals(1, capturedResponse.getSlot(i).getBookingsConfirmed());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsPending());
+            assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
         }
     }
 
@@ -406,11 +405,11 @@ public class BookingServiceImplTest {
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
         assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for (int i = 0; i < TOTAL_SLOTS; i++) {
-            Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
-            Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
-            Assertions.assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
-            Assertions.assertEquals(1, capturedResponse.getSlot(i).getBookingsPending());
-            Assertions.assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
+            assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
+            assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
+            assertEquals(0, capturedResponse.getSlot(i).getBookingsConfirmed());
+            assertEquals(1, capturedResponse.getSlot(i).getBookingsPending());
+            assertEquals(TIME_FROM_LOCAL_TIME.plusMinutes((long) i * SLOT_DURATION_MINUTES).toString(), capturedResponse.getSlot(i).getSlot());
         }
     }
 

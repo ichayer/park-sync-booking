@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.test;
 
-import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.models.*;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
@@ -17,7 +16,7 @@ import java.time.LocalTime;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReservationHandlerTest {

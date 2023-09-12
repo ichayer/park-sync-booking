@@ -12,19 +12,20 @@ import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.junit.jupiter.api.Assertions.*;
-@ExtendWith(MockitoExtension.class)
+import static org.junit.Assert.*;
+
+@RunWith(MockitoJUnitRunner.class)
 public class AdminServiceImplTest {
     private static final String ATTRACTION_NAME = "attractionName";
     private static final String ANOTHER_ATTRACTION_NAME = "anotherAttractionName";
@@ -57,7 +58,7 @@ public class AdminServiceImplTest {
     @Mock
     private StreamObserver<AddCapacityResponse> capacityResponseObserver;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         attractions.clear();
         for (int i = 0; i < ticketsByDay.length; i++)

@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.grpc.server.handlers;
 
-import ar.edu.itba.pod.grpc.AvailabilitySlot;
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotFoundException;
 import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
