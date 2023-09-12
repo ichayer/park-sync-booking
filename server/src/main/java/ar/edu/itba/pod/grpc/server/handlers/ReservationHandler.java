@@ -431,7 +431,7 @@ public class ReservationHandler {
      * @implNote If slotTo is null, all slots availability from slotFrom to the last one are returned.
      * @throws InvalidSlotException if the slotFrom or slotTo times are invalid.
      */
-    public void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, LocalTime slotFrom, LocalTime slotTo) {
+    public synchronized void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, LocalTime slotFrom, LocalTime slotTo) {
         int slotFromIndex = getSlotIndexOrThrow(slotFrom);
         int slotToIndex = (slotTo == null ? slotCount - 1 : getSlotIndexOrThrow(slotTo));
 
