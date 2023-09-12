@@ -90,13 +90,7 @@ public class AttractionHandler {
         Attraction attraction = getAttraction(attractionName);
         Ticket ticket = getTicketOrThrow(visitorId, dayOfYear);
 
-        synchronized (ticket) {
-            if (!ticket.canBook(slotTime))
-                throw new MissingPassException();
-            MakeReservationResult result = attraction.makeReservation(ticket, slotTime);
-            ticket.addBook();
-            return result;
-        }
+        return ticket.bookTransactional(slotTime, () -> attraction.makeReservation(ticket, slotTime));
     }
 
     /**
@@ -154,10 +148,7 @@ public class AttractionHandler {
             throw new MissingPassException();
 
         getAttraction(attractionName).cancelReservation(visitorId, dayOfYear, slotTime);
-
-        synchronized (ticket) {
-            ticket.removeBook(slotTime);
-        }
+        ticket.removeBook();
     }
 
     public Collection<SuggestedCapacityResult> getSuggestedCapacities(int dayOfYear) {

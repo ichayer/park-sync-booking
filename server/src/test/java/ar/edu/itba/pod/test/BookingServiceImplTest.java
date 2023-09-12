@@ -816,7 +816,7 @@ public class BookingServiceImplTest {
         Attraction attractionSpy = Mockito.spy(attraction);
         attractions.put(ATTRACTION_NAME, attractionSpy);
 
-        Ticket ticket = new Ticket(VISITOR_ID, VALID_DAY_OF_YEAR, TICKET_TYPE_FULL_DAY);
+        Ticket ticket = new Ticket(VISITOR_ID, VALID_DAY_OF_YEAR, TICKET_TYPE_FULL_DAY, 1);
         Ticket ticketSpy = Mockito.spy(ticket);
         ticketsByDay[VALID_DAY_OF_YEAR - 1].put(VISITOR_ID, ticketSpy);
 

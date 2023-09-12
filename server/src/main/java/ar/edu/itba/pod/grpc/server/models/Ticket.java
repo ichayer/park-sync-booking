@@ -1,14 +1,16 @@
 package ar.edu.itba.pod.grpc.server.models;
 
+import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
+
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Represents a ticket, or pass, for a visitor on a given day.
  *
- * @implNote This class is not thread-safe. The only field that is not readonly is 'bookings', and therefore any access
- * to the related methods (canBook, addBook, removeBook) is expected to be done with the caller ensuring thread-safety.
+ * @implNote The bookTransactional() and removeBook() methods are thread-safe and work as atomic operations
  */
 public class Ticket {
     private final UUID visitorId;
@@ -28,15 +30,33 @@ public class Ticket {
         this.bookings = bookings;
     }
 
-    public boolean canBook(LocalTime slotTime) {
-        return this.ticketType.canBook(this.bookings, slotTime);
+    /**
+     * Attempts to book a new reservation, incrementing the bookings counter and running a function all as an atomic
+     * operation. If the transaction function returns a non-null value, it is assumed that the reservation succeeded,
+     * so the bookings counter is incremented and the transaction function's result is returned. If the transaction
+     * function returns null, it is assumed that the reservation failed, so the bookings counter isn't incremented and
+     * null is returned.
+     * @param slotTime The time slot for the reservation.
+     * @param transaction The function that makes the reservation.
+     * @return The value returned by the transaction.
+     * @param <T> The return type for the transaction.
+     * @throws MissingPassException If the time slot isn't allowed or the user has reached their booking limit.
+     */
+    public synchronized <T> T bookTransactional(LocalTime slotTime, Supplier<T> transaction) {
+        if (!this.ticketType.canBook(this.bookings, slotTime))
+            throw new MissingPassException();
+        T result = transaction.get();
+        if (result != null)
+            this.bookings++;
+        return result;
     }
 
-    public void addBook() {
-        this.bookings++;
-    }
-
-    public void removeBook(LocalTime slotTime) {
+    /**
+     * Decrements the bookings counter for this ticket as an atomic operation.
+     */
+    public synchronized void removeBook() {
+        if (this.bookings <= 0)
+            throw new IllegalStateException("Cannot removeBook() when bookings is not greater than zero: " + this.bookings);
         this.bookings--;
     }
 
