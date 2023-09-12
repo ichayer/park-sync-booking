@@ -98,7 +98,12 @@ public class AttractionHandler {
 
     /**
      * Gets the availability for a given attraction, day of year and time slot.
+     * @param attractionName The name of the attraction.
+     * @param dayOfYear The day of the year.
+     * @param slotFrom The start of the time slot, inclusive.
+     * @param slotTo The end of the time slot, inclusive, or null to only check slotFrom.
      * @throws AttractionNotFoundException If no attraction is found with that name.
+     * @return A collection of AttractionAvailabilityResult with all the available slots for that attraction.
      */
     public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(String attractionName, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         List<AttractionAvailabilityResult> resultList = new ArrayList<>();
@@ -108,6 +113,10 @@ public class AttractionHandler {
 
     /**
      * Gets the availability for all attractions for a given day of year and time slot.
+     * @param dayOfYear The day of the year.
+     * @param slotFrom The start of the time slot, inclusive.
+     * @param slotTo The end of the time slot, inclusive, or null to only check slotFrom.
+     * @return A collection of AttractionAvailabilityResult with all the available slots for the attractions.
      */
     public Collection<AttractionAvailabilityResult> getAvailabilityForAllAttractions(int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         List<AttractionAvailabilityResult> resultList = new ArrayList<>();

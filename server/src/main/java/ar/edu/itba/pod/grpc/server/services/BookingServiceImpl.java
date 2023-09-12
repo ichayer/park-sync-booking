@@ -42,30 +42,17 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
     public void checkAttractionAvailability(AvailabilityRequest request, StreamObserver<AvailabilityResponse> responseObserver) {
         int dayOfYear = ParseUtils.checkValidDayOfYear(request.getDayOfYear());
         LocalTime slotFrom = ParseUtils.parseTime(request.getSlotFrom());
-        String attractionName;
         LocalTime slotTo;
 
-        try {
-            attractionName = ParseUtils.checkAttractionName(request.getAttractionName());
-        } catch (EmptyAttractionException e) {
-            attractionName = null;
-        }
-
-        try {
-            slotTo = ParseUtils.parseTime(request.getSlotTo());
-        } catch (InvalidSlotException e) {
-            slotTo = null;
-        }
-
-        if (attractionName == null && slotTo == null) {
+        String attractionName = ParseUtils.checkAttractionNameOrNull(request.getAttractionName());
+        slotTo = ParseUtils.parseTimeOrNull(request.getSlotTo());
+        if (attractionName == null && slotTo == null)
             throw new CheckAvailabilityInvalidArgumentException();
-        }
 
         if (slotTo != null && slotFrom.isAfter(slotTo))
             throw new InvalidSlotException();
 
         Collection<AttractionAvailabilityResult> availabilityResults;
-
         if (attractionName != null) {
             availabilityResults = attractionHandler.getAvailabilityForAttraction(attractionName, dayOfYear, slotFrom, slotTo);
         } else {

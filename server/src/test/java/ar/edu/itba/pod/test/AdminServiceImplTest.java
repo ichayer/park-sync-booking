@@ -5,8 +5,8 @@ import ar.edu.itba.pod.grpc.AddCapacityResponse;
 import ar.edu.itba.pod.grpc.AddTicketRequest;
 import ar.edu.itba.pod.grpc.PassType;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
-import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
@@ -49,7 +49,7 @@ public class AdminServiceImplTest {
     private static final int INVALID_CAPACITY = -1;
 
     private final ConcurrentMap<String, Attraction> attractions = new ConcurrentHashMap<>();
-    private final ConcurrentMap<UUID, Ticket> ticketsByDay[] = TestUtils.generateTicketsByDayMaps();
+    private final ConcurrentMap<UUID, Ticket>[] ticketsByDay = TestUtils.generateTicketsByDayMaps();
     private final AttractionHandler attractionHandler = new AttractionHandler(attractions, ticketsByDay);
     private final AdminServiceImpl adminService = new AdminServiceImpl(attractionHandler);
 

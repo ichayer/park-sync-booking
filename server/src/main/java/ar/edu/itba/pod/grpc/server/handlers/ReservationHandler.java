@@ -427,13 +427,12 @@ public class ReservationHandler {
      * Gets the availability for a given time slot.
      * @param resultCollection The collection to which to add the resulting elements.
      * @param slotFrom The start of the time slot, inclusive.
-     * @param slotTo The end of the time slot.
-     * @implNote If slotTo is null, all slots availability from slotFrom to the last one are returned.
+     * @param slotTo The end of the time slot, inclusive, or null to only check slotFrom.
      * @throws InvalidSlotException if the slotFrom or slotTo times are invalid.
      */
     public synchronized void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, LocalTime slotFrom, LocalTime slotTo) {
         int slotFromIndex = getSlotIndexOrThrow(slotFrom);
-        int slotToIndex = (slotTo == null ? slotCount - 1 : getSlotIndexOrThrow(slotTo));
+        int slotToIndex = (slotTo == null ? slotFromIndex : getSlotIndexOrThrow(slotTo));
 
         for (int slotIndex = slotFromIndex; slotIndex <= slotToIndex; slotIndex++) {
             Map<UUID, ConfirmedReservation> confirmed = slotConfirmedRequests[slotIndex];

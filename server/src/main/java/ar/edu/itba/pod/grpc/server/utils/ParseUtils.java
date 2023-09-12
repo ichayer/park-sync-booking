@@ -28,6 +28,18 @@ public final class ParseUtils {
         }
     }
 
+    /**
+     * Parses a "HH:mm" string into a LocalTime, or null if the given time is null or blank.
+     * @throws InvalidSlotException if the string is invalid.
+     */
+    public static LocalTime parseTimeOrNull(String time) {
+        try {
+            return time == null || time.isBlank() ? null : LocalTime.parse(time, slotTimeFormatter);
+        } catch (DateTimeParseException e) {
+            throw new InvalidSlotException();
+        }
+    }
+
     public static String formatTime(LocalTime time) {
         return slotTimeFormatter.format(time);
     }
@@ -86,5 +98,13 @@ public final class ParseUtils {
         if (attractionName == null || attractionName.isBlank())
             throw new EmptyAttractionException();
         return attractionName;
+    }
+
+    /**
+     * Verifies that the given string is valid for an attraction name. Does not check that said attraction exists.
+     * @return The same value passed, or null if attractionName is blank.
+     */
+    public static String checkAttractionNameOrNull(String attractionName) {
+        return (attractionName == null || attractionName.isBlank()) ? null : attractionName;
     }
 }

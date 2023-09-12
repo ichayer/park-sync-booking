@@ -70,6 +70,10 @@ public class Attraction {
 
     /**
      * Gets the availability for a given time slot.
+     * @param resultCollection The collection to which to add the resulting elements.
+     * @param dayOfYear The day of the year.
+     * @param slotFrom The start of the time slot, inclusive.
+     * @param slotTo The end of the time slot, inclusive, or null to only check slotFrom.
      */
     public void getAvailabilityForAttraction(Collection<AttractionAvailabilityResult> resultCollection, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         reservationHandlers[dayOfYear - 1].getAvailability(resultCollection, slotFrom, slotTo);

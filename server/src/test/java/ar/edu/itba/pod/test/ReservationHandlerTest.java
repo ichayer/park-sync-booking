@@ -1,8 +1,8 @@
 package ar.edu.itba.pod.test;
 
-import ar.edu.itba.pod.grpc.server.models.*;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
+import ar.edu.itba.pod.grpc.server.models.*;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
@@ -15,8 +15,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.time.LocalTime;
 import java.util.*;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReservationHandlerTest {
@@ -64,12 +64,12 @@ public class ReservationHandlerTest {
     @Mock
     private Attraction attraction2;
 
-    private Map<UUID, ConfirmedReservation>[] slotConfirmedRequests1 = new Map[VALID_TIME_SLOTS1.length];
-    private LinkedHashMap<UUID, Reservation>[] slotPendingRequests1 = new LinkedHashMap[VALID_TIME_SLOTS1.length];
+    private final Map<UUID, ConfirmedReservation>[] slotConfirmedRequests1 = new Map[VALID_TIME_SLOTS1.length];
+    private final LinkedHashMap<UUID, Reservation>[] slotPendingRequests1 = new LinkedHashMap[VALID_TIME_SLOTS1.length];
     private ReservationHandler reservationHandler1;
 
-    private Map<UUID, ConfirmedReservation>[] slotConfirmedRequests2 = new Map[VALID_TIME_SLOTS2.length];
-    private LinkedHashMap<UUID, Reservation>[] slotPendingRequests2 = new LinkedHashMap[VALID_TIME_SLOTS2.length];
+    private final Map<UUID, ConfirmedReservation>[] slotConfirmedRequests2 = new Map[VALID_TIME_SLOTS2.length];
+    private final LinkedHashMap<UUID, Reservation>[] slotPendingRequests2 = new LinkedHashMap[VALID_TIME_SLOTS2.length];
     private ReservationHandler reservationHandler2;
 
     @Before
@@ -285,7 +285,7 @@ public class ReservationHandlerTest {
     }
 
     private void checkConsistentState(Map<UUID, ConfirmedReservation>[] confirmed, LinkedHashMap<UUID, Reservation>[] pending, List<Integer> originalPendingNumbers, int capacity) {
-        for (int i = 0 ; i < confirmed.length ; ++i) {
+        for (int i = 0; i < confirmed.length; ++i) {
             Map<UUID, ConfirmedReservation> currentConfirmed = confirmed[i];
 
             // Expected confirmed bookings
@@ -362,7 +362,7 @@ public class ReservationHandlerTest {
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? num : capacity).sum(), result.bookingsConfirmed());
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum(), result.bookingsRelocated());
         assertEquals(0, result.bookingsCancelled());
-        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
+        checkConsistentState(slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -377,7 +377,7 @@ public class ReservationHandlerTest {
         assertEquals(10, result.bookingsConfirmed());
         assertEquals(70, result.bookingsRelocated());
         assertEquals(0, result.bookingsCancelled());
-        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
+        checkConsistentState(slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -392,7 +392,7 @@ public class ReservationHandlerTest {
         assertEquals(10, result.bookingsConfirmed());
         assertEquals(70, result.bookingsRelocated());
         assertEquals(1, result.bookingsCancelled());
-        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
+        checkConsistentState(slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -408,7 +408,7 @@ public class ReservationHandlerTest {
         int cancelled = pendingReservations.stream().mapToInt(Integer::intValue).sum() - capacity * 8;
         assertEquals(cancelled, result.bookingsCancelled());
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum() - cancelled, result.bookingsRelocated());
-        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
+        checkConsistentState(slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 
     @Test
@@ -424,6 +424,6 @@ public class ReservationHandlerTest {
         int cancelled = pendingReservations.stream().mapToInt(Integer::intValue).sum() - capacity * 8;
         assertEquals(cancelled, result.bookingsCancelled());
         assertEquals(pendingReservations.stream().mapToInt((num) -> num < capacity ? 0 : (num - capacity)).sum() - cancelled, result.bookingsRelocated());
-        checkConsistentState( slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
+        checkConsistentState(slotConfirmedRequests1, slotPendingRequests1, pendingReservations, capacity);
     }
 }
