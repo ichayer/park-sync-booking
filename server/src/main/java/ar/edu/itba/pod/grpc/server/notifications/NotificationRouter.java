@@ -56,10 +56,10 @@ public class NotificationRouter implements ReservationObserver {
     }
 
     @Override
-    public void onConfirmed(ConfirmedReservation reservation, LocalTime slotTime) {
+    public void onConfirmed(ConfirmedReservation reservation) {
         NotificationStreamObserver stream = getObserverIfExists(reservation);
         if (stream != null)
-            stream.onConfirmed(reservation, slotTime);
+            stream.onConfirmed(reservation);
     }
 
     @Override

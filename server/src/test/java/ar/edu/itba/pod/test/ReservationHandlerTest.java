@@ -190,7 +190,7 @@ public class ReservationHandlerTest {
     @Test
     public void testMakeReservationSlotCapacityDefinedExistingConfirmed() {
         slotConfirmedRequests2[3] = new HashMap<>();
-        ConfirmedReservation existingReservation = new ConfirmedReservation(TICKET2, attraction2);
+        ConfirmedReservation existingReservation = new ConfirmedReservation(TICKET2, attraction2, VALID_TIME_SLOTS2[3]);
         slotConfirmedRequests2[3].put(TICKET2.getVisitorId(), existingReservation);
 
         assertThrows(
@@ -228,7 +228,7 @@ public class ReservationHandlerTest {
     @Test(expected = ReservationAlreadyConfirmedException.class)
     public void testConfirmReservationWhenAlreadyConfirmed() {
         slotConfirmedRequests2[3] = new HashMap<>();
-        ConfirmedReservation existingReservation = new ConfirmedReservation(TICKET2, attraction2);
+        ConfirmedReservation existingReservation = new ConfirmedReservation(TICKET2, attraction2, VALID_TIME_SLOTS2[3]);
         slotConfirmedRequests2[3].put(TICKET2.getVisitorId(), existingReservation);
 
         reservationHandler2.confirmReservation(TICKET2.getVisitorId(), VALID_TIME_SLOTS2[3]);
@@ -254,7 +254,7 @@ public class ReservationHandlerTest {
     @Test
     public void testCancelReservationWhenConfirmed() {
         slotConfirmedRequests1[3] = new HashMap<>();
-        ConfirmedReservation existingReservation = new ConfirmedReservation(TICKET1, attraction1);
+        ConfirmedReservation existingReservation = new ConfirmedReservation(TICKET1, attraction1, VALID_TIME_SLOTS2[3]);
         slotConfirmedRequests1[3].put(TICKET1.getVisitorId(), existingReservation);
 
         reservationHandler1.cancelReservation(TICKET1.getVisitorId(), VALID_TIME_SLOTS1[3]);

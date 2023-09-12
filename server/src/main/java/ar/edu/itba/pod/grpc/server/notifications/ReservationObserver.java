@@ -25,7 +25,7 @@ public interface ReservationObserver {
     /**
      * Called whenever a previously pending reservation was confirmed.
      */
-    void onConfirmed(ConfirmedReservation reservation, LocalTime slotTime);
+    void onConfirmed(ConfirmedReservation reservation);
 
     /**
      * Called whenever a pending reservation was relocated (and remains pending).

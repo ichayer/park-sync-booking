@@ -5,6 +5,7 @@ import ar.edu.itba.pod.grpc.server.exceptions.AttractionNotFoundException;
 import ar.edu.itba.pod.grpc.server.exceptions.MissingPassException;
 import ar.edu.itba.pod.grpc.server.exceptions.TicketAlreadyExistsException;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
@@ -108,7 +109,7 @@ public class AttractionHandler {
      */
     public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(String attractionName, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         List<AttractionAvailabilityResult> resultList = new ArrayList<>();
-        getAttraction(attractionName).getAvailabilityForAttraction(resultList, dayOfYear, slotFrom, slotTo);
+        getAttraction(attractionName).getAvailability(resultList, dayOfYear, slotFrom, slotTo);
         return Collections.unmodifiableList(resultList);
     }
 
@@ -122,7 +123,7 @@ public class AttractionHandler {
     public Collection<AttractionAvailabilityResult> getAvailabilityForAllAttractions(int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         List<AttractionAvailabilityResult> resultList = new ArrayList<>();
         for (Attraction attraction : attractions.values())
-            attraction.getAvailabilityForAttraction(resultList, dayOfYear, slotFrom, slotTo);
+            attraction.getAvailability(resultList, dayOfYear, slotFrom, slotTo);
         return Collections.unmodifiableList(resultList);
     }
 
@@ -163,5 +164,14 @@ public class AttractionHandler {
         }
 
         return Collections.unmodifiableList(results);
+    }
+
+    public SortedSet<ConfirmedReservation> getConfirmedReservations(int dayOfYear) {
+        SortedSet<ConfirmedReservation> results = new TreeSet<>(ConfirmedReservation::compareByDateAndTiebreakerTo);
+
+        for (Attraction attraction : attractions.values())
+            attraction.getConfirmedReservations(results, dayOfYear);
+
+        return Collections.unmodifiableSortedSet(results);
     }
 }

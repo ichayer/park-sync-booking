@@ -89,13 +89,13 @@ public class NotificationServiceImpl extends AttractionNotificationServiceGrpc.A
         }
 
         @Override
-        public synchronized void onConfirmed(ConfirmedReservation reservation, LocalTime slotTime) {
+        public synchronized void onConfirmed(ConfirmedReservation reservation) {
             if (completed)
                 return;
 
             Notification notification = Notification.newBuilder()
                     .setType(NotificationType.NOTIFICATION_TYPE_BOOKING_CONFIRMED)
-                    .setSlotTime(ParseUtils.formatTime(slotTime))
+                    .setSlotTime(ParseUtils.formatTime(reservation.getSlotTime()))
                     .build();
 
             streamObserver.onNext(notification);

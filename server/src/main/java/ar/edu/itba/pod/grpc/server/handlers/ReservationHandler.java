@@ -11,6 +11,7 @@ import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -207,6 +208,9 @@ public class ReservationHandler {
         int bookingsRelocated = 0;
         int bookingsCancelled = 0;
 
+        int sortingTiebreaker = 0;
+        LocalDateTime dateTimeNow = LocalDateTime.now();
+
         for (int slotIndex = 0; slotIndex < slotPendingRequests.length; slotIndex++) {
             LinkedHashMap<UUID, Reservation> requests = slotPendingRequests[slotIndex];
             if (requests == null || requests.isEmpty())
@@ -221,11 +225,11 @@ public class ReservationHandler {
                 Reservation next = iterator.next();
                 iterator.remove();
 
-                ConfirmedReservation confirmedReservation = new ConfirmedReservation(next);
+                ConfirmedReservation confirmedReservation = new ConfirmedReservation(next, slotIndexTime, dateTimeNow, sortingTiebreaker++);
                 confirmed.put(next.getVisitorId(), confirmedReservation);
                 bookingsConfirmed++;
                 if (reservationObserver != null)
-                    reservationObserver.onConfirmed(confirmedReservation, slotIndexTime);
+                    reservationObserver.onConfirmed(confirmedReservation);
             }
         }
 
@@ -328,7 +332,7 @@ public class ReservationHandler {
             throw new ReservationAlreadyExistsException();
 
         // TODO: Discuss replacing with confirmed.computeIfAbsent. The issue with that function is that we can't differentiate the return value.
-        ConfirmedReservation reservation = new ConfirmedReservation(ticket, attraction);
+        ConfirmedReservation reservation = new ConfirmedReservation(ticket, attraction, slotTime);
         boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), reservation) == null;
         if (!success)
             throw new ReservationAlreadyExistsException();
@@ -363,12 +367,12 @@ public class ReservationHandler {
         }
 
         Map<UUID, ConfirmedReservation> confirmed = getOrCreateSlotConfirmedRequests(slotIndex);
-        ConfirmedReservation confirmedReservation = new ConfirmedReservation(reservation);
+        ConfirmedReservation confirmedReservation = new ConfirmedReservation(reservation, slotTime);
         boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), confirmedReservation) == null;
 
         if (success) {
             if (reservationObserver != null)
-                reservationObserver.onConfirmed(confirmedReservation, slotTime);
+                reservationObserver.onConfirmed(confirmedReservation);
             cancelPendingReservationsForSlotIfFull(slotIndex);
         } else {
             // This should never happen, as checks are in place to ensure a pending reservation is never left where
@@ -441,6 +445,18 @@ public class ReservationHandler {
 
             // TODO: Right now, slotCapacity value could be -1. Wouldn't be better to return a String that says "Not defined"?
             resultCollection.add(new AttractionAvailabilityResult(this.attraction.getName(), slotTime, this.slotCapacity, confirmedCount, pendingCount));
+        }
+    }
+
+    /**
+     * Gets all the confirmed reservations.
+     * @param resultCollection The collection to which to add the resulting elements.
+     */
+    public synchronized void getConfirmedReservations(Collection<ConfirmedReservation> resultCollection) {
+        for (int slotIndex = 0; slotIndex < slotConfirmedRequests.length; slotIndex++) {
+            Map<UUID, ConfirmedReservation> confirmed = slotConfirmedRequests[slotIndex];
+            if (confirmed != null && !confirmed.isEmpty())
+                resultCollection.addAll(confirmed.values());
         }
     }
 }

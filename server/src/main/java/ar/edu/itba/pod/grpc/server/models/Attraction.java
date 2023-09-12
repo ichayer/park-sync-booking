@@ -11,6 +11,7 @@ import ar.edu.itba.pod.grpc.server.utils.Constants;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.SortedSet;
 import java.util.UUID;
 
 public class Attraction {
@@ -83,8 +84,17 @@ public class Attraction {
      * @param slotFrom The start of the time slot, inclusive.
      * @param slotTo The end of the time slot, inclusive, or null to only check slotFrom.
      */
-    public void getAvailabilityForAttraction(Collection<AttractionAvailabilityResult> resultCollection, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
+    public void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         reservationHandlers[dayOfYear - 1].getAvailability(resultCollection, slotFrom, slotTo);
+    }
+
+    /**
+     * Gets all the confirmed reservations for a given day.
+     * @param resultCollection The collection to which to add the resulting elements.
+     * @param dayOfYear The day of the year.
+     */
+    public void getConfirmedReservations(Collection<ConfirmedReservation> resultCollection, int dayOfYear) {
+        reservationHandlers[dayOfYear - 1].getConfirmedReservations(resultCollection);
     }
 
     /**
