@@ -650,28 +650,6 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    public void testConfirmReservationFailureCantBookWithFullDayPass() {
-        assertThrows(MissingPassException.class, () -> {
-            Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
-            Attraction attractionSpy = Mockito.spy(attraction);
-            attractions.put(ATTRACTION_NAME, attractionSpy);
-
-            Ticket ticket = new Ticket(VISITOR_ID, VALID_DAY_OF_YEAR, TicketType.FULL_DAY);
-            Ticket ticketSpy = Mockito.spy(ticket);
-            ticketSpy.setBookings(MAX_BOOKINGS_FOR_FULL_DAY);
-            ticketsByDay[VALID_DAY_OF_YEAR - 1].put(VISITOR_ID, ticketSpy);
-
-            bookingService.confirmReservation(BookingRequest.newBuilder()
-                            .setAttractionName(ATTRACTION_NAME)
-                            .setDayOfYear(VALID_DAY_OF_YEAR)
-                            .setSlot(TIME_FROM_STRING)
-                            .setVisitorId(VISITOR_ID.toString())
-                            .build(),
-                    Mockito.mock(StreamObserver.class));
-        });
-    }
-
-    @Test
     public void testConfirmReservation() {
         Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
         Attraction attractionSpy = Mockito.spy(attraction);

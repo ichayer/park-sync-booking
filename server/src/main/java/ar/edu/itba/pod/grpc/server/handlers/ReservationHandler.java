@@ -19,8 +19,6 @@ import java.util.*;
  */
 public class ReservationHandler {
 
-    // TODO: On reservation cancelled, decrement the amount of bookings in the Ticket instance.
-
     /**
      * The attraction for which this ReservationHandler manages reservations.
      */

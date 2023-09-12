@@ -4,6 +4,11 @@ import java.time.LocalTime;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Represents a ticket, or pass, for a visitor on a given day.
+ * @implNote This class is not thread-safe. The only field that is not readonly is 'bookings', and therefore any access
+ * to the related methods (canBook, addBook, removeBook) is expected to be done with the caller ensuring thread-safety.
+ */
 public class Ticket {
     private final UUID visitorId;
     private final int dayOfYear;
@@ -39,14 +44,6 @@ public class Ticket {
 
     public TicketType getTicketType() {
         return ticketType;
-    }
-
-    public int getBookings() {
-        return bookings;
-    }
-
-    public void setBookings(int bookings) {
-        this.bookings = bookings;
     }
 
     @Override

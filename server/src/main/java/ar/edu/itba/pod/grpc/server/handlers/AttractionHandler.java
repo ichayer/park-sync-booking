@@ -43,13 +43,6 @@ public class AttractionHandler {
         this.reservationObserver = null;
     }
 
-    private Attraction getAttractionOrThrow(String attractionName) {
-        Attraction attraction = this.attractions.get(attractionName);
-        if (attraction == null)
-            throw new AttractionNotFoundException();
-        return attraction;
-    }
-
     private Ticket getTicketOrThrow(UUID visitorId, int dayOfYear) {
         Ticket ticket = this.ticketsByDay[dayOfYear - 1].get(visitorId);
         if (ticket == null)
@@ -62,12 +55,15 @@ public class AttractionHandler {
      * @throws AttractionNotFoundException If no attraction is found with that name.
      */
     public Attraction getAttraction(String attractionName) {
-        return getAttractionOrThrow(attractionName);
+        Attraction attraction = this.attractions.get(attractionName);
+        if (attraction == null)
+            throw new AttractionNotFoundException();
+        return attraction;
     }
 
     public void createAttraction(String attractionName, LocalTime openTime, LocalTime closeTime, int slotDuration) {
         Attraction attraction = new Attraction(attractionName, openTime, closeTime, slotDuration, reservationObserver);
-        if(this.attractions.putIfAbsent(attractionName, attraction) != null){
+        if (this.attractions.putIfAbsent(attractionName, attraction) != null) {
             throw new AttractionAlreadyExistsException();
         }
     }
@@ -83,7 +79,7 @@ public class AttractionHandler {
     public void addTicket(UUID visitorId, int dayOfYear, TicketType ticketType) {
         ConcurrentMap<UUID, Ticket> visitorTickets = ticketsByDay[dayOfYear - 1];
         Ticket ticket = new Ticket(visitorId, dayOfYear, ticketType);
-        if(visitorTickets.putIfAbsent(visitorId, ticket) != null){
+        if (visitorTickets.putIfAbsent(visitorId, ticket) != null) {
             throw new TicketAlreadyExistsException();
         }
     }
@@ -115,12 +111,10 @@ public class AttractionHandler {
      */
     public void confirmReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
         Ticket ticket = getTicketOrThrow(visitorId, dayOfYear);
+        if (!ticket.getTicketType().isSlotTimeValid(slotTime))
+            throw new MissingPassException();
 
-        synchronized (ticket) {
-            if (!ticket.canBook(slotTime))
-                throw new MissingPassException();
-            getAttraction(attractionName).confirmReservation(visitorId, dayOfYear, slotTime);
-        }
+        getAttraction(attractionName).confirmReservation(visitorId, dayOfYear, slotTime);
     }
 
     /**
@@ -129,11 +123,13 @@ public class AttractionHandler {
      */
     public void cancelReservation(String attractionName, UUID visitorId, int dayOfYear, LocalTime slotTime) {
         Ticket ticket = getTicketOrThrow(visitorId, dayOfYear);
+        if (!ticket.getTicketType().isSlotTimeValid(slotTime))
+            throw new MissingPassException();
+
+        getAttraction(attractionName).cancelReservation(visitorId, dayOfYear, slotTime);
 
         synchronized (ticket) {
-            if (!ticket.canBook(slotTime))
-                throw new MissingPassException();
-            getAttraction(attractionName).cancelReservation(visitorId, dayOfYear, slotTime);
+            ticket.removeBook(slotTime);
         }
     }
 }
