@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>grpc-com-patterns-parent</artifactId>
+        <artifactId>tpe1-g4-parent</artifactId>
         <groupId>ar.edu.itba.pod.grpc</groupId>
         <version>2023.1Q</version>
     </parent>
-    <artifactId>grpc-com-patterns-server</artifactId>
+    <artifactId>tpe1-g4-server</artifactId>
     <version>2023.1Q</version>
-    <name>grpc-com-patterns-server</name>
+    <name>tpe1-g4-server</name>
     <dependencies>
         <dependency>
             <groupId>ar.edu.itba.pod.grpc</groupId>
