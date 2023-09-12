@@ -57,32 +57,29 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
             slotTo = null;
         }
 
-        if(Objects.isNull(attractionName) && Objects.isNull(slotTo)) {
+        if (attractionName == null && slotTo == null) {
             throw new CheckAvailabilityInvalidArgumentException();
         }
 
-        if (Objects.nonNull(slotTo) && slotFrom.isAfter(slotTo))
+        if (slotTo != null && slotFrom.isAfter(slotTo))
             throw new InvalidSlotException();
 
-        Collection<AttractionAvailabilityResult> availabilityResults = new ArrayList<>();
+        Collection<AttractionAvailabilityResult> availabilityResults;
 
-        if (Objects.nonNull(attractionName)) {
-            availabilityResults.addAll(attractionHandler.getAvailabilityForAttraction(attractionName, dayOfYear, slotFrom, slotTo));
+        if (attractionName != null) {
+            availabilityResults = attractionHandler.getAvailabilityForAttraction(attractionName, dayOfYear, slotFrom, slotTo);
         } else {
-            Collection<Attraction> attractions = attractionHandler.getAttractions();
-            for (Attraction attraction : attractions) {
-                availabilityResults.addAll(attractionHandler.getAvailabilityForAttraction(attraction.getName(), dayOfYear, slotFrom, slotTo));
-            }
+            availabilityResults = attractionHandler.getAvailabilityForAllAttractions(dayOfYear, slotFrom, slotTo);
         }
 
-        Collection<AvailabilitySlot> availabilitySlotsDto = new ArrayList<>(availabilityResults.stream()
+        Collection<AvailabilitySlot> availabilitySlotsDto = availabilityResults.stream()
                 .map(availabilityResult -> AvailabilitySlot.newBuilder()
                         .setAttractionName(availabilityResult.attractionName())
                         .setSlot(ParseUtils.formatTime(availabilityResult.slotTime()))
                         .setSlotCapacity(availabilityResult.slotCapacity())
                         .setBookingsConfirmed(availabilityResult.confirmedReservations())
                         .setBookingsPending(availabilityResult.pendingReservations())
-                        .build()).toList());
+                        .build()).toList();
 
         responseObserver.onNext(AvailabilityResponse.newBuilder().addAllSlot(availabilitySlotsDto).build());
         responseObserver.onCompleted();

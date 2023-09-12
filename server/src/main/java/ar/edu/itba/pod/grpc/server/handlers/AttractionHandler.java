@@ -101,7 +101,19 @@ public class AttractionHandler {
      * @throws AttractionNotFoundException If no attraction is found with that name.
      */
     public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(String attractionName, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
-        return getAttraction(attractionName).getAvailabilityForAttraction(dayOfYear, slotFrom, slotTo);
+        List<AttractionAvailabilityResult> resultList = new ArrayList<>();
+        getAttraction(attractionName).getAvailabilityForAttraction(resultList, dayOfYear, slotFrom, slotTo);
+        return resultList;
+    }
+
+    /**
+     * Gets the availability for all attractions for a given day of year and time slot.
+     */
+    public Collection<AttractionAvailabilityResult> getAvailabilityForAllAttractions(int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
+        List<AttractionAvailabilityResult> resultList = new ArrayList<>();
+        for (Attraction attraction : attractions.values())
+            attraction.getAvailabilityForAttraction(resultList, dayOfYear, slotFrom, slotTo);
+        return resultList;
     }
 
     /**

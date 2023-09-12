@@ -9,6 +9,7 @@ import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -70,8 +71,8 @@ public class Attraction {
     /**
      * Gets the availability for a given time slot.
      */
-    public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
-        return reservationHandlers[dayOfYear - 1].getAvailability(slotFrom, slotTo);
+    public void getAvailabilityForAttraction(Collection<AttractionAvailabilityResult> resultCollection, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
+        reservationHandlers[dayOfYear - 1].getAvailability(resultCollection, slotFrom, slotTo);
     }
 
     /**
