@@ -1,9 +1,6 @@
 package ar.edu.itba.pod.test;
 
-import ar.edu.itba.pod.grpc.AddAttractionRequest;
-import ar.edu.itba.pod.grpc.AddCapacityResponse;
-import ar.edu.itba.pod.grpc.AddTicketRequest;
-import ar.edu.itba.pod.grpc.PassType;
+import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
@@ -15,7 +12,9 @@ import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalTime;
@@ -32,11 +31,14 @@ public class AdminServiceImplTest {
     private static final String INVALID_ATTRACTION_NAME = "";
     private static final String OPENING_TIME = "10:00";
     private static final String CLOSING_TIME = "18:00";
+    private static final LocalTime TIME_FROM_LOCAL_TIME = LocalTime.parse(OPENING_TIME);
+    private static final LocalTime TIME_TO_LOCAL_TIME = LocalTime.parse(CLOSING_TIME);
+    private static final int SLOT_GAP = 10;
+    private static final int TOTAL_SLOTS = (TIME_TO_LOCAL_TIME.toSecondOfDay() - TIME_FROM_LOCAL_TIME.toSecondOfDay()) / (SLOT_GAP * 60);
     private static final String INVALID_HOURS_FROM = "25:00";
     private static final String INVALID_HOURS_TO = "18:61";
     private static final String INVALID_HOURS_FROM_FORMAT = "10:0";
     private static final String INVALID_HOURS_TO_FORMAT = "10:00:00";
-    private static final int SLOT_GAP = 10;
     private static final int NO_SLOT_GAP = 0;
     private static final int NEGATIVE_SLOT_GAP = -1;
     private static final String DEFAULT_VISITOR_ID_STRING = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
@@ -327,6 +329,193 @@ public class AdminServiceImplTest {
         assertEquals(DEFAULT_VISITOR_ID_UUID, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getVisitorId());
         assertEquals(OTHER_VALID_DAY_OF_YEAR, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getDayOfYear());
         assertEquals(TicketType.FULL_DAY, ticketsByDay[OTHER_VALID_DAY_OF_YEAR - 1].get(DEFAULT_VISITOR_ID_UUID).getTicketType());
+    }
+
+    @Test
+    public void testAddCapacityFailureMoreThan365Days() {
+        assertThrows(InvalidDayException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(INVALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver));
+    }
+
+    @Test
+    public void testAddCapacityFailureLessThan1Day() {
+        assertThrows(InvalidDayException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(OTHER_INVALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver));
+    }
+
+    @Test
+    public void testAddCapacityFailureNoAttractionName() {
+        assertThrows(EmptyAttractionException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName("")
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver));
+    }
+
+    @Test
+    public void testAddCapacityFailureBlankAttractionName() {
+        assertThrows(EmptyAttractionException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(" ")
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver));
+    }
+
+    @Test
+    public void testAddCapacityFailureAttractionDoesNotExist() {
+        assertThrows(AttractionNotFoundException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver));
+    }
+
+    @Test
+    public void testAddCapacityFailureCapacityIsNegative() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
+        attractions.put(attraction.getName(), attraction);
+
+        assertThrows(NegativeCapacityException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(INVALID_CAPACITY)
+                .build(), capacityResponseObserver));
+    }
+
+    @Test
+    public void testAddCapacityFailureCapacityAlreadySet() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
+        attractions.put(attraction.getName(), attraction);
+        attraction.getReservationHandler(VALID_DAY_OF_YEAR).defineSlotCapacity(VALID_CAPACITY);
+
+        assertThrows(CapacityAlreadyDefinedException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver));
+    }
+
+    @Test
+    public void testAddCapacitySuccess() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
+        Attraction attractionSpy = Mockito.spy(attraction);
+        attractions.put(attraction.getName(), attractionSpy);
+
+        adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver);
+
+        ArgumentCaptor<AddCapacityResponse> responseCaptor = ArgumentCaptor.forClass(AddCapacityResponse.class);
+        Mockito.verify(capacityResponseObserver).onNext(responseCaptor.capture());
+        AddCapacityResponse capturedResponse = responseCaptor.getValue();
+
+        assertEquals(VALID_CAPACITY, attraction.getReservationHandler(VALID_DAY_OF_YEAR).getSlotCapacity());
+        assertEquals(0, capturedResponse.getConfirmedBookings());
+        assertEquals(0, capturedResponse.getCancelledBookings());
+        assertEquals(0, capturedResponse.getRelocatedBookings());
+    }
+
+    @Test
+    public void testAddCapacityConfirmPendingRequests() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
+        Attraction attractionSpy = Mockito.spy(attraction);
+        attractions.put(attraction.getName(), attractionSpy);
+
+
+        for (int i = 0; i < VALID_CAPACITY; i++) {
+            UUID visitorId = UUID.randomUUID();
+            Ticket ticket = new Ticket(visitorId, VALID_DAY_OF_YEAR, TicketType.UNLIMITED);
+            ticketsByDay[VALID_DAY_OF_YEAR - 1].put(ticket.getVisitorId(), ticket);
+            attractionHandler.makeReservation(ATTRACTION_NAME, visitorId, VALID_DAY_OF_YEAR, LocalTime.parse(OPENING_TIME).plusMinutes(SLOT_GAP));
+        }
+
+
+        adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver);
+
+        ArgumentCaptor<AddCapacityResponse> responseCaptor = ArgumentCaptor.forClass(AddCapacityResponse.class);
+        Mockito.verify(capacityResponseObserver).onNext(responseCaptor.capture());
+        AddCapacityResponse capturedResponse = responseCaptor.getValue();
+
+        assertEquals(VALID_CAPACITY, attraction.getReservationHandler(VALID_DAY_OF_YEAR).getSlotCapacity());
+        assertEquals(VALID_CAPACITY, capturedResponse.getConfirmedBookings());
+        assertEquals(0, capturedResponse.getCancelledBookings());
+        assertEquals(0, capturedResponse.getRelocatedBookings());
+    }
+
+    @Test
+    public void testAddCapacityCancelPendingRequests() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
+        Attraction attractionSpy = Mockito.spy(attraction);
+        attractions.put(attraction.getName(), attractionSpy);
+
+        for (int j = 0; j < TOTAL_SLOTS; j++) {
+            for (int i = 0; i < VALID_CAPACITY + 1; i++) {
+                UUID visitorId = UUID.randomUUID();
+                Ticket ticket = new Ticket(visitorId, VALID_DAY_OF_YEAR, TicketType.UNLIMITED);
+                ticketsByDay[VALID_DAY_OF_YEAR - 1].put(ticket.getVisitorId(), ticket);
+                attractionHandler.makeReservation(ATTRACTION_NAME, visitorId, VALID_DAY_OF_YEAR, LocalTime.parse(OPENING_TIME).plusMinutes((long) SLOT_GAP * j));
+            }
+        }
+
+        adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver);
+
+
+        ArgumentCaptor<AddCapacityResponse> responseCaptor = ArgumentCaptor.forClass(AddCapacityResponse.class);
+        Mockito.verify(capacityResponseObserver).onNext(responseCaptor.capture());
+        AddCapacityResponse capturedResponse = responseCaptor.getValue();
+
+        assertEquals(VALID_CAPACITY, attraction.getReservationHandler(VALID_DAY_OF_YEAR).getSlotCapacity());
+        assertEquals(VALID_CAPACITY * TOTAL_SLOTS, capturedResponse.getConfirmedBookings());
+        assertEquals(TOTAL_SLOTS, capturedResponse.getCancelledBookings());
+        assertEquals(0, capturedResponse.getRelocatedBookings());
+    }
+
+    @Test
+    public void testAddCapacityRelocateBookingRequest() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
+        Attraction attractionSpy = Mockito.spy(attraction);
+        attractions.put(attraction.getName(), attractionSpy);
+
+
+        for (int i = 0; i < 2 * VALID_CAPACITY; i++) {
+            UUID visitorId = UUID.randomUUID();
+            Ticket ticket = new Ticket(visitorId, VALID_DAY_OF_YEAR, TicketType.UNLIMITED);
+            ticketsByDay[VALID_DAY_OF_YEAR - 1].put(ticket.getVisitorId(), ticket);
+            attractionHandler.makeReservation(ATTRACTION_NAME, visitorId, VALID_DAY_OF_YEAR, LocalTime.parse(OPENING_TIME).plusMinutes((SLOT_GAP)));
+        }
+
+
+        adminService.addCapacity(AddCapacityRequest.newBuilder()
+                .setAttractionName(ATTRACTION_NAME)
+                .setDayOfYear(VALID_DAY_OF_YEAR)
+                .setCapacity(VALID_CAPACITY)
+                .build(), capacityResponseObserver);
+
+
+        ArgumentCaptor<AddCapacityResponse> responseCaptor = ArgumentCaptor.forClass(AddCapacityResponse.class);
+        Mockito.verify(capacityResponseObserver).onNext(responseCaptor.capture());
+        AddCapacityResponse capturedResponse = responseCaptor.getValue();
+
+        assertEquals(VALID_CAPACITY, attraction.getReservationHandler(VALID_DAY_OF_YEAR).getSlotCapacity());
+        assertEquals(VALID_CAPACITY, capturedResponse.getConfirmedBookings());
+        assertEquals(0, capturedResponse.getCancelledBookings());
+        assertEquals(VALID_CAPACITY, capturedResponse.getRelocatedBookings());
     }
 
 }
