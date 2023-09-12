@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.grpc.server.handlers;
+package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.server.exceptions.ServerException;
 import ar.edu.itba.pod.grpc.server.exceptions.UnknownException;

@@ -1,10 +1,10 @@
 package ar.edu.itba.pod.grpc.server;
 
-import ar.edu.itba.pod.grpc.server.handlers.ExceptionHandler;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.notifications.NotificationRouter;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
+import ar.edu.itba.pod.grpc.server.services.ExceptionHandler;
 import ar.edu.itba.pod.grpc.server.services.NotificationServiceImpl;
 import io.grpc.ServerBuilder;
 import org.slf4j.Logger;

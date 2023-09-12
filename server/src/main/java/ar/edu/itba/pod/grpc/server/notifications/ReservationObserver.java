@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.server.notifications;
 
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 
 import java.time.LocalTime;
@@ -24,7 +25,7 @@ public interface ReservationObserver {
     /**
      * Called whenever a previously pending reservation was confirmed.
      */
-    void onConfirmed(Reservation reservation, LocalTime slotTime);
+    void onConfirmed(ConfirmedReservation reservation, LocalTime slotTime);
 
     /**
      * Called whenever a pending reservation was relocated (and remains pending).

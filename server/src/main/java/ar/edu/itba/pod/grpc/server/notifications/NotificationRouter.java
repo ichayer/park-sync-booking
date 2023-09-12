@@ -3,6 +3,7 @@ package ar.edu.itba.pod.grpc.server.notifications;
 import ar.edu.itba.pod.grpc.server.exceptions.AlreadyRegisteredForNotificationsException;
 import ar.edu.itba.pod.grpc.server.exceptions.NotRegisteredForNotificationsException;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
 
@@ -55,7 +56,7 @@ public class NotificationRouter implements ReservationObserver {
     }
 
     @Override
-    public void onConfirmed(Reservation reservation, LocalTime slotTime) {
+    public void onConfirmed(ConfirmedReservation reservation, LocalTime slotTime) {
         NotificationStreamObserver stream = getObserverIfExists(reservation);
         if (stream != null)
             stream.onConfirmed(reservation, slotTime);

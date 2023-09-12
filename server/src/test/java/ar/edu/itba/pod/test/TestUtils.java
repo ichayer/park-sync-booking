@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.grpc;
+package ar.edu.itba.pod.test;
 
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.utils.Constants;

@@ -1,14 +1,19 @@
-package ar.edu.itba.pod.grpc;
+package ar.edu.itba.pod.test;
 
+import ar.edu.itba.pod.grpc.AvailabilityRequest;
+import ar.edu.itba.pod.grpc.AvailabilityResponse;
+import ar.edu.itba.pod.grpc.BookingRequest;
+import ar.edu.itba.pod.grpc.GetAttractionsResponse;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
-import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
-import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
-import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.services.BookingServiceImpl;
+import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
+import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.utils.ParseUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
@@ -27,6 +32,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BookingServiceImplTest {
@@ -82,7 +89,7 @@ public class BookingServiceImplTest {
         Mockito.verify(attractionResponseObserver).onNext(responseCaptor.capture());
         GetAttractionsResponse capturedResponse = responseCaptor.getValue();
 
-        Assertions.assertEquals(1, capturedResponse.getAttractionList().size());
+        assertEquals(1, capturedResponse.getAttractionList().size());
     }
 
     @Test
@@ -95,12 +102,12 @@ public class BookingServiceImplTest {
         Mockito.verify(attractionResponseObserver).onNext(responseCaptor.capture());
         GetAttractionsResponse capturedResponse = responseCaptor.getValue();
 
-        Assertions.assertEquals(0, capturedResponse.getAttractionList().size());
+        assertEquals(0, capturedResponse.getAttractionList().size());
     }
 
     @Test
     public void testCheckAttractionAvailabilityFailureMoreThan365Days() {
-        Assertions.assertThrows(InvalidDayException.class, () -> {
+        assertThrows(InvalidDayException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                     .setDayOfYear(OTHER_INVALID_DAY_OF_YEAR)
                     .setSlotFrom(TIME_FROM_STRING)
@@ -112,7 +119,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAttractionAvailabilityFailureLessThan1Day() {
-        Assertions.assertThrows(InvalidDayException.class, () -> {
+        assertThrows(InvalidDayException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setDayOfYear(INVALID_DAY_OF_YEAR)
                             .setSlotFrom(TIME_FROM_STRING)
@@ -124,7 +131,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAttractionAvailabilityFailureInvalidSlotRange() {
-        Assertions.assertThrows(InvalidSlotException.class, () -> {
+        assertThrows(InvalidSlotException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setDayOfYear(VALID_DAY_OF_YEAR)
                             .setSlotFrom(TIME_TO_STRING)
@@ -136,7 +143,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAttractionAvailabilityFailureEmptyAttractionNameAndSlotTo() {
-        Assertions.assertThrows(CheckAvailabilityInvalidArgumentException.class, () -> {
+        assertThrows(CheckAvailabilityInvalidArgumentException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setAttractionName("")
                             .setDayOfYear(VALID_DAY_OF_YEAR)
@@ -148,7 +155,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAttractionAvailabilityFailureBlankAttractionNameAndSlotTo() {
-        Assertions.assertThrows(CheckAvailabilityInvalidArgumentException.class, () -> {
+        assertThrows(CheckAvailabilityInvalidArgumentException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setAttractionName("  ")
                             .setDayOfYear(VALID_DAY_OF_YEAR)
@@ -160,7 +167,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAttractionAvailabilityFailureNoAttractionNameAndSlotTo() {
-        Assertions.assertThrows(CheckAvailabilityInvalidArgumentException.class, () -> {
+        assertThrows(CheckAvailabilityInvalidArgumentException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setDayOfYear(VALID_DAY_OF_YEAR)
                             .setSlotFrom(TIME_TO_STRING)
@@ -171,7 +178,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAttractionAvailabilityFailureNoSlotFrom() {
-        Assertions.assertThrows(InvalidSlotException.class, () -> {
+        assertThrows(InvalidSlotException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setDayOfYear(VALID_DAY_OF_YEAR)
                             .setAttractionName(ATTRACTION_NAME)
@@ -183,7 +190,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAttractionAvailabilityFailureNoDayOfYear() {
-        Assertions.assertThrows(InvalidDayException.class, () -> {
+        assertThrows(InvalidDayException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setAttractionName(ATTRACTION_NAME)
                             .setSlotTo(TIME_TO_STRING)
@@ -195,7 +202,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testCheckAvailabilityFailureForNonExistingAttraction() {
-        Assertions.assertThrows(AttractionNotFoundException.class, () -> {
+        assertThrows(AttractionNotFoundException.class, () -> {
             bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
                             .setDayOfYear(VALID_DAY_OF_YEAR)
                             .setSlotFrom(TIME_FROM_STRING)
@@ -219,7 +226,7 @@ public class BookingServiceImplTest {
         ArgumentCaptor<AvailabilityResponse> responseCaptor = ArgumentCaptor.forClass(AvailabilityResponse.class);
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
-        Assertions.assertEquals(0, capturedResponse.getSlotList().size());
+        assertEquals(0, capturedResponse.getSlotList().size());
     }
 
     @Test
@@ -242,7 +249,7 @@ public class BookingServiceImplTest {
         ArgumentCaptor<AvailabilityResponse> responseCaptor = ArgumentCaptor.forClass(AvailabilityResponse.class);
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
-        Assertions.assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
+        assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for(int i = 0; i< TOTAL_SLOTS; i++) {
             Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
             Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
@@ -274,7 +281,7 @@ public class BookingServiceImplTest {
         ArgumentCaptor<AvailabilityResponse> responseCaptor = ArgumentCaptor.forClass(AvailabilityResponse.class);
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
-        Assertions.assertEquals(limit + 1, capturedResponse.getSlotList().size());
+        assertEquals(limit + 1, capturedResponse.getSlotList().size());
         for(int i = 0; i< limit + 1; i++) {
             Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
             Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
@@ -312,7 +319,7 @@ public class BookingServiceImplTest {
         ArgumentCaptor<AvailabilityResponse> responseCaptor = ArgumentCaptor.forClass(AvailabilityResponse.class);
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
-        Assertions.assertEquals(2 * TOTAL_SLOTS, capturedResponse.getSlotList().size());
+        assertEquals(2 * TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for (int i = 0; i < TOTAL_SLOTS; i++) {
             Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
             Assertions.assertEquals(ANOTHER_ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
@@ -335,11 +342,11 @@ public class BookingServiceImplTest {
         Attraction attractionSpy = Mockito.spy(attraction);
         attractions.put(ATTRACTION_NAME, attractionSpy);
 
-        Map<UUID, Reservation>[] confirmedReservations = (Map<UUID, Reservation>[]) new Map[TOTAL_SLOTS];
+        Map<UUID, ar.edu.itba.pod.grpc.server.models.ConfirmedReservation>[] confirmedReservations = new Map[TOTAL_SLOTS];
 
         for (int i = 0; i < TOTAL_SLOTS; i++) {
             confirmedReservations[i] = new ConcurrentHashMap<>();
-            confirmedReservations[i].put(VISITOR_ID, Mockito.mock(Reservation.class));
+            confirmedReservations[i].put(VISITOR_ID, Mockito.mock(ar.edu.itba.pod.grpc.server.models.ConfirmedReservation.class));
         }
 
         ReservationHandler reservationHandler = new ReservationHandler(attractionSpy,
@@ -358,7 +365,7 @@ public class BookingServiceImplTest {
         ArgumentCaptor<AvailabilityResponse> responseCaptor = ArgumentCaptor.forClass(AvailabilityResponse.class);
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
-        Assertions.assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
+        assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for (int i = 0; i < TOTAL_SLOTS; i++) {
             Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
             Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
@@ -397,7 +404,7 @@ public class BookingServiceImplTest {
         ArgumentCaptor<AvailabilityResponse> responseCaptor = ArgumentCaptor.forClass(AvailabilityResponse.class);
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
-        Assertions.assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
+        assertEquals(TOTAL_SLOTS, capturedResponse.getSlotList().size());
         for (int i = 0; i < TOTAL_SLOTS; i++) {
             Assertions.assertEquals(SLOT_CAPACITY, capturedResponse.getSlot(i).getSlotCapacity());
             Assertions.assertEquals(ATTRACTION_NAME, capturedResponse.getSlot(i).getAttractionName());
@@ -409,7 +416,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureLessThan0Days() {
-        Assertions.assertThrows(InvalidDayException.class, () -> {
+        assertThrows(InvalidDayException.class, () -> {
             bookingService.confirmReservation(BookingRequest.newBuilder()
                             .setAttractionName(ATTRACTION_NAME)
                             .setDayOfYear(INVALID_DAY_OF_YEAR)
@@ -422,7 +429,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureMoreThan365Days() {
-        Assertions.assertThrows(InvalidDayException.class, () -> {
+        assertThrows(InvalidDayException.class, () -> {
             bookingService.confirmReservation(BookingRequest.newBuilder()
                             .setAttractionName(ATTRACTION_NAME)
                             .setDayOfYear(OTHER_INVALID_DAY_OF_YEAR)
@@ -435,7 +442,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureEmptyAttractionName() {
-        Assertions.assertThrows(EmptyAttractionException.class, () -> {
+        assertThrows(EmptyAttractionException.class, () -> {
             bookingService.confirmReservation(BookingRequest.newBuilder()
                             .setAttractionName("")
                             .setDayOfYear(VALID_DAY_OF_YEAR)
@@ -448,7 +455,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureBlankAttractionName() {
-        Assertions.assertThrows(EmptyAttractionException.class, () -> {
+        assertThrows(EmptyAttractionException.class, () -> {
             bookingService.confirmReservation(BookingRequest.newBuilder()
                             .setAttractionName("  ")
                             .setDayOfYear(VALID_DAY_OF_YEAR)
@@ -461,7 +468,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureNoAttraction() {
-        Assertions.assertThrows(AttractionNotFoundException.class, () -> {
+        assertThrows(AttractionNotFoundException.class, () -> {
 
             Ticket ticket = new Ticket(VISITOR_ID, VALID_DAY_OF_YEAR, TICKET_TYPE_FULL_DAY);
             Ticket ticketSpy = Mockito.spy(ticket);
@@ -479,7 +486,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureNoCapacityDefined() {
-        Assertions.assertThrows(CapacityNotDefinedException.class, () -> {
+        assertThrows(CapacityNotDefinedException.class, () -> {
             Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
             Attraction attractionSpy = Mockito.spy(attraction);
             attractions.put(ATTRACTION_NAME, attractionSpy);
@@ -505,7 +512,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureReservationAlreadyConfirmed() {
-        Assertions.assertThrows(ReservationAlreadyConfirmedException.class, () -> {
+        assertThrows(ReservationAlreadyConfirmedException.class, () -> {
             Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
             Attraction attractionSpy = Mockito.spy(attraction);
             attractions.put(ATTRACTION_NAME, attractionSpy);
@@ -515,9 +522,9 @@ public class BookingServiceImplTest {
             ticketsByDay[VALID_DAY_OF_YEAR - 1].put(VISITOR_ID, ticketSpy);
 
 
-            Map<UUID, Reservation>[] confirmedReservations = (Map<UUID, Reservation>[]) new Map[TOTAL_SLOTS];
+            Map<UUID, ar.edu.itba.pod.grpc.server.models.ConfirmedReservation>[] confirmedReservations = new Map[TOTAL_SLOTS];
 
-            Reservation reservation = Mockito.mock(Reservation.class);
+            ar.edu.itba.pod.grpc.server.models.ConfirmedReservation reservation = Mockito.mock(ar.edu.itba.pod.grpc.server.models.ConfirmedReservation.class);
             confirmedReservations[0] = new ConcurrentHashMap<>();
             confirmedReservations[0].put(VISITOR_ID, reservation);
 
@@ -540,7 +547,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureReservationNotFound() {
-        Assertions.assertThrows(ReservationNotFoundException.class, () -> {
+        assertThrows(ReservationNotFoundException.class, () -> {
             Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
             Attraction attractionSpy = Mockito.spy(attraction);
             attractions.put(ATTRACTION_NAME, attractionSpy);
@@ -549,7 +556,7 @@ public class BookingServiceImplTest {
             Ticket ticketSpy = Mockito.spy(ticket);
             ticketsByDay[VALID_DAY_OF_YEAR - 1].put(VISITOR_ID, ticketSpy);
 
-            Map<UUID, Reservation>[] confirmedReservations = (Map<UUID, Reservation>[]) new Map[TOTAL_SLOTS];
+            Map<UUID, ar.edu.itba.pod.grpc.server.models.ConfirmedReservation>[] confirmedReservations = new Map[TOTAL_SLOTS];
 
             confirmedReservations[0] = new ConcurrentHashMap<>();
 
@@ -572,7 +579,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureInvalidSlot() {
-        Assertions.assertThrows(InvalidSlotException.class, () -> {
+        assertThrows(InvalidSlotException.class, () -> {
             Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
             Attraction attractionSpy = Mockito.spy(attraction);
             attractions.put(ATTRACTION_NAME, attractionSpy);
@@ -582,7 +589,7 @@ public class BookingServiceImplTest {
             ticketsByDay[VALID_DAY_OF_YEAR - 1].put(VISITOR_ID, ticketSpy);
 
 
-            Map<UUID, Reservation>[] confirmedReservations = (Map<UUID, Reservation>[]) new Map[TOTAL_SLOTS];
+            Map<UUID, ConfirmedReservation>[] confirmedReservations = new Map[TOTAL_SLOTS];
 
             confirmedReservations[0] = new ConcurrentHashMap<>();
 
@@ -605,7 +612,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureNoTicket() {
-        Assertions.assertThrows(MissingPassException.class,() -> {
+        assertThrows(MissingPassException.class,() -> {
             Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
             Attraction attractionSpy = Mockito.spy(attraction);
             attractions.put(ATTRACTION_NAME, attractionSpy);
@@ -623,7 +630,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureCantBookWithHalfDayPass() {
-        Assertions.assertThrows(MissingPassException.class, () -> {
+        assertThrows(MissingPassException.class, () -> {
             Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
             Attraction attractionSpy = Mockito.spy(attraction);
             attractions.put(ATTRACTION_NAME, attractionSpy);
@@ -644,7 +651,7 @@ public class BookingServiceImplTest {
 
     @Test
     public void testConfirmReservationFailureCantBookWithFullDayPass() {
-        Assertions.assertThrows(MissingPassException.class, () -> {
+        assertThrows(MissingPassException.class, () -> {
             Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
             Attraction attractionSpy = Mockito.spy(attraction);
             attractions.put(ATTRACTION_NAME, attractionSpy);
@@ -678,7 +685,7 @@ public class BookingServiceImplTest {
         LinkedHashMap<UUID, Reservation>[] pendingReservations = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[TOTAL_SLOTS];
         pendingReservations[0] = new LinkedHashMap<>();
 
-        Reservation reservation = new Reservation(Mockito.mock(Ticket.class), Mockito.mock(Attraction.class), TIME_FROM_LOCAL_TIME, false);
+        Reservation reservation = new Reservation(Mockito.mock(Ticket.class), Mockito.mock(Attraction.class));
         Reservation reservationSpy = Mockito.spy(reservation);
         pendingReservations[0].put(VISITOR_ID, reservationSpy);
 
@@ -696,7 +703,5 @@ public class BookingServiceImplTest {
                         .setVisitorId(VISITOR_ID.toString())
                         .build(),
                 Mockito.mock(StreamObserver.class));
-
-        Assertions.assertTrue(reservationSpy.isConfirmed());
     }
 }

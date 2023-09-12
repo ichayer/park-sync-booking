@@ -6,6 +6,7 @@ import ar.edu.itba.pod.grpc.NotificationRequest;
 import ar.edu.itba.pod.grpc.NotificationType;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.notifications.NotificationRouter;
 import ar.edu.itba.pod.grpc.server.notifications.NotificationStreamObserver;
@@ -88,7 +89,7 @@ public class NotificationServiceImpl extends AttractionNotificationServiceGrpc.A
         }
 
         @Override
-        public synchronized void onConfirmed(Reservation reservation, LocalTime slotTime) {
+        public synchronized void onConfirmed(ConfirmedReservation reservation, LocalTime slotTime) {
             if (completed)
                 return;
 
