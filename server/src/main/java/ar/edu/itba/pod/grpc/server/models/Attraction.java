@@ -5,11 +5,11 @@ import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -56,15 +56,23 @@ public class Attraction {
     /**
      * Attempts to set slot capacity, failing if capacity is already set.
      */
-    public DefineSlotCapacityResult trySetSlotCapacity(int dayOfYear, int slotCapacity) {
+    public DefineSlotCapacityResult setSlotCapacity(int dayOfYear, int slotCapacity) {
         ReservationHandler reservationHandler = reservationHandlers[dayOfYear - 1];
         return reservationHandler.defineSlotCapacity(slotCapacity);
     }
 
     /**
+     * Gets the suggested slot capacity for a given day, or null if slot capacity has already been set for that day.
+     */
+    public SuggestedCapacityResult getSuggestedCapacity(int dayOfYear) {
+        ReservationHandler reservationHandler = reservationHandlers[dayOfYear - 1];
+        return reservationHandler.getSuggestedCapacity();
+    }
+
+    /**
      * Attempts to make a reservation for a given ticket (which includes visitorId and dayOfYear) and time slot.
      */
-    public MakeReservationResult tryMakeReservation(Ticket ticket, LocalTime slotTime) {
+    public MakeReservationResult makeReservation(Ticket ticket, LocalTime slotTime) {
         return reservationHandlers[ticket.getDayOfYear() - 1].makeReservation(ticket, slotTime);
     }
 
@@ -80,14 +88,14 @@ public class Attraction {
     }
 
     /**
-     * Gets the reservation handler for a given day of year. Only used for testing purposes
+     * Gets the reservation handler for a given day of year. ONLY USED FOR TESTING PURPOSES!
      */
     public ReservationHandler getReservationHandler(int dayOfYear) {
         return reservationHandlers[dayOfYear - 1];
     }
 
     /**
-     * Sets the reservation handler for a given day of year. Only used for testing purposes
+     * Sets the reservation handler for a given day of year. ONLY USED FOR TESTING PURPOSES!
      */
     public void setReservationHandler(int dayOfYear, ReservationHandler reservationHandler) {
         reservationHandlers[dayOfYear - 1] = reservationHandler;

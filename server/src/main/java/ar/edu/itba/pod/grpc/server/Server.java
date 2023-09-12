@@ -24,6 +24,7 @@ public class Server {
                 .addService(new AdminServiceImpl(attractionHandler))
                 .addService(new BookingServiceImpl(attractionHandler))
                 .addService(new NotificationServiceImpl(attractionHandler, notificationRouter))
+                .addService(new QueryServiceImpl(attractionHandler))
                 .build()
                 .start();
         logger.info("Server started, listening on " + port);

@@ -1,7 +1,6 @@
 package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
-import ar.edu.itba.pod.grpc.server.exceptions.EmptyAttractionException;
 import ar.edu.itba.pod.grpc.server.exceptions.CheckAvailabilityInvalidArgumentException;
 import ar.edu.itba.pod.grpc.server.exceptions.InvalidSlotException;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
@@ -25,16 +24,18 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
 
     @Override
     public void getAttractions(Empty request, StreamObserver<GetAttractionsResponse> responseObserver) {
+        GetAttractionsResponse.Builder responseBuilder = GetAttractionsResponse.newBuilder();
+
         Collection<Attraction> attractions = attractionHandler.getAttractions();
+        for (Attraction attraction : attractions) {
+            responseBuilder.addAttraction(ar.edu.itba.pod.grpc.Attraction.newBuilder()
+                    .setName(attraction.getName())
+                    .setClosingTime(ParseUtils.formatTime(attraction.getClosingTime()))
+                    .setOpeningTime(ParseUtils.formatTime(attraction.getOpeningTime()))
+                    .build());
+        }
 
-        Collection<ar.edu.itba.pod.grpc.Attraction> attractionsDto = attractions.stream()
-                .map(attraction -> ar.edu.itba.pod.grpc.Attraction.newBuilder()
-                        .setName(attraction.getName())
-                        .setClosingTime(ParseUtils.formatTime(attraction.getClosingTime()))
-                        .setOpeningTime(ParseUtils.formatTime(attraction.getOpeningTime()))
-                        .build()).toList();
-
-        responseObserver.onNext(GetAttractionsResponse.newBuilder().addAllAttraction(attractionsDto).build());
+        responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
     }
 
@@ -59,16 +60,19 @@ public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBas
             availabilityResults = attractionHandler.getAvailabilityForAllAttractions(dayOfYear, slotFrom, slotTo);
         }
 
-        Collection<AvailabilitySlot> availabilitySlotsDto = availabilityResults.stream()
-                .map(availabilityResult -> AvailabilitySlot.newBuilder()
-                        .setAttractionName(availabilityResult.attractionName())
-                        .setSlot(ParseUtils.formatTime(availabilityResult.slotTime()))
-                        .setSlotCapacity(availabilityResult.slotCapacity())
-                        .setBookingsConfirmed(availabilityResult.confirmedReservations())
-                        .setBookingsPending(availabilityResult.pendingReservations())
-                        .build()).toList();
+        AvailabilityResponse.Builder responseBuilder = AvailabilityResponse.newBuilder();
 
-        responseObserver.onNext(AvailabilityResponse.newBuilder().addAllSlot(availabilitySlotsDto).build());
+        for (AttractionAvailabilityResult availabilityResult : availabilityResults) {
+            responseBuilder.addSlot(AvailabilitySlot.newBuilder()
+                    .setAttractionName(availabilityResult.attractionName())
+                    .setSlot(ParseUtils.formatTime(availabilityResult.slotTime()))
+                    .setSlotCapacity(availabilityResult.slotCapacity())
+                    .setBookingsConfirmed(availabilityResult.confirmedReservations())
+                    .setBookingsPending(availabilityResult.pendingReservations())
+                    .build());
+        }
+
+        responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
     }
 

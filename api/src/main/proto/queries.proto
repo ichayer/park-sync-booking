@@ -19,12 +19,12 @@ message SuggestedCapacity {
 }
 
 message SuggestedCapacitiesResponse {
-  repeated SuggestedCapacity suggestedCapacity = 2;
+  repeated SuggestedCapacity suggestedCapacity = 1;
 }
 
 
 message ConfirmedReservationsResponse {
-  repeated ConfirmedReservation confirmedReservation = 2;
+  repeated ConfirmedReservation confirmedReservation = 1;
 }
 
 message ConfirmedReservation {

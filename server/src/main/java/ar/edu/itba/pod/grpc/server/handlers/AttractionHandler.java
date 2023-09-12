@@ -11,6 +11,7 @@ import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
 import ar.edu.itba.pod.grpc.server.utils.Constants;
 
 import java.time.LocalTime;
@@ -68,7 +69,7 @@ public class AttractionHandler {
     }
 
     public DefineSlotCapacityResult setSlotCapacityForAttraction(String attractionName, int dayOfYear, int slotCapacity) {
-        return getAttraction(attractionName).trySetSlotCapacity(dayOfYear, slotCapacity);
+        return getAttraction(attractionName).setSlotCapacity(dayOfYear, slotCapacity);
     }
 
     public Collection<Attraction> getAttractions() {
@@ -90,7 +91,7 @@ public class AttractionHandler {
         synchronized (ticket) {
             if (!ticket.canBook(slotTime))
                 throw new MissingPassException();
-            MakeReservationResult result = attraction.tryMakeReservation(ticket, slotTime);
+            MakeReservationResult result = attraction.makeReservation(ticket, slotTime);
             ticket.addBook();
             return result;
         }
@@ -108,7 +109,7 @@ public class AttractionHandler {
     public Collection<AttractionAvailabilityResult> getAvailabilityForAttraction(String attractionName, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         List<AttractionAvailabilityResult> resultList = new ArrayList<>();
         getAttraction(attractionName).getAvailabilityForAttraction(resultList, dayOfYear, slotFrom, slotTo);
-        return resultList;
+        return Collections.unmodifiableList(resultList);
     }
 
     /**
@@ -122,7 +123,7 @@ public class AttractionHandler {
         List<AttractionAvailabilityResult> resultList = new ArrayList<>();
         for (Attraction attraction : attractions.values())
             attraction.getAvailabilityForAttraction(resultList, dayOfYear, slotFrom, slotTo);
-        return resultList;
+        return Collections.unmodifiableList(resultList);
     }
 
     /**
@@ -151,5 +152,16 @@ public class AttractionHandler {
         synchronized (ticket) {
             ticket.removeBook(slotTime);
         }
+    }
+
+    public Collection<SuggestedCapacityResult> getSuggestedCapacities(int dayOfYear) {
+        List<SuggestedCapacityResult> results = new ArrayList<>();
+        for (Attraction attraction : attractions.values()) {
+            SuggestedCapacityResult r = attraction.getSuggestedCapacity(dayOfYear);
+            if (r != null)
+                results.add(r);
+        }
+
+        return Collections.unmodifiableList(results);
     }
 }

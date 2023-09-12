@@ -404,11 +404,8 @@ public class ReservationHandler {
      * the maximum between all slots, and the slot with the said maximum capacity.
      */
     public synchronized SuggestedCapacityResult getSuggestedCapacity() {
-        if (slotCapacity != -1)
+        if (slotCapacity != -1 || slotCount == 0)
            return null;
-
-        if (slotCount == 0)
-            return SuggestedCapacityResult.EMPTY;
 
         // Find the slotIndex wih the maximum amount of pending reservations.
         int indexOfMax = 0;
@@ -420,7 +417,7 @@ public class ReservationHandler {
             }
         }
 
-        return new SuggestedCapacityResult(maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
+        return new SuggestedCapacityResult(attraction, maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
     }
 
     /**
