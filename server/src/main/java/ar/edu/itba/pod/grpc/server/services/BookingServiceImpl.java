@@ -3,8 +3,8 @@ package ar.edu.itba.pod.grpc.server.services;
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.exceptions.CheckAvailabilityInvalidArgumentException;
 import ar.edu.itba.pod.grpc.server.exceptions.InvalidSlotException;
-import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
 import ar.edu.itba.pod.grpc.server.utils.ParseUtils;
@@ -12,7 +12,8 @@ import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.UUID;
 
 public class BookingServiceImpl extends BookingServiceGrpc.BookingServiceImplBase {
 

@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 
 public class Parser {
     private static final Map<String, BiConsumer<String, Arguments.Builder>> OPTIONS = Map.of(
-            "-DserverAddress", (argValue, argBuilder) -> argBuilder.channel(ManagedChannelBuilder.forTarget(argValue).usePlaintext().build()) ,
+            "-DserverAddress", (argValue, argBuilder) -> argBuilder.channel(ManagedChannelBuilder.forTarget(argValue).usePlaintext().build()),
             "-Daction", (argValue, argBuilder) -> argBuilder.action(argValue),
             "-Dday", (argValue, argBuilder) -> argBuilder.dayOfYear(Integer.parseInt(argValue)),
             "-Dride", (argValue, argBuilder) -> argBuilder.attractionName(argValue),

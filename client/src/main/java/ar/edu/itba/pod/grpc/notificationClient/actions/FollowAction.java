@@ -39,7 +39,8 @@ public class FollowAction implements Action {
 
 
         AttractionNotificationServiceGrpc.AttractionNotificationServiceStub asyncStub =
-                AttractionNotificationServiceGrpc.newStub(arguments.getChannel());;
+                AttractionNotificationServiceGrpc.newStub(arguments.getChannel());
+        ;
 
         asyncStub.follow(request, new StreamObserver<>() {
             @Override
@@ -57,9 +58,9 @@ public class FollowAction implements Action {
                                     arguments.getDayOfYear());
                     case NOTIFICATION_TYPE_BOOKING_CREATED_CONFIRMED, NOTIFICATION_TYPE_BOOKING_CONFIRMED ->
                             String.format("The reservation for %s at %s on the day %d is CONFIRMED",
-                            arguments.getAttractionName(),
-                            response.getSlotTime(),
-                            arguments.getDayOfYear());
+                                    arguments.getAttractionName(),
+                                    response.getSlotTime(),
+                                    arguments.getDayOfYear());
                     case NOTIFICATION_TYPE_BOOKING_CANCELLED ->
                             String.format("The reservation for %s at %s on the day %d is CANCELLED",
                                     arguments.getAttractionName(),

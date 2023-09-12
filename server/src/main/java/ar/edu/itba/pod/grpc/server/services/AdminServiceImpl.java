@@ -1,10 +1,11 @@
 package ar.edu.itba.pod.grpc.server.services;
 
 import ar.edu.itba.pod.grpc.*;
-import ar.edu.itba.pod.grpc.server.exceptions.*;
+import ar.edu.itba.pod.grpc.server.exceptions.InvalidDayException;
+import ar.edu.itba.pod.grpc.server.exceptions.InvalidOpeningAndClosingTimeException;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
-import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
+import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
 import ar.edu.itba.pod.grpc.server.utils.ParseUtils;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;

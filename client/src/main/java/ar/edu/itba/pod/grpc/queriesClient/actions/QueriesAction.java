@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.grpc.queriesClient.actions;
 
-import ar.edu.itba.pod.grpc.*;
+import ar.edu.itba.pod.grpc.DayOfYearRequest;
+import ar.edu.itba.pod.grpc.QueryServiceGrpc;
 import ar.edu.itba.pod.grpc.exceptions.IOClientFileError;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
@@ -10,7 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public abstract class QueriesAction implements Action{
+public abstract class QueriesAction implements Action {
 
     private String outPath;
 
@@ -36,7 +37,7 @@ public abstract class QueriesAction implements Action{
     public void showResults() {
         PrintWriter writer = null;
 
-        try(FileWriter fileWriter = new FileWriter(outPath)) {
+        try (FileWriter fileWriter = new FileWriter(outPath)) {
             writer = new PrintWriter(fileWriter);
             writeToFile(writer);
         } catch (IOException e) {

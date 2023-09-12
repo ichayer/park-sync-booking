@@ -10,7 +10,7 @@ public class CsvFileIterator implements Iterator<String[]>, Closeable {
     private final BufferedReader reader;
     private String currentLine;
 
-    public CsvFileIterator(String filename){
+    public CsvFileIterator(String filename) {
         if (filename == null) {
             throw new IllegalArgumentException("The filename cannot be null");
         }
@@ -54,7 +54,7 @@ public class CsvFileIterator implements Iterator<String[]>, Closeable {
     }
 
     @Override
-    public void close(){
+    public void close() {
         if (reader != null) {
             try {
                 reader.close();

@@ -1,6 +1,9 @@
 package ar.edu.itba.pod.grpc.bookingClient.actions;
 
-import ar.edu.itba.pod.grpc.*;
+import ar.edu.itba.pod.grpc.AvailabilityRequest;
+import ar.edu.itba.pod.grpc.AvailabilityResponse;
+import ar.edu.itba.pod.grpc.AvailabilitySlot;
+import ar.edu.itba.pod.grpc.BookingServiceGrpc;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
@@ -13,20 +16,20 @@ public class AvailabilityAction implements Action {
 
     List<AvailabilitySlot> slots;
     private static final Logger logger = LoggerFactory.getLogger(AvailabilityAction.class);
+
     @Override
     public Action execute(Arguments arguments) {
         AvailabilityRequest.Builder requestBuilder = AvailabilityRequest.newBuilder();
-        if(arguments.getAttractionName() == null && arguments.getBookingSlot() != null && arguments.getBookingSlotTo()!= null){
+        if (arguments.getAttractionName() == null && arguments.getBookingSlot() != null && arguments.getBookingSlotTo() != null) {
             requestBuilder.setSlotFrom(arguments.getBookingSlot());
             requestBuilder.setSlotTo(arguments.getBookingSlotTo());
-        }
-        else if(arguments.getAttractionName() != null && arguments.getBookingSlot() != null){
+        } else if (arguments.getAttractionName() != null && arguments.getBookingSlot() != null) {
             requestBuilder.setAttractionName(arguments.getAttractionName());
             requestBuilder.setSlotFrom(arguments.getBookingSlot());
-            if(arguments.getBookingSlotTo() != null){
+            if (arguments.getBookingSlotTo() != null) {
                 requestBuilder.setSlotTo(arguments.getBookingSlotTo());
             }
-        }else {
+        } else {
             throw new IllegalClientArgumentException("Invalid arguments for the availability action.");
         }
 

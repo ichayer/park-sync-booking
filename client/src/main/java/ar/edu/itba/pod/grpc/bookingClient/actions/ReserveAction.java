@@ -2,7 +2,6 @@ package ar.edu.itba.pod.grpc.bookingClient.actions;
 
 import ar.edu.itba.pod.grpc.BookingRequest;
 import ar.edu.itba.pod.grpc.BookingServiceGrpc;
-
 import ar.edu.itba.pod.grpc.BookingState;
 import ar.edu.itba.pod.grpc.ReservationResponse;
 import org.slf4j.Logger;

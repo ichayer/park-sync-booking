@@ -11,7 +11,6 @@ import ar.edu.itba.pod.grpc.server.utils.Constants;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.SortedSet;
 import java.util.UUID;
 
 public class Attraction {
@@ -35,7 +34,7 @@ public class Attraction {
         this(name, openingTime, closingTime, slotDuration, null);
     }
 
-        public String getName() {
+    public String getName() {
         return name;
     }
 
@@ -79,10 +78,11 @@ public class Attraction {
 
     /**
      * Gets the availability for a given time slot.
+     *
      * @param resultCollection The collection to which to add the resulting elements.
-     * @param dayOfYear The day of the year.
-     * @param slotFrom The start of the time slot, inclusive.
-     * @param slotTo The end of the time slot, inclusive, or null to only check slotFrom.
+     * @param dayOfYear        The day of the year.
+     * @param slotFrom         The start of the time slot, inclusive.
+     * @param slotTo           The end of the time slot, inclusive, or null to only check slotFrom.
      */
     public void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, int dayOfYear, LocalTime slotFrom, LocalTime slotTo) {
         reservationHandlers[dayOfYear - 1].getAvailability(resultCollection, slotFrom, slotTo);
@@ -90,8 +90,9 @@ public class Attraction {
 
     /**
      * Gets all the confirmed reservations for a given day.
+     *
      * @param resultCollection The collection to which to add the resulting elements.
-     * @param dayOfYear The day of the year.
+     * @param dayOfYear        The day of the year.
      */
     public void getConfirmedReservations(Collection<ConfirmedReservation> resultCollection, int dayOfYear) {
         reservationHandlers[dayOfYear - 1].getConfirmedReservations(resultCollection);

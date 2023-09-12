@@ -1,10 +1,10 @@
 package ar.edu.itba.pod.grpc.notificationClient.actions;
 
 import ar.edu.itba.pod.grpc.AttractionNotificationServiceGrpc;
+import ar.edu.itba.pod.grpc.NotificationRequest;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
-import ar.edu.itba.pod.grpc.NotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

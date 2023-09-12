@@ -20,7 +20,7 @@ public enum TicketType {
     HALF_DAY {
         @Override
         public boolean isSlotTimeValid(LocalTime slotTime) {
-            return slotTime.isAfter(LocalTime.of(14,0));
+            return slotTime.isAfter(LocalTime.of(14, 0));
         }
 
         @Override
@@ -59,6 +59,7 @@ public enum TicketType {
     }
 
     public abstract boolean isSlotTimeValid(LocalTime slotTime);
+
     public abstract boolean isBookingsCountValid(int bookings);
 
     public boolean canBook(int bookings, LocalTime slotTime) {

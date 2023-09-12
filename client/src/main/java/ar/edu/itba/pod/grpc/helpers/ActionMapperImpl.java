@@ -20,7 +20,7 @@ public abstract class ActionMapperImpl implements ActionMapper {
         return actionMapper.getOrDefault(actionName, ActionMapperImpl::InvalidAction).get();
     }
 
-    private static Action InvalidAction(){
+    private static Action InvalidAction() {
         throw new IllegalClientArgumentException("The provided action is not valid");
     }
 }

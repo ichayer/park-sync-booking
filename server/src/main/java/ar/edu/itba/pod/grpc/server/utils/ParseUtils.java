@@ -18,6 +18,7 @@ public final class ParseUtils {
 
     /**
      * Parses a "HH:mm" string into a LocalTime.
+     *
      * @throws InvalidSlotException if the string is invalid.
      */
     public static LocalTime parseTime(String time) {
@@ -30,6 +31,7 @@ public final class ParseUtils {
 
     /**
      * Parses a "HH:mm" string into a LocalTime, or null if the given time is null or blank.
+     *
      * @throws InvalidSlotException if the string is invalid.
      */
     public static LocalTime parseTimeOrNull(String time) {
@@ -46,6 +48,7 @@ public final class ParseUtils {
 
     /**
      * Parses a UUID from a string.
+     *
      * @throws InvalidVisitorIdException if the string is invalid.
      */
     public static UUID parseId(String id) {
@@ -58,8 +61,9 @@ public final class ParseUtils {
 
     /**
      * Verifies that the given int is a valid day of the year.
-     * @throws InvalidDayException if not a valid day of year.
+     *
      * @return The same value passed.
+     * @throws InvalidDayException if not a valid day of year.
      */
     public static int checkValidDayOfYear(int dayOfYear) {
         if (dayOfYear < 1 || dayOfYear > 365)
@@ -69,8 +73,9 @@ public final class ParseUtils {
 
     /**
      * Verifies that the given int is a valid duration.
-     * @throws InvalidDurationException if not a valid duration.
+     *
      * @return The same value passed.
+     * @throws InvalidDurationException if not a valid duration.
      */
     public static int checkValidDuration(int duration) {
         if (duration <= 0)
@@ -80,8 +85,9 @@ public final class ParseUtils {
 
     /**
      * Verifies that the given int is a valid capacity.
-     * @throws NegativeCapacityException if not a valid capacity.
+     *
      * @return The same value passed.
+     * @throws NegativeCapacityException if not a valid capacity.
      */
     public static int checkValidCapacity(int capacity) {
         if (capacity < 0)
@@ -91,8 +97,9 @@ public final class ParseUtils {
 
     /**
      * Verifies that the given string is valid for an attraction name. Does not check that said attraction exists.
-     * @throws EmptyAttractionException if the attraction name is empty or blank.
+     *
      * @return The same value passed.
+     * @throws EmptyAttractionException if the attraction name is empty or blank.
      */
     public static String checkAttractionName(String attractionName) {
         if (attractionName == null || attractionName.isBlank())
@@ -102,6 +109,7 @@ public final class ParseUtils {
 
     /**
      * Verifies that the given string is valid for an attraction name. Does not check that said attraction exists.
+     *
      * @return The same value passed, or null if attractionName is blank.
      */
     public static String checkAttractionNameOrNull(String attractionName) {

@@ -5,11 +5,11 @@ import ar.edu.itba.pod.grpc.server.models.Attraction;
 import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
-import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
-import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
 import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.results.AttractionAvailabilityResult;
 import ar.edu.itba.pod.grpc.server.results.DefineSlotCapacityResult;
+import ar.edu.itba.pod.grpc.server.results.MakeReservationResult;
+import ar.edu.itba.pod.grpc.server.results.SuggestedCapacityResult;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -147,6 +147,7 @@ public class ReservationHandler {
 
     /**
      * Same as getSlotIndex, but throws an exception instead of returning -1.
+     *
      * @throws InvalidSlotException
      */
     private int getSlotIndexOrThrow(LocalTime slotTime) {
@@ -192,6 +193,7 @@ public class ReservationHandler {
 
     /**
      * Sets the slot capacity, if it isn't already set.
+     *
      * @throws CapacityAlreadyDefinedException if slot capacity is already defined.
      */
     public synchronized DefineSlotCapacityResult defineSlotCapacity(int slotCapacity) {
@@ -297,10 +299,11 @@ public class ReservationHandler {
 
     /**
      * Attempts to make a reservation for a given visitor and time slot.
+     *
      * @return A Reservation
-     * @throws InvalidSlotException when the slot doesn't exist
+     * @throws InvalidSlotException              when the slot doesn't exist
      * @throws ReservationAlreadyExistsException if no such reservation exists
-     * @throws OutOfCapacityException if the slot is out of capacity
+     * @throws OutOfCapacityException            if the slot is out of capacity
      */
     public synchronized MakeReservationResult makeReservation(Ticket ticket, LocalTime slotTime) {
         final int slotIndex = getSlotIndexOrThrow(slotTime);
@@ -348,8 +351,9 @@ public class ReservationHandler {
 
     /**
      * Confirms a reservation.
-     * @throws InvalidSlotException when the slot doesn't exist
-     * @throws ReservationNotFoundException if no such reservation exists
+     *
+     * @throws InvalidSlotException                 when the slot doesn't exist
+     * @throws ReservationNotFoundException         if no such reservation exists
      * @throws ReservationAlreadyConfirmedException if the reservation has already been confirmed
      */
     public synchronized void confirmReservation(UUID visitorId, LocalTime slotTime) {
@@ -384,7 +388,8 @@ public class ReservationHandler {
 
     /**
      * Cancels a reservation.
-     * @throws InvalidSlotException when the slot doesn't exist
+     *
+     * @throws InvalidSlotException         when the slot doesn't exist
      * @throws ReservationNotFoundException if no such reservation exists
      */
     public synchronized void cancelReservation(UUID visitorId, LocalTime slotTime) {
@@ -404,12 +409,13 @@ public class ReservationHandler {
 
     /**
      * Computes the suggested slot capacity.
+     *
      * @return If slot capacity has already been decided, returns null. Otherwise, returns the suggested capacity as
      * the maximum between all slots, and the slot with the said maximum capacity.
      */
     public synchronized SuggestedCapacityResult getSuggestedCapacity() {
         if (slotCapacity != -1 || slotCount == 0)
-           return null;
+            return null;
 
         // Find the slotIndex wih the maximum amount of pending reservations.
         int indexOfMax = 0;
@@ -426,9 +432,10 @@ public class ReservationHandler {
 
     /**
      * Gets the availability for a given time slot.
+     *
      * @param resultCollection The collection to which to add the resulting elements.
-     * @param slotFrom The start of the time slot, inclusive.
-     * @param slotTo The end of the time slot, inclusive, or null to only check slotFrom.
+     * @param slotFrom         The start of the time slot, inclusive.
+     * @param slotTo           The end of the time slot, inclusive, or null to only check slotFrom.
      * @throws InvalidSlotException if the slotFrom or slotTo times are invalid.
      */
     public synchronized void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, LocalTime slotFrom, LocalTime slotTo) {
@@ -450,6 +457,7 @@ public class ReservationHandler {
 
     /**
      * Gets all the confirmed reservations.
+     *
      * @param resultCollection The collection to which to add the resulting elements.
      */
     public synchronized void getConfirmedReservations(Collection<ConfirmedReservation> resultCollection) {

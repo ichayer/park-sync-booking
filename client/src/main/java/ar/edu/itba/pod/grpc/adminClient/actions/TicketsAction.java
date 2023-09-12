@@ -1,8 +1,8 @@
 package ar.edu.itba.pod.grpc.adminClient.actions;
 
+import ar.edu.itba.pod.grpc.AddTicketRequest;
 import ar.edu.itba.pod.grpc.AdminServiceGrpc;
 import ar.edu.itba.pod.grpc.PassType;
-import ar.edu.itba.pod.grpc.AddTicketRequest;
 import ar.edu.itba.pod.grpc.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.helpers.CsvFileIterator;
@@ -30,7 +30,7 @@ public class TicketsAction implements Action {
         CsvFileIterator fileIterator = new CsvFileIterator(arguments.getFilename());
         while (fileIterator.hasNext()) {
             String[] fields = fileIterator.next();
-            if(fields.length != 3){
+            if (fields.length != 3) {
                 logger.error("Invalid file format, got {} fields, expected 3 ", fields.length);
                 continue;
             }
@@ -50,7 +50,7 @@ public class TicketsAction implements Action {
                 stub.addTicket(request);
                 logger.info("ticket for user {} added", fields[0]);
                 ticketsAdded++;
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.info("ticket for user {} could not be added", fields[0]);
                 logger.info("reason: {}", e.getMessage());
                 ticketsFailed++;
@@ -62,7 +62,7 @@ public class TicketsAction implements Action {
 
     @Override
     public void showResults() {
-        if(ticketsFailed!=0){
+        if (ticketsFailed != 0) {
             System.out.printf("Cannot add %d passes%n", ticketsFailed);
         }
         System.out.printf("%d passes added%n", ticketsAdded);

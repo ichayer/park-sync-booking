@@ -6,6 +6,7 @@ import java.util.UUID;
 
 /**
  * Represents a ticket, or pass, for a visitor on a given day.
+ *
  * @implNote This class is not thread-safe. The only field that is not readonly is 'bookings', and therefore any access
  * to the related methods (canBook, addBook, removeBook) is expected to be done with the caller ensuring thread-safety.
  */

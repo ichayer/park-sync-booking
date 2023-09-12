@@ -32,7 +32,7 @@ public class Arguments {
         }
     }
 
-    public String getOutFile(){
+    public String getOutFile() {
         return outFile;
     }
 

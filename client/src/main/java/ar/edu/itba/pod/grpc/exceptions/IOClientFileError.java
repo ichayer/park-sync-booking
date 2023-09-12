@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.grpc.exceptions;
 
-public class IOClientFileError extends RuntimeException{
+public class IOClientFileError extends RuntimeException {
     public IOClientFileError(String message) {
         super(message);
     }

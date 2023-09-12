@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class AdminActionMapper extends ActionMapperImpl {
 
-    public AdminActionMapper(){
+    public AdminActionMapper() {
         super(Map.of(
                 "RIDES", RidesAction::new,
                 "TICKETS", TicketsAction::new,

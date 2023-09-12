@@ -43,12 +43,12 @@ public class GenericClient {
             Map.entry("NOT_REGISTERED_FOR_NOTIFICATIONS", "The visitor is not registered for notifications of the provided day and attraction"));
     ;
 
-    public GenericClient(ActionMapper actionMapper){
+    public GenericClient(ActionMapper actionMapper) {
 
         this.actionMapper = actionMapper;
     }
 
-    public void run(String[] args) throws InterruptedException{
+    public void run(String[] args) throws InterruptedException {
         Arguments arguments = null;
         try {
 
@@ -56,19 +56,13 @@ public class GenericClient {
             logger.debug("Parsed arguments: {}", arguments);
 
             actionMapper.getAction(arguments.getAction()).execute(arguments).showResults();
-        }
-
-        catch (IllegalClientArgumentException | IOClientFileError | NotificationInterruptedException e) {
+        } catch (IllegalClientArgumentException | IOClientFileError | NotificationInterruptedException e) {
             System.out.println("Client error: " + e.getMessage());
-        }
-        catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException e) {
             System.out.println("Server error received: " + errorMapper.getOrDefault(e.getStatus().getDescription(), "Unknown error."));
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("Unknown error: " + e.getMessage());
-        }
-
-        finally {
+        } finally {
             if (arguments != null && arguments.getChannel() != null) {
                 arguments.getChannel().shutdown().awaitTermination(10, TimeUnit.SECONDS);
             }

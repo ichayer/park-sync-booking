@@ -9,7 +9,6 @@ import ar.edu.itba.pod.grpc.interfaces.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import static ar.edu.itba.pod.grpc.AdminServiceGrpc.newBlockingStub;
 
 public class RidesAction implements Action {
@@ -38,11 +37,11 @@ public class RidesAction implements Action {
                         .setSlotDurationMinutes(Integer.parseInt(fields[3]))
                         .build();
                 logger.info("Sending ride request {}", request);
-                try{
+                try {
                     stub.addAttraction(request);
                     logger.info("ride {} added", fields[0]);
                     attractionsAdded++;
-                }catch (Exception e) {
+                } catch (Exception e) {
                     logger.info("ride {} could not be added", fields[0]);
                     logger.info("reason: {}", e.getMessage());
                     attractionsFailed++;
@@ -55,7 +54,7 @@ public class RidesAction implements Action {
 
     @Override
     public void showResults() {
-        if(attractionsFailed!=0){
+        if (attractionsFailed != 0) {
             System.out.printf("Cannot add %d attractions%n", attractionsFailed);
         }
         System.out.printf("%d attractions added%n", attractionsAdded);

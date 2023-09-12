@@ -1,8 +1,8 @@
 package ar.edu.itba.pod.grpc.bookingClient.actions;
 
 import ar.edu.itba.pod.grpc.Attraction;
-import ar.edu.itba.pod.grpc.GetAttractionsResponse;
 import ar.edu.itba.pod.grpc.BookingServiceGrpc;
+import ar.edu.itba.pod.grpc.GetAttractionsResponse;
 import ar.edu.itba.pod.grpc.helpers.Arguments;
 import ar.edu.itba.pod.grpc.interfaces.Action;
 import com.google.protobuf.Empty;

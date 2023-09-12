@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 public class NotificationClient {
     private static final Logger logger = LoggerFactory.getLogger(NotificationClient.class);
+
     public static void main(String[] args) throws InterruptedException {
         logger.debug("Notification client started, mapping actions");
         GenericClient client = new GenericClient(new NotificationActionMapper());
