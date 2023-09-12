@@ -93,8 +93,5 @@ public class NotificationRouter implements ReservationObserver {
             throw new NotRegisteredForNotificationsException();
 
         stream.onComplete();
-
-        // Remove idMap from attractionMap if empty
-        attractionMap.computeIfPresent(attraction, (attr, idm) -> idm.isEmpty() ? null : idm);
     }
 }
