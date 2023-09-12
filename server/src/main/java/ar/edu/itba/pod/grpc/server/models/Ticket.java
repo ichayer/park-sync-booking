@@ -23,6 +23,11 @@ public class Ticket {
         this.bookings = 0;
     }
 
+    public Ticket(UUID visitorId, int dayOfYear, TicketType ticketType, int bookings) {
+        this(visitorId, dayOfYear, ticketType);
+        this.bookings = bookings;
+    }
+
     public boolean canBook(LocalTime slotTime) {
         return this.ticketType.canBook(this.bookings, slotTime);
     }
