@@ -325,18 +325,15 @@ public class ReservationHandler {
             throw new OutOfCapacityException();
 
         // Check if the reservation already exists as pending
-        // TODO: Decide if the way to handle this side case is to raise an error or confirm the pending reservation.
         LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
         if (pendings != null && pendings.containsKey(ticket.getVisitorId()))
             throw new ReservationAlreadyExistsException();
 
-        // TODO: Discuss replacing with confirmed.computeIfAbsent. The issue with that function is that we can't differentiate the return value.
         ConfirmedReservation reservation = new ConfirmedReservation(ticket, attraction, slotTime);
         boolean success = confirmed.putIfAbsent(reservation.getVisitorId(), reservation) == null;
         if (!success)
             throw new ReservationAlreadyExistsException();
 
-        // TODO: Decide if pending reservations are cancelled automatically when a slot fills up, or if the confirmation fails when the user attempts it.
         // If max capacity was reached for this slot, cancel all its pending reservations.
         cancelPendingReservationsForSlotIfFull(slotIndex);
 
