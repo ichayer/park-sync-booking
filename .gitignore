@@ -1,6 +1,9 @@
 # Maven artifacts
 */target/
 
+# Scripts artifacts
+tmp/*
+
 # IDEA artifacts and output dirs
 *.iml
 *.ipr

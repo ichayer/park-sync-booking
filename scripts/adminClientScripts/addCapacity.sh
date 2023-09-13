@@ -1,7 +1,3 @@
 #!/bin/bash
 
-source ../utils.sh
-
-check_and_extract
-
-./admin-cli -DserverAddress=localhost:50051 -Daction=slots -Dride=ride -Dday=day -Dcapacity=capacity
+cd ./tmp/tpe1-g4-client-2023.1Q/ && ./admin-cli -DserverAddress=localhost:50051 -Daction=slots -Dride=rideName -Dday=dayOfYear -Dcapacity=amount
