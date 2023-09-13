@@ -16,7 +16,7 @@ function check_and_extract() {
       tar -xzf "$TAR_FILE" -C "$HOME/park-sync-booking/client/target/" || exit
       echo "Tar file extracted successfully."
   else
-      echo "Clients jar already extracted. Executing script..."
+      echo -e "Clients jar already extracted. Executing script...\n"
   fi
 
   cd "$CLIENTS_DIR" || exit
