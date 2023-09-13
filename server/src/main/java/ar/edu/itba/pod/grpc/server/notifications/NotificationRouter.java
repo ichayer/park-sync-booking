@@ -34,7 +34,8 @@ public class NotificationRouter implements ReservationObserver {
             idMap.forEach((vid, notif) -> notif.onSlotCapacitySet(attraction, dayOfYear, slotCapacity));
     }
 
-    private NotificationStreamObserver getObserverIfExists(Reservation reservation) {
+    @Override
+    public void onCreated(Reservation reservation, LocalTime slotTime, boolean isConfirmed) {
         int dayOfYear = reservation.getDayOfYear();
         Attraction attraction = reservation.getAttraction();
 
@@ -42,38 +43,53 @@ public class NotificationRouter implements ReservationObserver {
         ConcurrentMap<UUID, NotificationStreamObserver> idMap = attractionMap.get(attraction);
         NotificationStreamObserver stream;
 
-        if (idMap == null || (stream = idMap.get(reservation.getVisitorId())) == null)
-            return null;
-
-        return stream;
-    }
-
-    @Override
-    public void onCreated(Reservation reservation, LocalTime slotTime, boolean isConfirmed) {
-        NotificationStreamObserver stream = getObserverIfExists(reservation);
-        if (stream != null)
+        if (idMap != null && (stream = idMap.get(reservation.getVisitorId())) != null)
             stream.onCreated(reservation, slotTime, isConfirmed);
     }
 
     @Override
     public void onConfirmed(ConfirmedReservation reservation) {
-        NotificationStreamObserver stream = getObserverIfExists(reservation);
-        if (stream != null)
+        int dayOfYear = reservation.getDayOfYear();
+        Attraction attraction = reservation.getAttraction();
+
+        ConcurrentMap<Attraction, ConcurrentMap<UUID, NotificationStreamObserver>> attractionMap = streamsByDay[dayOfYear];
+        ConcurrentMap<UUID, NotificationStreamObserver> idMap = attractionMap.get(attraction);
+        NotificationStreamObserver stream;
+
+        if (idMap != null && (stream = idMap.get(reservation.getVisitorId())) != null) {
             stream.onConfirmed(reservation);
+            stream.onComplete();
+            idMap.remove(reservation.getVisitorId());
+        }
     }
 
     @Override
     public void onRelocated(Reservation reservation, LocalTime prevSlotTime, LocalTime newSlotTime) {
-        NotificationStreamObserver stream = getObserverIfExists(reservation);
-        if (stream != null)
+        int dayOfYear = reservation.getDayOfYear();
+        Attraction attraction = reservation.getAttraction();
+
+        ConcurrentMap<Attraction, ConcurrentMap<UUID, NotificationStreamObserver>> attractionMap = streamsByDay[dayOfYear];
+        ConcurrentMap<UUID, NotificationStreamObserver> idMap = attractionMap.get(attraction);
+        NotificationStreamObserver stream;
+
+        if (idMap != null && (stream = idMap.get(reservation.getVisitorId())) != null)
             stream.onRelocated(reservation, prevSlotTime, newSlotTime);
     }
 
     @Override
     public void onCancelled(Reservation reservation, LocalTime slotTime) {
-        NotificationStreamObserver stream = getObserverIfExists(reservation);
-        if (stream != null)
+        int dayOfYear = reservation.getDayOfYear();
+        Attraction attraction = reservation.getAttraction();
+
+        ConcurrentMap<Attraction, ConcurrentMap<UUID, NotificationStreamObserver>> attractionMap = streamsByDay[dayOfYear];
+        ConcurrentMap<UUID, NotificationStreamObserver> idMap = attractionMap.get(attraction);
+        NotificationStreamObserver stream;
+
+        if (idMap != null && (stream = idMap.get(reservation.getVisitorId())) != null) {
             stream.onCancelled(reservation, slotTime);
+            stream.onComplete();
+            idMap.remove(reservation.getVisitorId());
+        }
     }
 
     public void subscribe(NotificationStreamObserver observer, Attraction attraction, UUID visitorId, int dayOfYear) {

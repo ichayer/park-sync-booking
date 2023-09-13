@@ -144,7 +144,7 @@ public class ReservationHandler {
     /**
      * Same as getSlotIndex, but throws an exception instead of returning -1.
      *
-     * @throws InvalidSlotException
+     * @throws InvalidSlotException if the slotTime doesn't exactly match a slot's time
      */
     private int getSlotIndexOrThrow(LocalTime slotTime) {
         int slotIndex = getSlotIndex(slotTime);
@@ -428,46 +428,25 @@ public class ReservationHandler {
 
 
     /**
-     * Same as getMinSlotIndex
+     * Similar to getSlotIndex, but rounding and clamping the slot index instead of fetching an exact match.
      */
-    private int getMinSlotIndex(LocalTime slotTime) {
+    private int getClampedSlotIndex(LocalTime slotTime, boolean clampMin) {
         int slotDuration = attraction.getSlotDuration();
         int slotMinuteOfDay = slotTime.getMinute() + slotTime.getHour() * 60;
-        if (slotMinuteOfDay < firstSlotMinuteOfDay) {
+
+        if (slotMinuteOfDay < firstSlotMinuteOfDay)
             return 0;
-        }
+
         int diff = slotMinuteOfDay - firstSlotMinuteOfDay;
         int slotIndex = diff / slotDuration;
 
-        if (slotIndex >= slotCount) {
+        if (slotIndex >= slotCount)
             return slotCount - 1;
-        }
 
-        if (slotIndex * slotDuration != diff) {
+        if (clampMin && slotIndex * slotDuration != diff)
             return slotIndex < (slotCount - 1) ? slotIndex + 1 : (slotCount - 1);
-        }
-
         return slotIndex;
     }
-
-    private int getMaxSlotIndex(LocalTime slotTime) {
-        int slotDuration = attraction.getSlotDuration();
-        int slotMinuteOfDay = slotTime.getMinute() + slotTime.getHour() * 60;
-
-        if (slotMinuteOfDay < firstSlotMinuteOfDay) {
-            return 0;
-        }
-
-        int diff = slotMinuteOfDay - firstSlotMinuteOfDay;
-        int slotIndex = diff / slotDuration;
-
-        if (slotIndex >= slotCount) {
-            return slotCount;
-        }
-
-        return slotIndex + 1;
-    }
-
 
     /**
      * Gets the availability for a given time slot.
@@ -478,14 +457,10 @@ public class ReservationHandler {
      * @throws InvalidSlotException if the slotFrom or slotTo times are invalid.
      */
     public synchronized void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, LocalTime slotFrom, LocalTime slotTo) {
-        int slotFromIndex = getMinSlotIndex(slotFrom);
-        int slotToIndex = getMaxSlotIndex(slotTo);
+        int slotFromIndex = getClampedSlotIndex(slotFrom, true);
+        int slotToIndex = getClampedSlotIndex(slotTo, false);
 
-        if (slotToIndex == slotFromIndex) {
-            return;
-        }
-
-        for (int slotIndex = slotFromIndex; slotIndex < slotToIndex; slotIndex++) {
+        for (int slotIndex = slotFromIndex; slotIndex <= slotToIndex; slotIndex++) {
             Map<UUID, ConfirmedReservation> confirmed = slotConfirmedRequests[slotIndex];
             LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
             LocalTime slotTime = getSlotTimeByIndex(slotIndex);
