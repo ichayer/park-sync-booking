@@ -3,9 +3,13 @@ package ar.edu.itba.pod.test;
 import ar.edu.itba.pod.grpc.*;
 import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
+import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
+import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
+import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
+import ar.edu.itba.pod.grpc.server.notifications.ReservationObserver;
 import ar.edu.itba.pod.grpc.server.services.AdminServiceImpl;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
@@ -18,6 +22,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -60,6 +66,7 @@ public class AdminServiceImplTest {
     @Mock
     private StreamObserver<AddCapacityResponse> capacityResponseObserver;
 
+
     @Before
     public void setUp() {
         attractions.clear();
@@ -101,16 +108,15 @@ public class AdminServiceImplTest {
 
     @Test
     public void testAddAttractionWithExistingName() {
+        final Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
+        attractions.put(attraction.getName(), attraction);
+
         final AddAttractionRequest request = AddAttractionRequest.newBuilder()
                 .setName(ATTRACTION_NAME)
                 .setOpeningTime(OPENING_TIME)
                 .setClosingTime(CLOSING_TIME)
                 .setSlotDurationMinutes(SLOT_GAP)
                 .build();
-
-        final Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-
-        attractions.put(attraction.getName(), attraction);
 
         assertThrows(AttractionAlreadyExistsException.class, () -> adminService.addAttraction(request, emptyStreamObserver));
 
@@ -392,7 +398,11 @@ public class AdminServiceImplTest {
     public void testAddCapacityFailureCapacityAlreadySet() {
         Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
         attractions.put(attraction.getName(), attraction);
-        attraction.getReservationHandler(VALID_DAY_OF_YEAR).defineSlotCapacity(VALID_CAPACITY);
+
+        ReservationHandler reservationHandler = new ReservationHandler(attraction,
+                VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                VALID_CAPACITY, new Map[TOTAL_SLOTS], new LinkedHashMap[TOTAL_SLOTS]);
+        attraction.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandler);
 
         assertThrows(CapacityAlreadyDefinedException.class, () -> adminService.addCapacity(AddCapacityRequest.newBuilder()
                 .setAttractionName(ATTRACTION_NAME)
@@ -404,8 +414,7 @@ public class AdminServiceImplTest {
     @Test
     public void testAddCapacitySuccess() {
         Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-        Attraction attractionSpy = Mockito.spy(attraction);
-        attractions.put(attraction.getName(), attractionSpy);
+        attractions.put(attraction.getName(), attraction);
 
         adminService.addCapacity(AddCapacityRequest.newBuilder()
                 .setAttractionName(ATTRACTION_NAME)
@@ -426,17 +435,23 @@ public class AdminServiceImplTest {
     @Test
     public void testAddCapacityConfirmPendingRequests() {
         Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-        Attraction attractionSpy = Mockito.spy(attraction);
-        attractions.put(attraction.getName(), attractionSpy);
+        attractions.put(attraction.getName(), attraction);
 
+        LinkedHashMap<UUID, Reservation>[] pendingReservations = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[TOTAL_SLOTS];
+        pendingReservations[VALID_DAY_OF_YEAR - 1] = new LinkedHashMap<>();
+
+        ReservationHandler reservationHandler = new ReservationHandler(attraction,
+                VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                INVALID_CAPACITY, new Map[TOTAL_SLOTS], pendingReservations);
 
         for (int i = 0; i < VALID_CAPACITY; i++) {
             UUID visitorId = UUID.randomUUID();
             Ticket ticket = new Ticket(visitorId, VALID_DAY_OF_YEAR, TicketType.UNLIMITED);
             ticketsByDay[VALID_DAY_OF_YEAR - 1].put(ticket.getVisitorId(), ticket);
-            attractionHandler.makeReservation(ATTRACTION_NAME, visitorId, VALID_DAY_OF_YEAR, LocalTime.parse(OPENING_TIME).plusMinutes(SLOT_GAP));
+            pendingReservations[VALID_DAY_OF_YEAR - 1].put(visitorId, new Reservation(ticket, attraction));
         }
 
+        attraction.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandler);
 
         adminService.addCapacity(AddCapacityRequest.newBuilder()
                 .setAttractionName(ATTRACTION_NAME)
@@ -457,24 +472,31 @@ public class AdminServiceImplTest {
     @Test
     public void testAddCapacityCancelPendingRequests() {
         Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-        Attraction attractionSpy = Mockito.spy(attraction);
-        attractions.put(attraction.getName(), attractionSpy);
+        attractions.put(attraction.getName(), attraction);
+
+        LinkedHashMap<UUID, Reservation>[] pendingReservations = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[TOTAL_SLOTS];
+
+        ReservationHandler reservationHandler = new ReservationHandler(attraction,
+                VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                INVALID_CAPACITY, new Map[TOTAL_SLOTS], pendingReservations);
 
         for (int j = 0; j < TOTAL_SLOTS; j++) {
+            pendingReservations[j] = new LinkedHashMap<>();
             for (int i = 0; i < VALID_CAPACITY + 1; i++) {
                 UUID visitorId = UUID.randomUUID();
                 Ticket ticket = new Ticket(visitorId, VALID_DAY_OF_YEAR, TicketType.UNLIMITED);
                 ticketsByDay[VALID_DAY_OF_YEAR - 1].put(ticket.getVisitorId(), ticket);
-                attractionHandler.makeReservation(ATTRACTION_NAME, visitorId, VALID_DAY_OF_YEAR, LocalTime.parse(OPENING_TIME).plusMinutes((long) SLOT_GAP * j));
+                pendingReservations[j].put(visitorId, new Reservation(ticket, attraction));
             }
         }
+
+        attraction.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandler);
 
         adminService.addCapacity(AddCapacityRequest.newBuilder()
                 .setAttractionName(ATTRACTION_NAME)
                 .setDayOfYear(VALID_DAY_OF_YEAR)
                 .setCapacity(VALID_CAPACITY)
                 .build(), capacityResponseObserver);
-
 
         ArgumentCaptor<AddCapacityResponse> responseCaptor = ArgumentCaptor.forClass(AddCapacityResponse.class);
         Mockito.verify(capacityResponseObserver).onNext(responseCaptor.capture());
@@ -489,17 +511,24 @@ public class AdminServiceImplTest {
     @Test
     public void testAddCapacityRelocateBookingRequest() {
         Attraction attraction = new Attraction(ATTRACTION_NAME, LocalTime.parse(OPENING_TIME), LocalTime.parse(CLOSING_TIME), SLOT_GAP);
-        Attraction attractionSpy = Mockito.spy(attraction);
-        attractions.put(attraction.getName(), attractionSpy);
+        attractions.put(attraction.getName(), attraction);
 
+        LinkedHashMap<UUID, Reservation>[] pendingReservations = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[TOTAL_SLOTS];
+
+        ReservationHandler reservationHandler = new ReservationHandler(attraction,
+                VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
+                INVALID_CAPACITY, new Map[TOTAL_SLOTS], pendingReservations);
+
+        pendingReservations[0] = new LinkedHashMap<>();
 
         for (int i = 0; i < 2 * VALID_CAPACITY; i++) {
             UUID visitorId = UUID.randomUUID();
             Ticket ticket = new Ticket(visitorId, VALID_DAY_OF_YEAR, TicketType.UNLIMITED);
             ticketsByDay[VALID_DAY_OF_YEAR - 1].put(ticket.getVisitorId(), ticket);
-            attractionHandler.makeReservation(ATTRACTION_NAME, visitorId, VALID_DAY_OF_YEAR, LocalTime.parse(OPENING_TIME).plusMinutes((SLOT_GAP)));
+            pendingReservations[0].put(visitorId, new Reservation(ticket, attraction));
         }
 
+        attraction.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandler);
 
         adminService.addCapacity(AddCapacityRequest.newBuilder()
                 .setAttractionName(ATTRACTION_NAME)
@@ -517,5 +546,4 @@ public class AdminServiceImplTest {
         assertEquals(0, capturedResponse.getCancelledBookings());
         assertEquals(VALID_CAPACITY, capturedResponse.getRelocatedBookings());
     }
-
 }
