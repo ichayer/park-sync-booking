@@ -30,7 +30,7 @@ This will extract the generated `.tar.gz` files, storing them in a temporary dir
 
 Sample scripts are provided in the `scripts` folder. Update script flags values to match your environment.
 
-> Note: this scripts MUST be executed from the root of the project.
+> Note: this scripts MUST be executed from the root of the project and they must use absolute paths
 
 ## Add executions permissions to scripts
 ```bash
@@ -109,7 +109,7 @@ Receive notifications from modifications in attraction bookings:
 ./scripts/notificationsClientScripts/subscribe.sh
 ```
 
-Unscribe from notifications:
+Unsubscribe from notifications:
 ```bash
 ./scripts/notificationsClientScripts/unsubscribe.sh
 ```
