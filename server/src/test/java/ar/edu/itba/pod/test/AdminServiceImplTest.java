@@ -5,7 +5,6 @@ import ar.edu.itba.pod.grpc.server.exceptions.*;
 import ar.edu.itba.pod.grpc.server.handlers.AttractionHandler;
 import ar.edu.itba.pod.grpc.server.handlers.ReservationHandler;
 import ar.edu.itba.pod.grpc.server.models.Attraction;
-import ar.edu.itba.pod.grpc.server.models.ConfirmedReservation;
 import ar.edu.itba.pod.grpc.server.models.Reservation;
 import ar.edu.itba.pod.grpc.server.models.Ticket;
 import ar.edu.itba.pod.grpc.server.models.TicketType;
@@ -438,7 +437,7 @@ public class AdminServiceImplTest {
         attractions.put(attraction.getName(), attraction);
 
         LinkedHashMap<UUID, Reservation>[] pendingReservations = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[TOTAL_SLOTS];
-        pendingReservations[VALID_DAY_OF_YEAR - 1] = new LinkedHashMap<>();
+        pendingReservations[0] = new LinkedHashMap<>();
 
         ReservationHandler reservationHandler = new ReservationHandler(attraction,
                 VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
@@ -514,12 +513,12 @@ public class AdminServiceImplTest {
         attractions.put(attraction.getName(), attraction);
 
         LinkedHashMap<UUID, Reservation>[] pendingReservations = (LinkedHashMap<UUID, Reservation>[]) new LinkedHashMap[TOTAL_SLOTS];
+        pendingReservations[0] = new LinkedHashMap<>();
 
         ReservationHandler reservationHandler = new ReservationHandler(attraction,
                 VALID_DAY_OF_YEAR, Mockito.mock(ReservationObserver.class),
                 INVALID_CAPACITY, new Map[TOTAL_SLOTS], pendingReservations);
 
-        pendingReservations[0] = new LinkedHashMap<>();
 
         for (int i = 0; i < 2 * VALID_CAPACITY; i++) {
             UUID visitorId = UUID.randomUUID();
