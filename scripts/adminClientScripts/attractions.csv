@@ -1,0 +1,17 @@
+name;hoursFrom;hoursTo;slotGap
+SplashMountain;09:00;23:00;10
+PiratesOfTheCaribbean;09:30;15:00;20
+ItsASmallWorld;08:00;23:00;20
+SoaringEpcot;08:00;23:00;20
+BuzzLightyearAstroBlasters;10:15;23:00;45
+HarryPotter;09:10;23:10;20
+MickeyMouse;10:00;20:00;20
+PeterPan'sFlight;09:00;15:00;35
+SplashMountain;10:00;12:00;20
+;10:00;12:00;20
+WrongTime;25:00:00;12:00;20
+WrongTime2;12:00;25:00:00;20
+WrongTime3;12:00;09:20;20
+NegativeSlotTime;12:00;09:20;-1
+NoHoursFrom;;09:20;20
+NoHoursTo;09:20;;20
