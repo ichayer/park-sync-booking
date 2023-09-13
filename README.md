@@ -106,12 +106,12 @@ cd ./scripts/bookingClientScripts/cancel.sh
 
 Receive notifications from modifications in attraction bookings:
 ```bash
-cd ./scripts/notificationsClientScripts/suscribe.sh
+cd ./scripts/notificationsClientScripts/subscribe.sh
 ```
 
 Unscribe from notifications:
 ```bash
-cd ./scripts/notificationsClientScripts/unsuscribe.sh
+cd ./scripts/notificationsClientScripts/unsubscribe.sh
 ```
 
 Query suggested capacity:
