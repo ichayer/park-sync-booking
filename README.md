@@ -3,7 +3,7 @@
 ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 
 <div align="right">
-  [<img src="https://github.com/ichayer/park-sync-booking/actions/workflows/maven.yml/badge.svg" alt="Java CI with Maven" height="30">](https://github.com/ichayer/park-sync-booking/actions/workflows/maven.yml)
+  <img src="https://github.com/ichayer/park-sync-booking/actions/workflows/maven.yml/badge.svg" alt="Java CI with Maven" height="30">
 </div>
 
 # Authors
