@@ -20,6 +20,10 @@ public class AvailabilityAction implements Action {
     @Override
     public Action execute(Arguments arguments) {
         AvailabilityRequest.Builder requestBuilder = AvailabilityRequest.newBuilder();
+        if(arguments.getDayOfYear() == null){
+            throw new IllegalClientArgumentException("Invalid arguments for the availability action.");
+        }
+        requestBuilder.setDayOfYear(arguments.getDayOfYear());
         if (arguments.getAttractionName() == null && arguments.getBookingSlot() != null && arguments.getBookingSlotTo() != null) {
             requestBuilder.setSlotFrom(arguments.getBookingSlot());
             requestBuilder.setSlotTo(arguments.getBookingSlotTo());
