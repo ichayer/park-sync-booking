@@ -39,29 +39,25 @@ public class ReservationHandler {
      * The total amount of slots available for the day.
      */
     private final int slotCount;
-
-    /**
-     * The amount of people each slot may assign, or -1 if this has not been defined yet.
-     */
-    private int slotCapacity = -1;
-
-    /**
-     * A ReservationObserver that listens to reservation changes from this ReservationHandler.
-     */
-    private ReservationObserver reservationObserver;
-
     /**
      * Stores the confirmed set of visitors for each slot. The slots are stored ordered by time ascending.
      * Note: all elements in this array start as null and are created as needed.
      */
     private final Map<UUID, ConfirmedReservation>[] slotConfirmedRequests;
-
     /**
      * Stores the pending reservation requests for each slot. Requests are added to this queue as they arrive, and
      * therefore are ordered chronologically.
      * Note: all elements in this array start as null and are created as needed.
      */
     private final LinkedHashMap<UUID, Reservation>[] slotPendingRequests;
+    /**
+     * The amount of people each slot may assign, or -1 if this has not been defined yet.
+     */
+    private int slotCapacity = -1;
+    /**
+     * A ReservationObserver that listens to reservation changes from this ReservationHandler.
+     */
+    private final ReservationObserver reservationObserver;
 
     /**
      * Creates a new ReservationHandler for the given attraction and day of year.
@@ -430,6 +426,50 @@ public class ReservationHandler {
         return new SuggestedCapacityResult(attraction, maxPendingReservationCount, getSlotTimeByIndex(indexOfMax));
     }
 
+
+    /**
+     * Same as getMinSlotIndex
+     */
+    private int getMinSlotIndex(LocalTime slotTime) {
+        int slotDuration = attraction.getSlotDuration();
+        int slotMinuteOfDay = slotTime.getMinute() + slotTime.getHour() * 60;
+        if (slotMinuteOfDay < firstSlotMinuteOfDay) {
+            return 0;
+        }
+        int diff = slotMinuteOfDay - firstSlotMinuteOfDay;
+        int slotIndex = diff / slotDuration;
+
+        if (slotIndex >= slotCount) {
+            return slotCount - 1;
+        }
+
+        if (slotIndex * slotDuration != diff) {
+            return slotIndex < (slotCount - 1) ? slotIndex + 1 : (slotCount - 1);
+        }
+
+        return slotIndex;
+    }
+
+    private int getMaxSlotIndex(LocalTime slotTime) {
+        int slotDuration = attraction.getSlotDuration();
+        int slotMinuteOfDay = slotTime.getMinute() + slotTime.getHour() * 60;
+
+        if (slotMinuteOfDay < firstSlotMinuteOfDay) {
+            return 0;
+        }
+
+        int diff = slotMinuteOfDay - firstSlotMinuteOfDay;
+        int slotIndex = diff / slotDuration;
+
+        if (slotIndex >= slotCount) {
+            return slotCount;
+        }
+
+
+        return slotIndex;
+    }
+
+
     /**
      * Gets the availability for a given time slot.
      *
@@ -439,10 +479,16 @@ public class ReservationHandler {
      * @throws InvalidSlotException if the slotFrom or slotTo times are invalid.
      */
     public synchronized void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, LocalTime slotFrom, LocalTime slotTo) {
-        int slotFromIndex = getSlotIndexOrThrow(slotFrom);
-        int slotToIndex = (slotTo == null ? slotFromIndex : getSlotIndexOrThrow(slotTo));
+        int slotFromIndex = getMinSlotIndex(slotFrom);
+        int slotToIndex = getMaxSlotIndex(slotTo);
 
-        for (int slotIndex = slotFromIndex; slotIndex <= slotToIndex; slotIndex++) {
+        System.out.println("min: " + slotFromIndex + "max: " + slotToIndex);
+
+        if (slotToIndex == slotFromIndex) {
+            return;
+        }
+
+        for (int slotIndex = slotFromIndex; slotIndex < slotToIndex; slotIndex++) {
             Map<UUID, ConfirmedReservation> confirmed = slotConfirmedRequests[slotIndex];
             LinkedHashMap<UUID, Reservation> pendings = slotPendingRequests[slotIndex];
             LocalTime slotTime = getSlotTimeByIndex(slotIndex);
@@ -450,7 +496,6 @@ public class ReservationHandler {
             int confirmedCount = confirmed == null ? 0 : confirmed.size();
             int pendingCount = pendings == null ? 0 : pendings.size();
 
-            // TODO: Right now, slotCapacity value could be -1. Wouldn't be better to return a String that says "Not defined"?
             resultCollection.add(new AttractionAvailabilityResult(this.attraction.getName(), slotTime, this.slotCapacity, confirmedCount, pendingCount));
         }
     }
