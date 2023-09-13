@@ -53,7 +53,7 @@ public class AvailabilityAction implements Action {
         System.out.printf("%-7s | %9s | %9s | %9s | %-7s\n",
                 "Slot", "Capacity", "Pending", "Confirmed", "Attraction");
         for (AvailabilitySlot slot : slots) {
-            System.out.printf("%-7s | %-9s | %9d | %9d | %-7s\n",
+            System.out.printf("%-7s | %9s | %9d | %9d | %-7s\n",
                     slot.getSlot(),
                     slot.getSlotCapacity()==-1 ?"X":"-1",
                     slot.getBookingsPending(),
