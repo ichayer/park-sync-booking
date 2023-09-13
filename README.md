@@ -32,6 +32,10 @@ Sample scripts are provided in the `scripts` folder. Update script flags values 
 
 > Note: this scripts MUST be executed from the root of the project.
 
+## Add executions permissions to scripts
+```bash
+find . -path './scripts/*' -exec chmod u+x {} \;
+```
 ## Run server
 ```bash
 ./scripts/run-server.sh
@@ -54,11 +58,6 @@ Sample scripts are provided in the `scripts` folder. Update script flags values 
 ```
 
 ## Examples
-
-Add executions permissions:
-```bash
-find . -path './scripts/*' -exec chmod u+x {} \;
-```
 
 Run server:
 ```bash
