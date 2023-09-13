@@ -482,8 +482,6 @@ public class ReservationHandler {
         int slotFromIndex = getMinSlotIndex(slotFrom);
         int slotToIndex = getMaxSlotIndex(slotTo);
 
-        System.out.println("min: " + slotFromIndex + "max: " + slotToIndex);
-
         if (slotToIndex == slotFromIndex) {
             return;
         }
