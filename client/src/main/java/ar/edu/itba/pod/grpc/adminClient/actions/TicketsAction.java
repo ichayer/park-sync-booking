@@ -70,7 +70,7 @@ public class TicketsAction implements Action {
 
     private static PassType mapPassType(String type) {
         return switch (type) {
-            case "HALFDAY" -> PassType.PASS_TYPE_HALF_DAY;
+            case "HALF_DAY" -> PassType.PASS_TYPE_HALF_DAY;
             case "THREE" -> PassType.PASS_TYPE_FULL_DAY;
             case "UNLIMITED" -> PassType.PASS_TYPE_UNLIMITED;
             default -> PassType.PASS_TYPE_UNKNOWN;
