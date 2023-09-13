@@ -1,9 +1,14 @@
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
-![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white)
-![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 
-<div align="right">
-  <img src="https://github.com/ichayer/park-sync-booking/actions/workflows/maven.yml/badge.svg" alt="Java CI with Maven" height="30">
+<div style="display: flex; justify-content: space-between;">
+  <div>
+    <img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white">
+    <img src="https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white">
+    <img src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white">
+  </div>
+
+  <div>
+    <img src="https://github.com/ichayer/park-sync-booking/actions/workflows/maven.yml/badge.svg" alt="Java CI with Maven">
+  </div>
 </div>
 
 # Authors
