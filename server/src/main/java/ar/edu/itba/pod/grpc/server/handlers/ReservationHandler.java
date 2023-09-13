@@ -465,8 +465,7 @@ public class ReservationHandler {
             return slotCount;
         }
 
-
-        return slotIndex;
+        return slotIndex + 1;
     }
 
 

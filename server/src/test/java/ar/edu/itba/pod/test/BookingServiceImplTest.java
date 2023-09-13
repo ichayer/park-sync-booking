@@ -245,7 +245,7 @@ public class BookingServiceImplTest {
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
 
-        assertTrue(capturedResponse.getSlotList().isEmpty());
+        assertEquals(1, capturedResponse.getSlotList().size());
     }
 
     @Test
@@ -269,7 +269,7 @@ public class BookingServiceImplTest {
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
 
-        assertEquals(1, capturedResponse.getSlotList().size());
+        assertEquals(2, capturedResponse.getSlotList().size());
     }
 
     @Test
@@ -293,7 +293,7 @@ public class BookingServiceImplTest {
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
 
-        assertEquals(2, capturedResponse.getSlotList().size());
+        assertEquals(3, capturedResponse.getSlotList().size());
     }
 
     @Test
@@ -391,7 +391,31 @@ public class BookingServiceImplTest {
         Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
         AvailabilityResponse capturedResponse = responseCaptor.getValue();
 
-        assertEquals(14, capturedResponse.getSlotList().size());
+        assertEquals(15, capturedResponse.getSlotList().size());
+    }
+
+    @Test
+    public void testCheckAvailabilityOneAttraction8() {
+        Attraction attraction = new Attraction(ATTRACTION_NAME, TIME_FROM_LOCAL_TIME, TIME_TO_LOCAL_TIME, SLOT_DURATION_MINUTES);
+        Attraction attractionSpy = Mockito.spy(attraction);
+        attractions.put(ATTRACTION_NAME, attractionSpy);
+        ReservationHandler reservationHandler = attraction.getReservationHandler(VALID_DAY_OF_YEAR);
+        ReservationHandler reservationHandlerSpy = Mockito.spy(reservationHandler);
+        reservationHandlerSpy.defineSlotCapacity(SLOT_CAPACITY);
+        attractionSpy.setReservationHandler(VALID_DAY_OF_YEAR, reservationHandlerSpy);
+
+        bookingService.checkAttractionAvailability(AvailabilityRequest.newBuilder()
+                        .setDayOfYear(VALID_DAY_OF_YEAR)
+                        .setSlotFrom("11:00")
+                        .setSlotTo("11:00")
+                        .build(),
+                availabilityResponseObserver);
+
+        ArgumentCaptor<AvailabilityResponse> responseCaptor = ArgumentCaptor.forClass(AvailabilityResponse.class);
+        Mockito.verify(availabilityResponseObserver).onNext(responseCaptor.capture());
+        AvailabilityResponse capturedResponse = responseCaptor.getValue();
+
+        assertEquals(1, capturedResponse.getSlotList().size());
     }
 
     @Test
