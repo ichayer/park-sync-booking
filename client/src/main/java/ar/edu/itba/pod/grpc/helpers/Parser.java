@@ -7,17 +7,18 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 public class Parser {
-    private static final Map<String, BiConsumer<String, Arguments.Builder>> OPTIONS = Map.of(
-            "-DserverAddress", (argValue, argBuilder) -> argBuilder.channel(ManagedChannelBuilder.forTarget(argValue).usePlaintext().build()),
-            "-Daction", (argValue, argBuilder) -> argBuilder.action(argValue),
-            "-Dday", (argValue, argBuilder) -> argBuilder.dayOfYear(Integer.parseInt(argValue)),
-            "-Dride", (argValue, argBuilder) -> argBuilder.attractionName(argValue),
-            "-Dvisitor", (argValue, argBuilder) -> argBuilder.visitorId(argValue),
-            "-Dslot", (argValue, argBuilder) -> argBuilder.bookingSlot(argValue),
-            "-DslotTo", (argValue, argBuilder) -> argBuilder.bookingSlotTo(argValue),
-            "-DinPath", (argValue, argBuilder) -> argBuilder.filename(argValue),
-            "-Dcapacity", (argValue, argBuilder) -> argBuilder.capacity(Integer.valueOf(argValue)),
-            "-DoutPath", (argValue, argBuilder) -> argBuilder.outFile(argValue)
+    private static final Map<String, BiConsumer<String, Arguments.Builder>> OPTIONS = Map.ofEntries(
+            Map.entry("-DserverAddress", (argValue, argBuilder) -> argBuilder.channel(ManagedChannelBuilder.forTarget(argValue).usePlaintext().build())),
+            Map.entry("-Daction", (argValue, argBuilder) -> argBuilder.action(argValue)),
+            Map.entry("-Dday", (argValue, argBuilder) -> argBuilder.dayOfYear(Integer.parseInt(argValue))),
+            Map.entry("-Dride", (argValue, argBuilder) -> argBuilder.attractionName(argValue)),
+            Map.entry("-Dvisitor", (argValue, argBuilder) -> argBuilder.visitorId(argValue)),
+            Map.entry("-Dslot", (argValue, argBuilder) -> argBuilder.bookingSlot(argValue)),
+            Map.entry("-DslotTo", (argValue, argBuilder) -> argBuilder.bookingSlotTo(argValue)),
+            Map.entry("-DinPath", (argValue, argBuilder) -> argBuilder.filename(argValue)),
+            Map.entry("-Dcapacity", (argValue, argBuilder) -> argBuilder.capacity(Integer.valueOf(argValue))),
+            Map.entry("-DoutPath", (argValue, argBuilder) -> argBuilder.outFile(argValue)),
+            Map.entry("-Dattraction", (argValue, argBuilder) -> argBuilder.attractionName(argValue))
     );
 
     private static void invalidArgument(String arg, Arguments.Builder argBuilder) {
