@@ -23,7 +23,7 @@ public class ReserveAction extends BoookingAction {
 
     @Override
     public void showResults() {
-        System.out.printf("The reservation for %s at %s on the day %d is %s%n", attractionName, slot, dayOfYear, bookingState.name());
+        System.out.printf("The reservation for %s at %s on the day %d is %s%n", attractionName, slot, dayOfYear,bookingStateToString(bookingState));
     }
 
     private String bookingStateToString(BookingState bookingState){
