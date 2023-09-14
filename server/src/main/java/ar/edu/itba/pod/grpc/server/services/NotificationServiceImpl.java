@@ -47,6 +47,8 @@ public class NotificationServiceImpl extends AttractionNotificationServiceGrpc.A
         Attraction attraction = attractionHandler.getAttraction(attractionName);
 
         notificationRouter.unsubscribe(attraction, visitorId, dayOfYear);
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
     }
 
     private static class NotificationStreamObserverImpl implements NotificationStreamObserver {
