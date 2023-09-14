@@ -38,7 +38,7 @@ find . -path './scripts/*' -exec chmod u+x {} \;
 ```
 ## Run server
 ```bash
-./scripts/run-server.sh
+./scripts/run_server.sh
 ```
 ## Run admin client
 ```bash
