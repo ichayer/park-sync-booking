@@ -25,4 +25,12 @@ public class ReserveAction extends BoookingAction {
     public void showResults() {
         System.out.printf("The reservation for %s at %s on the day %d is %s%n", attractionName, slot, dayOfYear, bookingState.name());
     }
+
+    private String bookingStateToString(BookingState bookingState){
+        return switch (bookingState) {
+            case RESERVATION_STATUS_UNKNOWN, UNRECOGNIZED -> "UNKNOWN";
+            case RESERVATION_STATUS_PENDING -> "PENDING";
+            case RESERVATION_STATUS_CONFIRMED -> "CONFIRMED";
+        };
+    }
 }

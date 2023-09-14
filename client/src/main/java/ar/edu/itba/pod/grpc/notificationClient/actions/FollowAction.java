@@ -80,7 +80,7 @@ public class FollowAction implements Action {
 
             @Override
             public void onError(Throwable t) {
-                logger.error("Error: {}", t.getMessage());
+                System.out.println("Server error received: " + t.getMessage());
                 completableFuture.complete("Error");
             }
 
