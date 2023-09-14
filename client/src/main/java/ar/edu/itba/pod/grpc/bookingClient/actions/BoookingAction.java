@@ -17,7 +17,7 @@ public abstract class BoookingAction implements Action {
     public Action execute(Arguments arguments) {
         if (arguments.getDayOfYear() == null || arguments.getVisitorId() == null || arguments.getAttractionName() == null || arguments.getBookingSlot() == null) {
             throw new IllegalClientArgumentException("The book action requires the day of year, the visitorId, the ride and the booking slot, " +
-                    "use -Dday=dayOfYear -ride=rideName -Dvisitor=visitorId -Dslot=bookingSlot ");
+                    "use -Dday=dayOfYear -Dride=rideName -Dvisitor=visitorId -Dslot=bookingSlot ");
         }
 
         BookingServiceGrpc.BookingServiceBlockingStub stub = BookingServiceGrpc.newBlockingStub(arguments.getChannel());

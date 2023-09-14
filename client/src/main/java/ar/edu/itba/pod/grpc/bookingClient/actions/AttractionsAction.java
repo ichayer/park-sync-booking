@@ -25,6 +25,7 @@ public class AttractionsAction implements Action {
     @Override
     public void showResults() {
         System.out.println("Atracciones del parque:");
+        System.out.println("----------------------------------");
         for (Attraction attraction : attractionList) {
             System.out.printf("Nombre: %s\n", attraction.getName());
             System.out.printf("Horario de Apertura: %s\n", attraction.getOpeningTime());
