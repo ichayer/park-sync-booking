@@ -151,15 +151,15 @@ public class AttractionHandler {
         ticket.removeBook();
     }
 
-    public Collection<SuggestedCapacityResult> getSuggestedCapacities(int dayOfYear) {
-        List<SuggestedCapacityResult> results = new ArrayList<>();
+    public SortedSet<SuggestedCapacityResult> getSuggestedCapacities(int dayOfYear) {
+        SortedSet<SuggestedCapacityResult> results = new TreeSet<>(SuggestedCapacityResult::compareCapacityTo);
         for (Attraction attraction : attractions.values()) {
             SuggestedCapacityResult r = attraction.getSuggestedCapacity(dayOfYear);
             if (r != null)
                 results.add(r);
         }
 
-        return Collections.unmodifiableList(results);
+        return Collections.unmodifiableSortedSet(results);
     }
 
     public SortedSet<ConfirmedReservation> getConfirmedReservations(int dayOfYear) {

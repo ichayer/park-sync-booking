@@ -23,7 +23,7 @@ public class QueryServiceImpl extends QueryServiceGrpc.QueryServiceImplBase {
 
         SuggestedCapacitiesResponse.Builder responseBuilder = SuggestedCapacitiesResponse.newBuilder();
 
-        Collection<SuggestedCapacityResult> results = attractionHandler.getSuggestedCapacities(dayOfYear);
+        SortedSet<SuggestedCapacityResult> results = attractionHandler.getSuggestedCapacities(dayOfYear);
         for (SuggestedCapacityResult result : results) {
             responseBuilder.addSuggestedCapacity(SuggestedCapacity.newBuilder()
                     .setAttractionName(result.attraction().getName())

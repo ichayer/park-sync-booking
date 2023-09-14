@@ -12,4 +12,8 @@ import java.time.LocalTime;
  * @param slotTime                   The slot's time, or null if there are no slots.
  */
 public record SuggestedCapacityResult(Attraction attraction, int maxPendingReservationCount, LocalTime slotTime) {
+    public int compareCapacityTo(SuggestedCapacityResult other) {
+        int cmp = Integer.compare(other.maxPendingReservationCount, this.maxPendingReservationCount);
+        return cmp == 0 ? this.attraction.getName().compareTo(other.attraction.getName()) : cmp;
+    }
 }
