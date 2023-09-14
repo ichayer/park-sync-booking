@@ -28,36 +28,36 @@ find . -path './tmp/tpe1-g4-*/*' -exec chmod u+x {} \;
 ```
 This will extract the generated `.tar.gz` files, storing them in a temporary directory `./tmp`, and grant execution permissions to both the client and server `.sh` files. It will also create a `csv` folder to place csv's in it.
 
-## Run server
-```bash
-cd ./tmp/tpe1-g4-server-2023.1Q/ && ./run-server.sh
-```
-## Run admin client
-```bash
-cd ./tmp/tpe1-g4-client-2023.1Q/ && ./admin-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName [ -DinPath=filename | -Dride=rideName | -Dday=dayOfYear | -Dcapacity=amount ]
-```
-## Run booking client
-```bash
-cd ./tmp/tpe1-g4-client-2023.1Q/ && ./book-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName [ -Dday=dayOfYear -Dride=rideName -Dvisitor=visitorId -Dslot=bookingSlot -DslotTo=bookingSlotTo ]
-```
-## Run notification client
-```bash
-cd ./tmp/tpe1-g4-client-2023.1Q/ && ./notif-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName -Dday=dayOfYear -Dride=rideName -Dvisitor=visitorId
-```
-## Run query client
-```bash
-cd ./tmp/tpe1-g4-client-2023.1Q/ && ./query-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName -Dday=dayOfYear -DoutPath=output.txt
-```
-
-## Examples
 Sample scripts are provided in the `scripts` folder. Update script flags values to match your environment.
 
-> Note: this scripts must be executed from the root of the project.
+> Note: this scripts MUST be executed from the root of the project and they must use absolute paths
 
-Add executions permissions:
+## Add executions permissions to scripts
 ```bash
 find . -path './scripts/*' -exec chmod u+x {} \;
 ```
+## Run server
+```bash
+./scripts/run-server.sh
+```
+## Run admin client
+```bash
+./scripts/admin-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName [ -DinPath=filename | -Dride=rideName | -Dday=dayOfYear | -Dcapacity=amount ]
+```
+## Run booking client
+```bash
+./scripts/book-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName [ -Dday=dayOfYear -Dride=rideName -Dvisitor=visitorId -Dslot=bookingSlot -DslotTo=bookingSlotTo ]
+```
+## Run notification client
+```bash
+./scripts/notif-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName -Dday=dayOfYear -Dride=rideName -Dvisitor=visitorId
+```
+## Run query client
+```bash
+./scripts/query-cli -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName -Dday=dayOfYear -DoutPath=output.txt
+```
+
+## Examples
 
 Run server:
 ```bash
@@ -66,62 +66,62 @@ Run server:
 
 Add attractions:
 ```bash
-cd ./scripts/adminClientScripts/addAttractions.sh
+./scripts/adminClientScripts/addAttractions.sh
 ```
 
 Add capacity for attraction:
 ```bash
-cd ./scripts/adminClientScripts/addCapacity.sh
+./scripts/adminClientScripts/addCapacity.sh
  ```
 
 Add tickets:
 ```bash
-cd ./scripts/adminClientScripts/addTickets.sh
+./scripts/adminClientScripts/addTickets.sh
 ```
 
 Get loaded attractions info:
 ```bash
-cd ./scripts/bookingClientScripts/attractionsInfo.sh
+./scripts/bookingClientScripts/attractionsInfo.sh
 ```
 
 Get attraction(s) availability(ies):
 ```bash
-cd ./scripts/bookingClientScripts/availability.sh
+./scripts/bookingClientScripts/availability.sh
 ```
 
 Book:
 ```bash
-cd ./scripts/bookingClientScripts/book.sh
+./scripts/bookingClientScripts/book.sh
 ```
 
 Confirm reservation:
 ```bash
-cd ./scripts/bookingClientScripts/confirm.sh
+./scripts/bookingClientScripts/confirm.sh
 ```
 
 Cancel reservation:
 ```bash
-cd ./scripts/bookingClientScripts/cancel.sh
+./scripts/bookingClientScripts/cancel.sh
 ```
 
 Receive notifications from modifications in attraction bookings:
 ```bash
-cd ./scripts/notificationsClientScripts/suscribe.sh
+./scripts/notificationsClientScripts/subscribe.sh
 ```
 
-Unscribe from notifications:
+Unsubscribe from notifications:
 ```bash
-cd ./scripts/notificationsClientScripts/unsuscribe.sh
+./scripts/notificationsClientScripts/unsubscribe.sh
 ```
 
 Query suggested capacity:
 ```bash
-cd ./scripts/queryClientScripts/suggestedCapacity.sh
+./scripts/queryClientScripts/suggestedCapacity.sh
 ```
 
 Query confirmed reservations:
 ```bash
-cd ./scripts/queryClientScripts/confirmedReservations.sh
+./scripts/queryClientScripts/confirmedReservations.sh
 ```
 
 # Project description

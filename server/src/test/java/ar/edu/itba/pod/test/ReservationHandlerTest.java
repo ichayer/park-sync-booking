@@ -56,20 +56,15 @@ public class ReservationHandlerTest {
     private final static Ticket TICKET1 = new Ticket(USER1, DAY_OF_YEAR, TicketType.HALF_DAY);
 
     private final static Ticket TICKET2 = new Ticket(USER2, DAY_OF_YEAR, TicketType.FULL_DAY);
-
-
-    @Mock
-    private ar.edu.itba.pod.grpc.server.models.Attraction attraction1;
-
-    @Mock
-    private Attraction attraction2;
-
     private final Map<UUID, ConfirmedReservation>[] slotConfirmedRequests1 = new Map[VALID_TIME_SLOTS1.length];
     private final LinkedHashMap<UUID, Reservation>[] slotPendingRequests1 = new LinkedHashMap[VALID_TIME_SLOTS1.length];
-    private ReservationHandler reservationHandler1;
-
     private final Map<UUID, ConfirmedReservation>[] slotConfirmedRequests2 = new Map[VALID_TIME_SLOTS2.length];
     private final LinkedHashMap<UUID, Reservation>[] slotPendingRequests2 = new LinkedHashMap[VALID_TIME_SLOTS2.length];
+    @Mock
+    private ar.edu.itba.pod.grpc.server.models.Attraction attraction1;
+    @Mock
+    private Attraction attraction2;
+    private ReservationHandler reservationHandler1;
     private ReservationHandler reservationHandler2;
 
     @Before
