@@ -412,7 +412,7 @@ public class ReservationHandler {
 
         // Find the slotIndex wih the maximum amount of pending reservations.
         int indexOfMax = 0;
-        int maxPendingReservationCount = slotPendingRequests[0].size();
+        int maxPendingReservationCount = slotPendingRequests[0] == null ? 0 : slotPendingRequests[0].size();
         for (int i = 1; i < slotPendingRequests.length; i++) {
             if (slotPendingRequests[i] != null && slotPendingRequests[i].size() > maxPendingReservationCount) {
                 indexOfMax = i;
