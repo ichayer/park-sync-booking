@@ -455,7 +455,7 @@ public class ReservationHandler {
      */
     public synchronized void getAvailability(Collection<AttractionAvailabilityResult> resultCollection, LocalTime slotFrom, LocalTime slotTo) {
         int slotFromIndex = getClampedSlotIndex(slotFrom, true);
-        int slotToIndex = getClampedSlotIndex(slotTo, false);
+        int slotToIndex = slotTo == null ? slotFromIndex : getClampedSlotIndex(slotTo, false);
 
         for (int slotIndex = slotFromIndex; slotIndex <= slotToIndex; slotIndex++) {
             Map<UUID, ConfirmedReservation> confirmed = slotConfirmedRequests[slotIndex];
