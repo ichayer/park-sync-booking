@@ -26,11 +26,11 @@ Extract `tar.gz` from `target` folders:
 mkdir -p tmp/csv && find . -name '*tar.gz' -exec tar -C tmp -xzf {} \;
 find . -path './tmp/tpe1-g4-*/*' -exec chmod u+x {} \;
 ```
-This will extract the generated `.tar.gz` files, storing them in a temporary directory `./tmp`, and grant execution permissions to both the client and server `.sh` files. It will also create a `csv` folder to place csv's in it.
+This will extract the generated `.tar.gz` files, storing them in a temporary directory `./tmp`, and grant execution permissions to both the client and server `.sh` files. It will also create a `csv` folder to place CSVs in it.
 
 Sample scripts are provided in the `scripts` folder. Update script flags values to match your environment.
 
-> Note: this scripts MUST be executed from the root of the project and they must use absolute paths
+> Note: these scripts MUST be executed from the root of the project and they must use absolute paths. An easy way to do this is replacing `"./output.txt"` with `"$PWD/output.txt"`
 
 ## Add executions permissions to scripts
 ```bash
@@ -125,7 +125,7 @@ Query confirmed reservations:
 ```
 
 # Project description
-This project focuses on the development of thread-safe system for managing and booking attractions in an theme park. It includes remote services for park management, attraction reservations, and receiving notifications about changes in reservations. It also provides the ability to make queries about suggested capacity and confirmed reservations.
+This project focuses on the development of thread-safe system for managing and booking attractions in an theme park. It includes remote services for park management, attraction reservations, and receiving notifications about changes in reservations. It also provides the ability to make queries about suggested capacities and confirmed reservations.
 
 ## Park Administration Service
   - Add an attraction to the park using its name, opening and closing hours, and the duration of slots for reservations. Fails if an attraction with that name already exists, if the provided time values are invalid, if the minutes are not positive, or if there's no possible slot with the given values.
@@ -155,7 +155,7 @@ The project includes four client programs, each corresponding to a remote servic
 - `Park Management Client:` Allows executing actions related to park management, such as adding attractions, passes, or loading slot capacity.
 - `Reservation Client:` Allows making queries and reservations for attractions, as well as confirming and canceling reservations.
 - `Notification Client:` Allows registering and canceling registration to receive notifications about events related to a reservation.
-- `Query Client:` Generates TXT files with results of queries about suggested capacity and confirmed reservations for attractions.
+- `Query Client:` Generates TXT/CSV files with results of queries about suggested capacity and confirmed reservations for attractions.
 
 ## Considerations
 - There's no persistence of data between executions.
