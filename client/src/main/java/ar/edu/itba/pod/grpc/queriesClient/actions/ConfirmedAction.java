@@ -26,13 +26,7 @@ public class ConfirmedAction extends QueriesAction {
 
     @Override
     protected void writeToFile(PrintWriter writer) {
-
         writer.printf("%-7s | %-25s | %-7s%n", "Slot", "Visitor", "Attraction");
-
-        reservations.sort(Comparator
-                .comparing(ConfirmedReservation::getAttractionName)
-                .thenComparing(ConfirmedReservation::getSlot)
-                .thenComparing(ConfirmedReservation::getVisitorId));
 
         for (ConfirmedReservation reservation : reservations) {
             String line = String.format("%-7s | %-25s | %-7s%n",
@@ -41,6 +35,5 @@ public class ConfirmedAction extends QueriesAction {
                     reservation.getAttractionName());
             writer.println(line);
         }
-
     }
 }
