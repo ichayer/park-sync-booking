@@ -43,8 +43,11 @@ public class NotificationRouter implements ReservationObserver {
         ConcurrentMap<UUID, NotificationStreamObserver> idMap = attractionMap.get(attraction);
         NotificationStreamObserver stream;
 
-        if (idMap != null && (stream = idMap.get(reservation.getVisitorId())) != null)
+        if (idMap != null && (stream = idMap.get(reservation.getVisitorId())) != null) {
             stream.onCreated(reservation, slotTime, isConfirmed);
+            stream.onComplete();
+            idMap.remove(reservation.getVisitorId());
+        }
     }
 
     @Override
